@@ -28,8 +28,8 @@ class PywerScene(QGraphicsScene):
         edge = pyweritems.PywerEdge()
         edge.source_plug = source_plug
         edge.target_plug = target_plug
-        edge.source_plug.parentItem().outputs.append(edge)
-        edge.target_plug.parentItem().inputs.append(edge)
+        # edge.source_plug.parentItem().outputs.append(edge)
+        # edge.target_plug.parentItem().inputs.append(edge)
 
         edge.source_plug.edges.append(edge)
         edge.target_plug.edges.append(edge)
@@ -45,3 +45,22 @@ class PywerScene(QGraphicsScene):
         self.removeItem(edge)
 
         edge.hide()  # TODO dont know why I have to do this
+
+    def get_selected_nodes(self):
+        return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerNode)]
+
+    def remove_node(self, node):
+        for plug in node.inputs + node.outputs:
+            for edge in plug.edges:
+                self.remove_edge(edge)
+
+                all_items = self.items()
+                if edge.source_plug in all_items:
+                    edge.source_plug.update()
+                if edge.target_plug in all_items:
+                    edge.target_plug.update()
+        self.removeItem(node)
+
+    def remove_nodes(self, nodes):
+        for node in nodes:
+            self.remove_node(node)

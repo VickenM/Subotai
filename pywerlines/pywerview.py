@@ -102,6 +102,8 @@ class PywerView(QtWidgets.QGraphicsView):
                 edge = plug.edges[0]
                 if plug == edge.target_plug:
                     self.scene().remove_edge(edge)
+                    edge.source_plug.update()
+                    edge.target_plug.update()
 
                     plug = edge.source_plug
                     self.new_edge.source_plug = plug
@@ -109,7 +111,6 @@ class PywerView(QtWidgets.QGraphicsView):
                     self.new_edge.target_position = self.mapToScene(mouse_position)
                     self.new_edge.adjust()
                     self.new_edge.show()
-                    self.new_edge.source_plug.update()
 
             self.drag_edge_from(plug=plug)
         super(PywerView, self).mousePressEvent(event)
@@ -120,5 +121,5 @@ class PywerView(QtWidgets.QGraphicsView):
             self.perform_new_connection()
         self.update()
         if button == QtCore.Qt.RightButton:
-            print(len(self.scene().items()))
+            self.scene().remove_node(self.scene().get_selected_nodes())
         super(PywerView, self).mouseReleaseEvent(event)

@@ -222,7 +222,8 @@ class PywerNode(PywerItem):
 
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
-            for edge in self.inputs + self.outputs:
-                edge.adjust()
+            for plug in self.inputs + self.outputs:
+                for edge in plug.edges:
+                    edge.adjust()
 
         return super(PywerNode, self).itemChange(change, value)
