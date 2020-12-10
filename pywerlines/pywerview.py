@@ -62,6 +62,9 @@ class PywerView(QtWidgets.QGraphicsView):
         return items[0]
 
     def perform_new_connection(self):
+        if not self.new_edge.target_position:
+            return
+
         position = self.new_edge.target_position.toPoint()
         plug = self.get_plug_at(position=self.mapFromScene(position))
 
@@ -88,8 +91,6 @@ class PywerView(QtWidgets.QGraphicsView):
         mouse_position = event.pos()
         self.new_edge.target_position = self.mapToScene(mouse_position)
         self.new_edge.adjust()
-        if self.new_edge.source_plug:
-            print(self.new_edge.target_position)
         super(PywerView, self).mouseMoveEvent(event)
 
     def mousePressEvent(self, event):

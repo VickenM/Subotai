@@ -81,16 +81,13 @@ class PywerEdge(PywerItem):
     def paint(self, painter, option, widget):
         painter.setClipRect(option.exposedRect)
 
-        start = self.start
-        end = self.end
-
-        center = QtCore.QPointF((start + end) / 2)
-        c1 = QtCore.QPointF(center.x(), start.y())
-        c2 = QtCore.QPointF(center.x(), end.y())
+        center = QtCore.QPointF((self.start + self.end) / 2)
+        c1 = QtCore.QPointF(center.x(), self.start.y())
+        c2 = QtCore.QPointF(center.x(), self.end.y())
 
         shape = QtGui.QPainterPath()
-        shape.moveTo(start)
-        shape.cubicTo(c1, c2, end)
+        shape.moveTo(self.start)
+        shape.cubicTo(c1, c2, self.end)
 
         percent = 0.5
         center = shape.pointAtPercent(percent)
@@ -165,6 +162,8 @@ class PywerNode(PywerItem):
         self.base_color = (25, 25, 25, 200)
         self.header_color = (35, 105, 140, 200)
 
+        self.selected_color = (190, 190, 0, 255)
+
         self.setFlag(self.ItemIsMovable)
 
         self.inputs = []
@@ -213,6 +212,10 @@ class PywerNode(PywerItem):
         gradient = QtGui.QLinearGradient(50, self.header_height - gradient_amount, 50, self.header_height)
         gradient.setColorAt(0, color1)
         gradient.setColorAt(1, color2)
+
+        if self.isSelected():
+            pen = QtGui.QPen(QtGui.QColor(*self.selected_color))
+            painter.setPen(pen)
 
         painter.setBrush(gradient)
         painter.drawPath(shape)

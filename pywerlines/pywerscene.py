@@ -44,5 +44,4 @@ class PywerScene(QGraphicsScene):
         edge.target_plug.edges.remove(edge)
         self.removeItem(edge)
 
-        print('hack: hiding, dont know why')
-        edge.hide()
+        edge.hide()  # TODO dont know why I have to do this
