@@ -121,5 +121,5 @@ class PywerView(QtWidgets.QGraphicsView):
             self.perform_new_connection()
         self.update()
         if button == QtCore.Qt.RightButton:
-            self.scene().remove_node(self.scene().get_selected_nodes())
+            self.scene().remove_nodes(self.scene().get_selected_nodes())
         super(PywerView, self).mouseReleaseEvent(event)
