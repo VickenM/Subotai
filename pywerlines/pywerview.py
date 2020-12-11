@@ -44,6 +44,15 @@ class PywerView(QtWidgets.QGraphicsView):
         for y in range(int(top_right.y()), int(bottom_left.y()), 250):
             painter.drawLine(bottom_left.x(), y, top_right.x(), y)
 
+    def reset_new_edge(self):
+        self.new_edge.source_plug = None
+        self.new_edge.target_plug = None
+        self.new_edge.target_position = None
+        self.new_edge.start = QtCore.QPoint()
+        self.new_edge.end = QtCore.QPoint()
+        self.new_edge.adjust()
+        self.new_edge.hide()
+
     def drag_edge_from(self, plug):
         if not plug:
             return None
@@ -62,24 +71,13 @@ class PywerView(QtWidgets.QGraphicsView):
         return items[0]
 
     def perform_new_connection(self):
-        if not self.new_edge.target_position:
-            return
-
         position = self.new_edge.target_position.toPoint()
         plug = self.get_plug_at(position=self.mapFromScene(position))
 
         if self.new_edge.source_plug:
             self.scene().create_edge(self.new_edge.source_plug, plug)
-        elif self.new_edge.target_plug:
-            self.scene().create_edge(plug, self.new_edge.target_plug)
 
-        self.new_edge.source_plug = None
-        self.new_edge.target_plug = None
-        self.new_edge.target_position = None
-        self.new_edge.start = QtCore.QPoint()
-        self.new_edge.end = QtCore.QPoint()
-        self.new_edge.adjust()
-        self.new_edge.hide()
+        self.reset_new_edge()
 
     def scaleView(self, scaleFactor):
         # abs_factor = self.transform().scale(scaleFactor, scaleFactor).mapRect(QtCore.QRectF(0, 0, 1, 1)).width()
@@ -105,9 +103,10 @@ class PywerView(QtWidgets.QGraphicsView):
                     edge.source_plug.update()
                     edge.target_plug.update()
 
+                    self.reset_new_edge()
+
                     plug = edge.source_plug
                     self.new_edge.source_plug = plug
-                    self.new_edge.target_plug = None
                     self.new_edge.target_position = self.mapToScene(mouse_position)
                     self.new_edge.adjust()
                     self.new_edge.show()
