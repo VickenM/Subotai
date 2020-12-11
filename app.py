@@ -13,6 +13,7 @@ class MainWindow(QWidget):
         view = pywerlines.pywerview.PywerView()
         scene = pywerscene.PywerScene()
         scene.setSceneRect(0, 0, 5000, 5000)
+        scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
 
         layout = QVBoxLayout()

@@ -54,6 +54,26 @@ class PywerEdge(PywerItem):
         self.end = QtCore.QPoint()
         self.setZValue(0)
 
+    def add_plug(self, plug):
+        if plug in plug.parentItem().inputs:
+            self.target_plug = plug
+        else:
+            self.source_plug = plug
+
+    def connect_plugs(self, plug1, plug2, change_direction=False):
+        source_plug, target_plug = plug1, plug2
+
+        if not change_direction:
+            if plug1 in plug1.parentItem().outputs:
+                source_plug, target_plug = plug1, plug2
+            else:
+                source_plug, target_plug = plug2, plug1
+
+        self.source_plug = source_plug
+        self.target_plug = target_plug
+        self.source_plug.add_edge(self)
+        self.target_plug.add_edge(self)
+
     def adjust(self):
         if self.target_position:
             self.start = self.target_position
@@ -124,6 +144,11 @@ class PywerPlug(PywerItem):
 
         self.edges = []
 
+        # self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, enabled=False)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemNegativeZStacksBehindParent)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, enabled=False)
+        self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
+
     def boundingRect(self):
         diameter = 2 * self.radius
         bbox = QtCore.QRectF(0, 0, diameter, diameter)
@@ -147,6 +172,16 @@ class PywerPlug(PywerItem):
             path.addEllipse(QtCore.QPointF(self.radius, self.radius), inner_radius, inner_radius)
 
         painter.drawPath(path)
+
+    def add_edge(self, edge):
+        if edge not in self.edges:
+            self.edges.append(edge)
+        self.update()
+
+    def remove_edge(self, edge):
+        if edge in self.edges:
+            self.edges.remove(edge)
+        self.update()
 
 
 class PywerNode(PywerItem):

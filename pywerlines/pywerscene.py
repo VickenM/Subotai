@@ -11,9 +11,14 @@ class PywerScene(QGraphicsScene):
         super(PywerScene, self).addItem(item)
 
     def removeItem(self, item):
-        super(PywerScene, self).removeItem(item)
+        for child_item in item.childItems():
+            super().removeItem(child_item)
+        super().removeItem(item)
 
     def can_connect(self, source_plug, target_plug):
+        if not (source_plug and target_plug):
+            return False
+
         if source_plug.parentItem() == target_plug.parentItem():
             return False
         return True
@@ -28,8 +33,6 @@ class PywerScene(QGraphicsScene):
         edge = pyweritems.PywerEdge()
         edge.source_plug = source_plug
         edge.target_plug = target_plug
-        # edge.source_plug.parentItem().outputs.append(edge)
-        # edge.target_plug.parentItem().inputs.append(edge)
 
         edge.source_plug.edges.append(edge)
         edge.target_plug.edges.append(edge)
