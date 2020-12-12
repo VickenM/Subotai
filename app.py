@@ -2,8 +2,36 @@ import sys
 import pywerlines.pywerview
 
 from PySide2.QtWidgets import QApplication, QLabel, QMainWindow, QDockWidget, QWidget, QVBoxLayout, QGraphicsScene
+from PySide2.QtCore import Slot
 
 from pywerlines import pyweritems, pywerscene
+
+
+@Slot(list)
+def selected_nodes(data):
+    print(data)
+
+
+@Slot(list)
+def added_nodes(data):
+    print(data)
+
+
+@Slot(list)
+def deleted_nodes(data):
+    print(data)
+
+
+@Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
+def connected_plugs(plug1, plug2):
+    print('connected')
+    # print(plug1, plug2)
+
+
+@Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
+def disconnected_plugs(plug1, plug2):
+    # print(plug1, plug2)
+    print('disconnected')
 
 
 class MainWindow(QWidget):
@@ -12,7 +40,7 @@ class MainWindow(QWidget):
 
         view = pywerlines.pywerview.PywerView()
         scene = pywerscene.PywerScene()
-        scene.setSceneRect(0, 0, 5000, 5000)
+        scene.setSceneRect(0, 0, 1000, 1000)
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
 
@@ -23,7 +51,7 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
         node = pyweritems.PywerNode()
-        node.setPos(2250, 2500)
+        node.setPos(250, 500)
         scene.addItem(node)
         node.add_input(plug=pyweritems.PywerPlug())
         node.add_input(plug=pyweritems.PywerPlug())
@@ -31,7 +59,7 @@ class MainWindow(QWidget):
         node.add_output(plug=p1)
 
         node = pyweritems.PywerNode()
-        node.setPos(2500, 2500)
+        node.setPos(500, 500)
         scene.addItem(node)
         node.add_input(plug=pyweritems.PywerPlug())
         node.add_input(plug=pyweritems.PywerPlug())
@@ -40,17 +68,21 @@ class MainWindow(QWidget):
         node.add_output(plug=pyweritems.PywerPlug())
 
         node = pyweritems.PywerNode()
-        node.setPos(2750, 2500)
+        node.setPos(750, 500)
         scene.addItem(node)
         node.add_input(plug=pyweritems.PywerPlug())
         node.add_input(plug=pyweritems.PywerPlug())
-        p3 = pyweritems.PywerPlug()
-        node.add_input(plug=p2)
         node.add_output(plug=pyweritems.PywerPlug())
+        node.add_output(plug=pyweritems.PywerPlug())
+
+        scene.nodes_selected.connect(selected_nodes)
+        scene.nodes_deleted.connect(deleted_nodes)
+        scene.plugs_connected.connect(connected_plugs)
+        scene.plugs_disconnected.connect(disconnected_plugs)
+
 
         edge = scene.create_edge(p1, p2)
         scene.remove_edge(edge)
-
 
 if __name__ == "__main__":
     def main():

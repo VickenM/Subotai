@@ -4,6 +4,11 @@ from . import pyweritems
 
 
 class PywerScene(QGraphicsScene):
+    nodes_selected = QtCore.Signal(list)
+    nodes_deleted = QtCore.Signal(list)
+    plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
+    plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
+
     def __init_(self, **kwargs):
         super(PywerScene, self).__init__(**kwargs)
 
@@ -28,6 +33,7 @@ class PywerScene(QGraphicsScene):
             return
 
         edge = pyweritems.PywerEdge()
+        edge.connect_plugs(source_plug, target_plug)
         edge.add_plug(source_plug)
         edge.add_plug(target_plug)
 
@@ -35,17 +41,19 @@ class PywerScene(QGraphicsScene):
         target_plug.add_edge(edge)
         self.addItem(edge)
         edge.adjust()
+        self.emit_connected_plugs(source_plug, target_plug)
         return edge
 
     def remove_edge(self, edge):
         edge.source_plug.edges.remove(edge)
         edge.target_plug.edges.remove(edge)
         self.removeItem(edge)
+        self.emit_disconnected_plugs(edge.source_plug, edge.target_plug)
 
     def get_selected_nodes(self):
         return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerNode)]
 
-    def remove_node(self, node):
+    def _remove_node(self, node):
         for plug in node.inputs + node.outputs:
             for edge in plug.edges:
                 self.remove_edge(edge)
@@ -57,6 +65,30 @@ class PywerScene(QGraphicsScene):
                     edge.target_plug.update()
         self.removeItem(node)
 
+    def remove_node(self, node):
+        self._remove_node(node)
+        self.emit_deleted_nodes([node])
+
     def remove_nodes(self, nodes):
         for node in nodes:
-            self.remove_node(node)
+            self._remove_node(node)
+        self.emit_deleted_nodes(nodes)
+
+    def remove_selected_nodes(self):
+        nodes = self.get_selected_nodes()
+        self.remove_nodes(nodes)
+        self.emit_deleted_nodes(nodes)
+
+    def emit_selected_nodes(self):
+        selected_nodes = self.get_selected_nodes()
+        if selected_nodes:
+            self.nodes_selected.emit(selected_nodes)
+
+    def emit_deleted_nodes(self, nodes):
+        self.nodes_deleted.emit(nodes)
+
+    def emit_connected_plugs(self, plug1, plug2):
+        self.plugs_connected.emit(plug1, plug2)
+
+    def emit_disconnected_plugs(self, plug1, plug2):
+        self.plugs_disconnected.emit(plug1, plug2)

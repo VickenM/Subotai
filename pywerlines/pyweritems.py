@@ -205,11 +205,11 @@ class PywerNode(PywerItem):
         self.width = 100
         self.height = 50
         self.radius = 5
-        self.plug_spacing = 5
+        self.plug_spacing = 8
         self.header_height = 20
-        self.base_color = (25, 25, 25, 200)
         self.header_color = (35, 105, 140, 200)
 
+        self.base_color = (25, 25, 25, 200)
         self.selected_color = (190, 190, 0, 255)
 
         self.setFlag(self.ItemIsMovable)
@@ -218,7 +218,7 @@ class PywerNode(PywerItem):
         self.outputs = []
 
     def add_input(self, plug):
-        y = self.header_height
+        y = self.header_height + self.plug_spacing
         for p in self.inputs:
             y += 2 * p.radius + self.plug_spacing
 
@@ -256,7 +256,7 @@ class PywerNode(PywerItem):
         color1 = QtGui.QColor(*self.header_color)
         color2 = QtGui.QColor(*self.base_color)
 
-        gradient_amount = 10
+        gradient_amount = 5
         gradient = QtGui.QLinearGradient(50, self.header_height - gradient_amount, 50, self.header_height)
         gradient.setColorAt(0, color1)
         gradient.setColorAt(1, color2)
@@ -267,6 +267,31 @@ class PywerNode(PywerItem):
 
         painter.setBrush(gradient)
         painter.drawPath(shape)
+
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font_metrics = QtGui.QFontMetrics(font)
+        font_height = font_metrics.height()
+        painter.setFont(font)
+
+        pen = QtGui.QPen(QtCore.Qt.white)
+        pen.setWidthF(0.1)
+        painter.setPen(pen)
+
+        painter.drawText(10, 0.5 * (font_height + font_height), 'NodeName')
+
+        for plug in self.inputs:
+            rect = plug.boundingRect()
+            pos = plug.pos()
+            x, y = pos.x() + rect.right(), pos.y() + rect.bottom()
+            painter.drawText(x, y, 'input')
+
+        for plug in self.outputs:
+            width = font_metrics.width('output')
+            rect = plug.boundingRect()
+            pos = plug.pos()
+            x, y = pos.x() - width, pos.y() + rect.bottom()
+            painter.drawText(x, y, 'output')
 
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:

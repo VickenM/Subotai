@@ -3,6 +3,9 @@ from . import pyweritems
 
 
 class PywerView(QtWidgets.QGraphicsView):
+    nodes_selected = QtCore.Signal(list)
+    nodes_deleted = QtCore.Signal(list)
+
     def __init__(self):
         super(PywerView, self).__init__()
 
@@ -83,9 +86,11 @@ class PywerView(QtWidgets.QGraphicsView):
             mouse_over_plug = self.get_plug_at(position=position)
             if self.scene().can_connect(dragged_from_plug, mouse_over_plug):
                 self.drag_edge.connect_plugs(dragged_from_plug, mouse_over_plug)
+                self.scene().emit_connected_plugs(dragged_from_plug, mouse_over_plug)
             else:
                 dragged_from_plug.remove_edge(self.drag_edge)
                 self.scene().removeItem(self.drag_edge)
+
             self.drag_edge = None
 
     def mousePressEvent(self, event):
@@ -98,8 +103,8 @@ class PywerView(QtWidgets.QGraphicsView):
         button = event.button()
         if button == QtCore.Qt.LeftButton:
             self._drop_edge(position=event.pos())
-
+            self.scene().emit_selected_nodes()
         if button == QtCore.Qt.RightButton:
-            items = [i for i in self.scene().selectedItems() if isinstance(i, pyweritems.PywerNode)]
-            self.scene().remove_nodes(items)
+            self.scene().remove_selected_nodes()
+
         super(PywerView, self).mouseReleaseEvent(event)
