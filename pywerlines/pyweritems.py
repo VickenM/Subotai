@@ -55,16 +55,16 @@ class PywerEdge(PywerItem):
         self.setZValue(0)
 
     def add_plug(self, plug):
-        if plug in plug.parentItem().inputs:
+        if plug.is_input():
             self.target_plug = plug
-        else:
+        elif plug.is_output():
             self.source_plug = plug
 
     def connect_plugs(self, plug1, plug2, change_direction=False):
         source_plug, target_plug = plug1, plug2
 
         if not change_direction:
-            if plug1 in plug1.parentItem().outputs:
+            if plug1.is_output():
                 source_plug, target_plug = plug1, plug2
             else:
                 source_plug, target_plug = plug2, plug1
@@ -73,6 +73,7 @@ class PywerEdge(PywerItem):
         self.target_plug = target_plug
         self.source_plug.add_edge(self)
         self.target_plug.add_edge(self)
+        self.adjust()
 
     def adjust(self):
         if self.target_position:
@@ -99,6 +100,8 @@ class PywerEdge(PywerItem):
                                                                                                  extra)
 
     def paint(self, painter, option, widget):
+        import math
+
         painter.setClipRect(option.exposedRect)
 
         center = QtCore.QPointF((self.start + self.end) / 2)
@@ -112,7 +115,6 @@ class PywerEdge(PywerItem):
         percent = 0.5
         center = shape.pointAtPercent(percent)
 
-        import math
         angle_up = math.radians(shape.angleAtPercent(percent) + 60)
         cos = math.cos(angle_up)
         sin = math.sin(angle_up)
@@ -173,6 +175,12 @@ class PywerPlug(PywerItem):
 
         painter.drawPath(path)
 
+    def is_input(self):
+        return self in self.parentItem().inputs
+
+    def is_output(self):
+        return self in self.parentItem().outputs
+
     def add_edge(self, edge):
         if edge not in self.edges:
             self.edges.append(edge)
@@ -182,6 +190,11 @@ class PywerPlug(PywerItem):
         if edge in self.edges:
             self.edges.remove(edge)
         self.update()
+
+    def first_edge(self):
+        if self.edges:
+            return self.edges[0]
+        return None
 
 
 class PywerNode(PywerItem):

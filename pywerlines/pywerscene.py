@@ -24,30 +24,23 @@ class PywerScene(QGraphicsScene):
         return True
 
     def create_edge(self, source_plug, target_plug):
-        if not (source_plug and target_plug):
-            return False
-
         if not self.can_connect(source_plug=source_plug, target_plug=target_plug):
             return
 
         edge = pyweritems.PywerEdge()
-        edge.source_plug = source_plug
-        edge.target_plug = target_plug
+        edge.add_plug(source_plug)
+        edge.add_plug(target_plug)
 
-        edge.source_plug.edges.append(edge)
-        edge.target_plug.edges.append(edge)
-        edge.adjust()
+        source_plug.add_edge(edge)
+        target_plug.add_edge(edge)
         self.addItem(edge)
-
-        edge.source_plug.update()
-        edge.target_plug.update()
+        edge.adjust()
+        return edge
 
     def remove_edge(self, edge):
         edge.source_plug.edges.remove(edge)
         edge.target_plug.edges.remove(edge)
         self.removeItem(edge)
-
-        edge.hide()  # TODO dont know why I have to do this
 
     def get_selected_nodes(self):
         return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerNode)]

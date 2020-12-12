@@ -62,39 +62,44 @@ class PywerView(QtWidgets.QGraphicsView):
     def mouseDoubleClickEvent(self, event):
         self.mousePressEvent(event)
 
+    def _drag_edge(self, position):
+        plug = self.get_plug_at(position=position)
+        if plug and plug.edges and (plug == plug.edges[0].target_plug):
+            edge = plug.edges[0]
+            if plug == edge.target_plug:
+                self.drag_edge = edge
+                self.drag_edge.target_plug = None
+                plug.remove_edge(edge)
+                plug.update()
+        elif plug:
+            self.drag_edge = pyweritems.PywerEdge()
+            plug.add_edge(self.drag_edge)
+            self.drag_edge.add_plug(plug)
+            self.scene().addItem(self.drag_edge)
+
+    def _drop_edge(self, position):
+        if self.drag_edge:
+            dragged_from_plug = self.drag_edge.source_plug or self.drag_edge.target_plug
+            mouse_over_plug = self.get_plug_at(position=position)
+            if self.scene().can_connect(dragged_from_plug, mouse_over_plug):
+                self.drag_edge.connect_plugs(dragged_from_plug, mouse_over_plug)
+            else:
+                dragged_from_plug.remove_edge(self.drag_edge)
+                self.scene().removeItem(self.drag_edge)
+            self.drag_edge = None
+
     def mousePressEvent(self, event):
         button = event.button()
         if button == QtCore.Qt.LeftButton:
-            mouse_position = event.pos()
-            plug = self.get_plug_at(position=mouse_position)
-
-            if plug and plug.edges and (plug == plug.edges[0].target_plug):
-                edge = plug.edges[0]
-
-                if plug == edge.target_plug:
-                    self.drag_edge = edge
-                    self.drag_edge.target_plug = None
-                    plug.edges.remove(edge)
-                    plug.update()
-            elif plug:
-                self.drag_edge = pyweritems.PywerEdge()
-                plug.add_edge(self.drag_edge)
-                self.drag_edge.add_plug(plug)
-                self.scene().addItem(self.drag_edge)
+            self._drag_edge(position=event.pos())
         super(PywerView, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         button = event.button()
         if button == QtCore.Qt.LeftButton:
+            self._drop_edge(position=event.pos())
 
-            if self.drag_edge:
-
-                dragged_plug = self.drag_edge.source_plug or self.drag_edge.target_plug
-                mouse_over_plug = self.get_plug_at(position=event.pos())
-                if self.scene().can_connect(dragged_plug, mouse_over_plug):
-                    self.drag_edge.connect_plugs(dragged_plug, mouse_over_plug)
-                else:
-                    dragged_plug.remove_edge(self.drag_edge)
-                    self.scene().removeItem(self.drag_edge)
-                self.drag_edge = None
+        if button == QtCore.Qt.RightButton:
+            items = [i for i in self.scene().selectedItems() if isinstance(i, pyweritems.PywerNode)]
+            self.scene().remove_nodes(items)
         super(PywerView, self).mouseReleaseEvent(event)

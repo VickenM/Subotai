@@ -5,10 +5,10 @@ from PySide2.QtWidgets import QApplication, QLabel, QMainWindow, QDockWidget, QW
 
 from pywerlines import pyweritems, pywerscene
 
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-
 
         view = pywerlines.pywerview.PywerView()
         scene = pywerscene.PywerScene()
@@ -25,7 +25,6 @@ class MainWindow(QWidget):
         node = pyweritems.PywerNode()
         node.setPos(2250, 2500)
         scene.addItem(node)
-
         node.add_input(plug=pyweritems.PywerPlug())
         node.add_input(plug=pyweritems.PywerPlug())
         p1 = pyweritems.PywerPlug()
@@ -34,14 +33,24 @@ class MainWindow(QWidget):
         node = pyweritems.PywerNode()
         node.setPos(2500, 2500)
         scene.addItem(node)
-
         node.add_input(plug=pyweritems.PywerPlug())
         node.add_input(plug=pyweritems.PywerPlug())
         p2 = pyweritems.PywerPlug()
         node.add_input(plug=p2)
         node.add_output(plug=pyweritems.PywerPlug())
 
-        # view.create_edge(p1, p2)
+        node = pyweritems.PywerNode()
+        node.setPos(2750, 2500)
+        scene.addItem(node)
+        node.add_input(plug=pyweritems.PywerPlug())
+        node.add_input(plug=pyweritems.PywerPlug())
+        p3 = pyweritems.PywerPlug()
+        node.add_input(plug=p2)
+        node.add_output(plug=pyweritems.PywerPlug())
+
+        edge = scene.create_edge(p1, p2)
+        scene.remove_edge(edge)
+
 
 if __name__ == "__main__":
     def main():
