@@ -19,6 +19,9 @@ class PywerView(QtWidgets.QGraphicsView):
         self.scale(1.0, 1.0)
 
         self.drag_edge = None
+        self.disconnected_plug = None
+
+        self.mouse_position = None
 
     def setScene(self, scene):
         super(PywerView, self).setScene(scene)
@@ -56,6 +59,7 @@ class PywerView(QtWidgets.QGraphicsView):
         self.scale(scaleFactor, scaleFactor)
 
     def mouseMoveEvent(self, event):
+        self.mouse_position = event.pos()
         mouse_position = event.pos()
         if self.drag_edge:
             self.drag_edge.target_position = self.mapToScene(mouse_position)
@@ -72,6 +76,7 @@ class PywerView(QtWidgets.QGraphicsView):
             if plug == edge.target_plug:
                 self.drag_edge = edge
                 self.drag_edge.target_plug = None
+                self.disconnected_plug = plug
                 plug.remove_edge(edge)
                 plug.update()
         elif plug:
@@ -86,11 +91,15 @@ class PywerView(QtWidgets.QGraphicsView):
             mouse_over_plug = self.get_plug_at(position=position)
             if self.scene().can_connect(dragged_from_plug, mouse_over_plug):
                 self.drag_edge.connect_plugs(dragged_from_plug, mouse_over_plug)
-                self.scene().emit_connected_plugs(dragged_from_plug, mouse_over_plug)
+                if mouse_over_plug != self.disconnected_plug:
+                    self.scene().emit_connected_plugs(dragged_from_plug, mouse_over_plug)
             else:
                 dragged_from_plug.remove_edge(self.drag_edge)
                 self.scene().removeItem(self.drag_edge)
 
+            if self.disconnected_plug and (mouse_over_plug != self.disconnected_plug):
+                self.scene().emit_disconnected_plugs(dragged_from_plug, self.disconnected_plug)
+            self.disconnected_plug = None
             self.drag_edge = None
 
     def mousePressEvent(self, event):
@@ -108,3 +117,10 @@ class PywerView(QtWidgets.QGraphicsView):
             self.scene().remove_selected_nodes()
 
         super(PywerView, self).mouseReleaseEvent(event)
+
+    # def keyPressEvent(self, event):
+    #     if event.key() == QtCore.Qt.Key_A:
+    #         node = self.scene().add_node(inputs=2, outputs=2)
+    #         position = QtCore.QPointF(self.mapToScene(self.mouse_position))
+    #         node.setPos(position)
+    #     super(PywerView, self).keyPressEvent(event)

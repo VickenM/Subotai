@@ -5,6 +5,7 @@ from . import pyweritems
 
 class PywerScene(QGraphicsScene):
     nodes_selected = QtCore.Signal(list)
+    nodes_added = QtCore.Signal(list)
     nodes_deleted = QtCore.Signal(list)
     plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
     plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
@@ -55,7 +56,8 @@ class PywerScene(QGraphicsScene):
 
     def _remove_node(self, node):
         for plug in node.inputs + node.outputs:
-            for edge in plug.edges:
+            while len(plug.edges):
+                edge = plug.edges[0]
                 self.remove_edge(edge)
 
                 all_items = self.items()
@@ -78,6 +80,23 @@ class PywerScene(QGraphicsScene):
         nodes = self.get_selected_nodes()
         self.remove_nodes(nodes)
         self.emit_deleted_nodes(nodes)
+
+    def add_node(self, inputs=0, outputs=0):
+        node = pyweritems.PywerNode()
+        for i in range(inputs):
+            node.add_input(plug=pyweritems.PywerPlug())
+        for i in range(outputs):
+            node.add_output(plug=pyweritems.PywerPlug())
+        self.addItem(node)
+        self.nodes_added.emit([node])
+        return node
+
+    def list_node_types(self):
+        return [
+            (3,2),
+            (2,1),
+            (1,3)
+        ]
 
     def emit_selected_nodes(self):
         selected_nodes = self.get_selected_nodes()

@@ -2,6 +2,7 @@ import sys
 import pywerlines.pywerview
 
 from PySide2.QtWidgets import QApplication, QLabel, QMainWindow, QDockWidget, QWidget, QVBoxLayout, QGraphicsScene
+from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
 from pywerlines import pyweritems, pywerscene
@@ -34,12 +35,34 @@ def disconnected_plugs(plug1, plug2):
     print('disconnected')
 
 
+class Arithmetic(pywerscene.PywerScene):
+    def list_node_types(self):
+        return [
+            'Add',
+            'Subtract',
+            'Multiply',
+            'Divide'
+        ]
+
+    def add_node(self, type_):
+        node = super(Arithmetic, self).add_node()
+        node.label = type_
+        if type_ == 'Constant':
+            node.add_output(plug=pyweritems.PywerPlug())
+            return node
+
+        node.add_input(plug=pyweritems.PywerPlug())
+        node.add_input(plug=pyweritems.PywerPlug())
+        node.add_output(plug=pyweritems.PywerPlug())
+        return node
+
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
         view = pywerlines.pywerview.PywerView()
-        scene = pywerscene.PywerScene()
+        scene = Arithmetic() #pywerscene.PywerScene()
         scene.setSceneRect(0, 0, 1000, 1000)
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
@@ -50,39 +73,32 @@ class MainWindow(QWidget):
 
         self.setLayout(layout)
 
-        node = pyweritems.PywerNode()
-        node.setPos(250, 500)
-        scene.addItem(node)
-        node.add_input(plug=pyweritems.PywerPlug())
-        node.add_input(plug=pyweritems.PywerPlug())
-        p1 = pyweritems.PywerPlug()
-        node.add_output(plug=p1)
-
-        node = pyweritems.PywerNode()
-        node.setPos(500, 500)
-        scene.addItem(node)
-        node.add_input(plug=pyweritems.PywerPlug())
-        node.add_input(plug=pyweritems.PywerPlug())
-        p2 = pyweritems.PywerPlug()
-        node.add_input(plug=p2)
-        node.add_output(plug=pyweritems.PywerPlug())
-
-        node = pyweritems.PywerNode()
-        node.setPos(750, 500)
-        scene.addItem(node)
-        node.add_input(plug=pyweritems.PywerPlug())
-        node.add_input(plug=pyweritems.PywerPlug())
-        node.add_output(plug=pyweritems.PywerPlug())
-        node.add_output(plug=pyweritems.PywerPlug())
-
         scene.nodes_selected.connect(selected_nodes)
         scene.nodes_deleted.connect(deleted_nodes)
+        scene.nodes_added.connect(added_nodes)
         scene.plugs_connected.connect(connected_plugs)
         scene.plugs_disconnected.connect(disconnected_plugs)
 
+        self.scene = scene
+        self.view = view
 
-        edge = scene.create_edge(p1, p2)
-        scene.remove_edge(edge)
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_A:
+            node = self.scene.add_node('Add')
+        elif event.key() == QtCore.Qt.Key_S:
+            node = self.scene.add_node('Subtract')
+        elif event.key() == QtCore.Qt.Key_X:
+            node = self.scene.add_node('Multiple')
+        elif event.key() == QtCore.Qt.Key_D:
+            node = self.scene.add_node('Divide')
+        elif event.key() == QtCore.Qt.Key_C:
+            node = self.scene.add_node('Constant')
+        else:
+            return
+
+        position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+        node.setPos(position)
+
 
 if __name__ == "__main__":
     def main():

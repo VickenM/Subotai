@@ -217,6 +217,8 @@ class PywerNode(PywerItem):
         self.inputs = []
         self.outputs = []
 
+        self.label = ''
+
     def add_input(self, plug):
         y = self.header_height + self.plug_spacing
         for p in self.inputs:
@@ -278,7 +280,7 @@ class PywerNode(PywerItem):
         pen.setWidthF(0.1)
         painter.setPen(pen)
 
-        painter.drawText(10, 0.5 * (font_height + font_height), 'NodeName')
+        painter.drawText(10, 0.5 * (font_height + font_height), self.label)
 
         for plug in self.inputs:
             rect = plug.boundingRect()
