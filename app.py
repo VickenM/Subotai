@@ -15,7 +15,7 @@ def selected_nodes(data):
 
 @Slot(list)
 def added_nodes(data):
-    print(data)
+    pass
 
 
 @Slot(list)
@@ -44,17 +44,44 @@ class Arithmetic(pywerscene.PywerScene):
             'Divide'
         ]
 
-    def add_node(self, type_):
-        node = super(Arithmetic, self).add_node()
-        node.label = type_
+    def new_node(self, type_):
         if type_ == 'Constant':
-            node.add_output(plug=pyweritems.PywerPlug())
-            return node
+            bluepint = {
+                'type': 'Constant',
+                'inputs': [],
+                'outputs': ['value']
+            }
+            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+        elif type_ == 'Add':
+            bluepint = {
+                'type': 'Add',
+                'inputs': ['in1', 'in2'],
+                'outputs': ['value']
+            }
+            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+        elif type_ == 'Subtract':
+            bluepint = {
+                'type': 'Subtract',
+                'inputs': ['in1', 'in2'],
+                'outputs': ['value']
+            }
+            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+        elif type_ == 'Components':
+            bluepint = {
+                'type': 'Components',
+                'inputs': ['RGB', ],
+                'outputs': ['Red', 'Green', 'Blue']
+            }
+            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
 
-        node.add_input(plug=pyweritems.PywerPlug())
-        node.add_input(plug=pyweritems.PywerPlug())
-        node.add_output(plug=pyweritems.PywerPlug())
+        self.add_node(node)
         return node
+
+    def create_edge(self, source_plug, target_plug):
+        super(Arithmetic, self).create_edge(source_plug, target_plug)
+
+    def eval(self):
+        print('evaluating')
 
 
 class MainWindow(QWidget):
@@ -62,8 +89,8 @@ class MainWindow(QWidget):
         super().__init__()
 
         view = pywerlines.pywerview.PywerView()
-        scene = Arithmetic() #pywerscene.PywerScene()
-        scene.setSceneRect(0, 0, 1000, 1000)
+        scene = Arithmetic()  # pywerscene.PywerScene()
+        scene.setSceneRect(0, 0, 5000, 5000)
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
 
@@ -84,20 +111,33 @@ class MainWindow(QWidget):
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_A:
-            node = self.scene.add_node('Add')
+            node = self.scene.new_node('Add')
+            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+            node.setPos(position)
         elif event.key() == QtCore.Qt.Key_S:
-            node = self.scene.add_node('Subtract')
-        elif event.key() == QtCore.Qt.Key_X:
-            node = self.scene.add_node('Multiple')
-        elif event.key() == QtCore.Qt.Key_D:
-            node = self.scene.add_node('Divide')
+            node = self.scene.new_node('Subtract')
+            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+            node.setPos(position)
         elif event.key() == QtCore.Qt.Key_C:
-            node = self.scene.add_node('Constant')
-        else:
-            return
-
-        position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-        node.setPos(position)
+            node = self.scene.new_node('Constant')
+            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+            node.setPos(position)
+        elif event.key() == QtCore.Qt.Key_R:
+            node = self.scene.new_node('Components')
+            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+            node.setPos(position)
+        elif event.key() == QtCore.Qt.Key_G:
+            group = pyweritems.PywerGroup()
+            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+            group.setPos(position)
+            self.scene.addItem(group)
+        elif event.key() == QtCore.Qt.Key_Period:
+            self.scene.toggle_labels()
+        elif event.key() == QtCore.Qt.Key_Delete:
+            self.scene.remove_selected_nodes()
+            self.scene.remove_selected_groups()
+        elif event.key() == QtCore.Qt.Key_Space:
+            self.scene.eval()
 
 
 if __name__ == "__main__":

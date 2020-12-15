@@ -54,6 +54,9 @@ class PywerScene(QGraphicsScene):
     def get_selected_nodes(self):
         return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerNode)]
 
+    def get_selected_groups(self):
+        return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerGroup)]
+
     def _remove_node(self, node):
         for plug in node.inputs + node.outputs:
             while len(plug.edges):
@@ -76,27 +79,30 @@ class PywerScene(QGraphicsScene):
             self._remove_node(node)
         self.emit_deleted_nodes(nodes)
 
+    def remove_selected_groups(self):
+        for group in self.get_selected_groups():
+            self.removeItem(group)
+
     def remove_selected_nodes(self):
         nodes = self.get_selected_nodes()
         self.remove_nodes(nodes)
-        self.emit_deleted_nodes(nodes)
 
-    def add_node(self, inputs=0, outputs=0):
-        node = pyweritems.PywerNode()
-        for i in range(inputs):
-            node.add_input(plug=pyweritems.PywerPlug())
-        for i in range(outputs):
-            node.add_output(plug=pyweritems.PywerPlug())
+    def add_node(self, node):
+        # node = pyweritems.PywerNode()
         self.addItem(node)
         self.nodes_added.emit([node])
         return node
 
     def list_node_types(self):
-        return [
-            (3,2),
-            (2,1),
-            (1,3)
-        ]
+        return []
+
+    def toggle_labels(self):
+        all_nodes = [item for item in self.items() if isinstance(item, pyweritems.PywerNode) or \
+                     isinstance(item, pyweritems.PywerGroup)]
+        for node in all_nodes:
+            # print(node.label.isVisible())
+            # node.label.setVisible(False)
+            node.label.setVisible(not node.label.isVisible())
 
     def emit_selected_nodes(self):
         selected_nodes = self.get_selected_nodes()

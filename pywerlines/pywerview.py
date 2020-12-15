@@ -113,14 +113,6 @@ class PywerView(QtWidgets.QGraphicsView):
         if button == QtCore.Qt.LeftButton:
             self._drop_edge(position=event.pos())
             self.scene().emit_selected_nodes()
-        if button == QtCore.Qt.RightButton:
-            self.scene().remove_selected_nodes()
+
 
         super(PywerView, self).mouseReleaseEvent(event)
-
-    # def keyPressEvent(self, event):
-    #     if event.key() == QtCore.Qt.Key_A:
-    #         node = self.scene().add_node(inputs=2, outputs=2)
-    #         position = QtCore.QPointF(self.mapToScene(self.mouse_position))
-    #         node.setPos(position)
-    #     super(PywerView, self).keyPressEvent(event)
