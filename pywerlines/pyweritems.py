@@ -43,6 +43,7 @@ class PywerItem(QtWidgets.QGraphicsItem):
 class PywerEdge(PywerItem):
     def __init__(self, *args, **kwargs):
         super(PywerEdge, self).__init__(*args, **kwargs)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
 
         self.arrow_size = 5.0
         self.color = (255, 120, 150, 255)
@@ -325,69 +326,58 @@ class PywerNode(PywerItem):
         return super(PywerNode, self).itemChange(change, value)
 
 
-class Grip(QtWidgets.QGraphicsItem):
-    def __init__(self, *args, **kwargs):
-        super(Grip, self).__init__(*args, **kwargs)
-        self.setFlag(self.ItemIsMovable)
-        self.setFlag(self.ItemSendsGeometryChanges)
-        self.setFlag(self.ItemIsFocusable)
-        self.setFlag(self.ItemIsSelectable)
+class Resizer(QtWidgets.QGraphicsObject):
+    resize_signal = QtCore.Signal(QtCore.QPointF)
 
-        self.width = 10
-        self.height = 10
+    def __init__(self, rect=QtCore.QRectF(0, 0, 10, 10), parent=None):
+        super().__init__(parent)
+        self.rect = rect
 
-        parent = self.parentItem()
-
-        self.setFlag(self.ItemSendsGeometryChanges, False)
-        self.setPos(parent.width - self.width, parent.height - self.height)
-        self.setFlag(self.ItemSendsGeometryChanges, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
+        self.setAcceptHoverEvents(True)
 
     def boundingRect(self):
-        bbox = QtCore.QRectF(0, 0, self.width, self.height).adjusted(-0.1, -0.1, 0.1, 0.1)
-        return bbox
+        return self.rect
 
-    def paint(self, painter, option, widget):
+    def paint(self, painter, option, widget=None):
         painter.setClipRect(option.exposedRect)
+
+        width = self.rect.width()
+        height = self.rect.height()
 
         painter.setBrush(QtGui.QColor(100, 100, 100))
         painter.setPen(QtGui.QColor(150, 150, 150))
-
-        # shape = QtGui.QPainterPath()
-        # shape.addRect(0, 0, self.width, self.height)
-        # painter.drawPath(shape)
-
-        for i in range(0, int(self.width / 3) * 3, int(self.width / 3)):
-            painter.drawLine(i, self.height - 2, self.width - 2, i)
+        for i in range(0, int(width / 3) * 3, int(width / 3)):
+            painter.drawLine(i, height - 2, width - 2, i)
 
     def itemChange(self, change, value):
-        if change == self.ItemPositionChange:
-            newPos = value
-            newPos.setX(max(self.width, newPos.x()))
-            newPos.setY(max(self.height, newPos.y()))
+        if change == QtWidgets.QGraphicsItem.ItemPositionChange:
+            if self.isSelected():
+                self.resize_signal.emit(value - self.pos())
+        return value
 
-            parent = self.parentItem()
 
-            # method 1
-            # diff = newPos - self.lastPos
-            # parent.width += diff.x()
-            # parent.height += diff.y()
-            # self.lastPos = newPos
+    def hoverEnterEvent(self, event):
+        from PySide2.QtWidgets import QApplication
+        QApplication.setOverrideCursor(QtCore.Qt.SizeFDiagCursor)
+        return super(Resizer, self).hoverEnterEvent(event)
 
-            # method 2
-            scene_pos = self.mapToScene(newPos)
-            parent.width = (scene_pos.x() - parent.x()) / 2 + self.width
-            parent.height = (scene_pos.y() - parent.y()) / 2 + self.height
-            parent.update()
 
-            return newPos
+    def hoverLeaveEvent(self, event):
+        from PySide2.QtWidgets import QApplication
+        QApplication.setOverrideCursor(QtCore.Qt.ArrowCursor)
+        return super(Resizer, self).hoverLeaveEvent(event)
 
-        return super(Grip, self).itemChange(change, value)
+from PySide2.QtCore import Slot
 
 
 class PywerGroup(PywerItem):
     def __init__(self, *args, **kwargs):
         super(PywerGroup, self).__init__(*args, **kwargs)
 
+        self.type_ = 'Group'
         self.width = 100
         self.height = 100
         self.header_height = 20
@@ -407,12 +397,27 @@ class PywerGroup(PywerItem):
         self.label.setDefaultTextColor(QtCore.Qt.white)
         self.label.setPos(self.pos().x(), self.pos().y() - 20)
 
-        self.grip = Grip(parent=self)
+        self.resizer = Resizer(parent=self)
+        resizer_width = self.resizer.rect.width() / 2
+        resizer_offset = QtCore.QPointF(resizer_width * 2, resizer_width * 2)
+        rect = QtCore.QRectF(0, 0, self.width, self.height)
+        self.resizer.setPos(rect.bottomRight() - resizer_offset)
+        self.resizer.resize_signal.connect(self.resize)
 
         self.setZValue(-1)
 
+        self.contained_nodes = []
+
+    @Slot(QtCore.QPointF)
+    def resize(self, change):
+        rect = QtCore.QRectF(0, 0, self.width, self.height).adjusted(0, 0, change.x(), change.y())
+        self.width = rect.width()
+        self.height = rect.height()
+        self.prepareGeometryChange()
+        self.update()
+
     def boundingRect(self):
-        bbox = QtCore.QRectF(0, 0, self.width, self.height)  # .adjusted(-0.5, -0.5, 0.5, 0.5)
+        bbox = QtCore.QRectF(0, 0, self.width, self.height)
         return bbox
 
     def paint(self, painter, option, widget):
@@ -438,23 +443,32 @@ class PywerGroup(PywerItem):
 
         font = QtGui.QFont()
         font.setPointSize(10)
+        font_metrics = QtGui.QFontMetrics(font)
+        font_height = font_metrics.height()
         painter.setFont(font)
 
         pen = QtGui.QPen(QtCore.Qt.white)
         pen.setWidthF(0.1)
         painter.setPen(pen)
 
+        painter.drawText(10, font_height, self.type_)
+
     def itemChange(self, change, value):
         if change == self.ItemPositionChange and self.scene():
             pos = value
-            # print(pos, self.pos())
-            all_nodes = [item for item in self.scene().items() if isinstance(item, PywerNode)]
-            bounding_rect = self.sceneBoundingRect()
-            for node in all_nodes:
-                if bounding_rect.contains(node.sceneBoundingRect()):
-                    diff = pos - self.pos()
-                    node.moveBy(diff.x(), diff.y())
-
+            for node in self.contained_nodes:
+                diff = pos - self.pos()
+                node.moveBy(diff.x(), diff.y())
             return value
 
         return super(PywerGroup, self).itemChange(change, value)
+
+    def mousePressEvent(self, event):
+        self.contained_nodes = []
+        bounding_rect = self.sceneBoundingRect()
+
+        all_nodes = [item for item in self.scene().items() if isinstance(item, PywerNode)]
+        for node in all_nodes:
+            if bounding_rect.contains(node.sceneBoundingRect()):
+                self.contained_nodes.append(node)
+        return super(PywerGroup, self).mousePressEvent(event)
