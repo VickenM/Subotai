@@ -83,9 +83,11 @@ class PywerEdge(PywerItem):
             self.end = self.target_position
 
         if self.source_plug:
+            self.color = self.source_plug.color
             self.start = self.mapFromItem(self.source_plug, self.source_plug.boundingRect().center())
 
         if self.target_plug:
+            self.color = self.target_plug.color
             self.end = self.mapFromItem(self.target_plug, self.target_plug.boundingRect().center())
 
         self.prepareGeometryChange()
@@ -138,18 +140,40 @@ class PywerEdge(PywerItem):
         painter.drawPath(shape)
 
 
+ELLIPSE = QtGui.QPainterPath()
+ELLIPSE.addEllipse(QtCore.QPointF(5, 5), 5, 5)
+
+PENTAGON = QtGui.QPainterPath()
+PENTAGON.addPolygon(QtGui.QPolygonF([
+    QtCore.QPointF(0, 0),
+    QtCore.QPointF(5, 0),
+    QtCore.QPointF(10, 5),
+    QtCore.QPointF(5, 10),
+    QtCore.QPointF(0, 10),
+    QtCore.QPointF(0, 0)
+]))
+
+
 class PywerPlug(PywerItem):
+    ELLIPSE = ELLIPSE
+    PENTAGON=PENTAGON
     def __init__(self, *args, **kwargs):
+        self.path = kwargs.pop('path', self.ELLIPSE)
+        self.color = kwargs.pop('color', (255, 120, 150, 255))
+
         super(PywerPlug, self).__init__(*args, **kwargs)
         self.setFlag(QtWidgets.QGraphicsItem.ItemNegativeZStacksBehindParent)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, enabled=False)
         self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
 
         self.radius = 5
-        self.thickness = 2
-        self.color = (255, 120, 150, 255)
+        self.thickness = 1
 
         self.edges = []
+
+        if not self.path:
+            self.path = QtGui.QPainterPath()
+            self.path.addEllipse(QtCore.QPointF(self.radius, self.radius), self.radius, self.radius)
 
     def boundingRect(self):
         diameter = 2 * self.radius
@@ -157,23 +181,24 @@ class PywerPlug(PywerItem):
         bbox.adjust(-0.5, -0.5, 0.5, 0.5)
         return bbox
 
+    def shape(self):
+        return self.path
+
     def paint(self, painter, option, widget):
         painter.setClipRect(option.exposedRect)
         pen_color = QtCore.Qt.black
         pen = QtGui.QPen(pen_color)
-        pen.setWidthF(0.1)
+        pen.setWidthF(self.thickness)
+        pen.setColor(QtGui.QColor(*self.color))
         painter.setPen(pen)
 
         painter.setBrush(QtGui.QColor(*self.color))
+        path = self.shape()
 
-        inner_radius = self.radius - self.thickness
-        path = QtGui.QPainterPath()
-        path.addEllipse(QtCore.QPointF(self.radius, self.radius), self.radius, self.radius)
-
-        if not len(self.edges):
-            path.addEllipse(QtCore.QPointF(self.radius, self.radius), inner_radius, inner_radius)
-
-        painter.drawPath(path)
+        if len(self.edges):
+            painter.drawPath(path)
+        else:
+            painter.strokePath(path, pen)
 
     def is_input(self):
         return self in self.parentItem().inputs
@@ -210,7 +235,7 @@ class PywerNode(PywerItem):
         self.header_color = (35, 105, 140, 200)
 
         self.base_color = (25, 25, 25, 200)
-        self.selected_color = (190, 190, 0, 255)
+        self.selected_color = (255, 165, 0, 255)
 
         self.setFlag(self.ItemIsMovable)
 
@@ -226,46 +251,53 @@ class PywerNode(PywerItem):
         self.label.setDefaultTextColor(QtCore.Qt.white)
         self.label.setPos(self.pos().x(), self.pos().y() - 20)
 
+        # path = QtGui.QPainterPath()
+        # path.addPolygon(QtGui.QPolygonF([
+        #     QtCore.QPointF(0, 0),
+        #     QtCore.QPointF(5, 0),
+        #     QtCore.QPointF(10, 5),
+        #     QtCore.QPointF(5, 10),
+        #     QtCore.QPointF(0, 10),
+        #     QtCore.QPointF(0, 0)
+        # ]))
+        plug = PywerPlug(path=PywerPlug.PENTAGON, color=(255, 255, 255, 255))
+        self.add_input(plug=plug)
+        plug = PywerPlug(path=PywerPlug.PENTAGON, color=(255, 255, 255, 255))
+        self.add_output(plug=plug)
+
     @classmethod
     def from_dict(cls, blueprint):
         node = cls()
         node.type_ = blueprint.get('type', '')
 
         for i in blueprint.get('inputs', []):
-            node.add_input(PywerPlug(type=i))
+            node.add_input(PywerPlug(type=i, path=PywerPlug.ELLIPSE))
         for i in blueprint.get('outputs', []):
             node.add_output(PywerPlug(type=i))
         return node
 
     def add_input(self, plug):
-        y = self.header_height + self.plug_spacing
-        for p in self.inputs:
-            y += 2 * p.radius + self.plug_spacing
-
-        plug.setPos(QtCore.QPointF(-plug.radius, y))
         plug.setParentItem(self)
         self.inputs.append(plug)
         self.adjust()
 
     def add_output(self, plug):
-        y = self.header_height
-        if not self.inputs:
-            y += self.plug_spacing
-        for p in self.inputs + self.outputs:
-            y += 2 * p.radius + self.plug_spacing
-
-        plug.setPos(QtCore.QPointF(self.width - plug.radius, y))
         plug.setParentItem(self)
         self.outputs.append(plug)
         self.adjust()
 
     def adjust(self):
-        total = 0
-        for plug in self.inputs + self.outputs:
-            total += 2 * plug.radius + self.plug_spacing
-        if not self.inputs:
-            total += self.plug_spacing
-        self.height = total + self.header_height
+        y = self.plug_spacing
+        for p in self.inputs:
+            y += 2 * p.radius + self.plug_spacing
+            p.setPos(QtCore.QPointF(p.radius, y))
+
+        y = self.plug_spacing
+        for p in self.outputs:
+            y += 2 * p.radius + self.plug_spacing
+            p.setPos(QtCore.QPointF(self.width - (3 * p.radius), y))
+
+        self.height = max([plug.y() + plug.radius + self.plug_spacing for plug in self.inputs + self.outputs])
 
     def boundingRect(self):
         bbox = QtCore.QRectF(0, 0, self.width, self.height).adjusted(-0.5, -0.5, 0.5, 0.5)
@@ -289,6 +321,12 @@ class PywerNode(PywerItem):
             pen = QtGui.QPen(QtGui.QColor(*self.selected_color))
             painter.setPen(pen)
 
+        for plug in self.inputs + self.outputs:
+            cshape = plug.shape()
+            cshape = cshape.translated(plug.pos())
+
+            shape = shape.subtracted(cshape)
+
         painter.setBrush(gradient)
         painter.drawPath(shape)
 
@@ -307,14 +345,14 @@ class PywerNode(PywerItem):
         for plug in self.inputs:
             rect = plug.boundingRect()
             pos = plug.pos()
-            x, y = pos.x() + rect.right(), pos.y() + rect.bottom()
+            x, y = pos.x() + rect.right() + 5, pos.y() + rect.bottom()
             painter.drawText(x, y, plug.type_)
 
         for plug in self.outputs:
             width = font_metrics.width(plug.type_)
             rect = plug.boundingRect()
             pos = plug.pos()
-            x, y = pos.x() - width, pos.y() + rect.bottom()
+            x, y = pos.x() - width - 5, pos.y() + rect.bottom()
             painter.drawText(x, y, plug.type_)
 
     def itemChange(self, change, value):
@@ -358,17 +396,16 @@ class Resizer(QtWidgets.QGraphicsObject):
                 self.resize_signal.emit(value - self.pos())
         return value
 
-
     def hoverEnterEvent(self, event):
         from PySide2.QtWidgets import QApplication
         QApplication.setOverrideCursor(QtCore.Qt.SizeFDiagCursor)
         return super(Resizer, self).hoverEnterEvent(event)
 
-
     def hoverLeaveEvent(self, event):
         from PySide2.QtWidgets import QApplication
         QApplication.setOverrideCursor(QtCore.Qt.ArrowCursor)
         return super(Resizer, self).hoverLeaveEvent(event)
+
 
 from PySide2.QtCore import Slot
 
@@ -384,7 +421,7 @@ class PywerGroup(PywerItem):
         self.header_color = (35, 105, 140, 200)
 
         self.base_color = (125, 125, 125, 100)
-        self.selected_color = (190, 190, 0, 255)
+        self.selected_color = (255, 165, 0, 255)
 
         self.setFlag(self.ItemIsMovable)
 

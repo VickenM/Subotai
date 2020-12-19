@@ -52,6 +52,11 @@ class Arithmetic(pywerscene.PywerScene):
                 'outputs': ['value']
             }
             node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+            p = node.inputs[0]
+            node.inputs.remove(p)
+            node.inputs = []
+            node.adjust()
+            p.scene()
         elif type_ == 'Add':
             bluepint = {
                 'type': 'Add',
