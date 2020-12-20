@@ -48,7 +48,7 @@ class Arithmetic(pywerscene.PywerScene):
         if type_ == 'Constant':
             bluepint = {
                 'attribs': {
-                    'type': 'Constant'
+                    'type': 'Constant', 'color': (55, 150, 55, 255)
                 },
                 'inputs': [],
                 'outputs': [
@@ -60,7 +60,7 @@ class Arithmetic(pywerscene.PywerScene):
         elif type_ == 'Add':
             bluepint = {
                 'attribs': {
-                    'type': 'Add', 'color': (150, 0, 0, 255)
+                    'type': 'Add'
                 },
                 'inputs': [
                     {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
@@ -92,7 +92,7 @@ class Arithmetic(pywerscene.PywerScene):
         elif type_ == 'Components':
             bluepint = {
                 'attribs': {
-                    'type': 'Components'
+                    'type': 'Components', 'color': (150, 0, 0, 255)
                 }, 'inputs': [
                     {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
                     {'type': 'In1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
@@ -103,6 +103,18 @@ class Arithmetic(pywerscene.PywerScene):
                     {'type': 'Green', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
                     {'type': 'Blue', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
                 ]
+            }
+            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+
+        elif type_ == 'Output':
+            bluepint = {
+                'attribs': {
+                    'type': 'Output'
+                }, 'inputs': [
+                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                    {'type': 'Multi', 'path': pyweritems.PywerPlug.RECTANGLE, 'color': (255, 120, 150, 255)},
+                ],
+                'outputs': []
             }
             node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
 
@@ -156,6 +168,10 @@ class MainWindow(QWidget):
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_R:
             node = self.scene.new_node('Components')
+            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+            node.setPos(position)
+        elif event.key() == QtCore.Qt.Key_O:
+            node = self.scene.new_node('Output')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_G:
