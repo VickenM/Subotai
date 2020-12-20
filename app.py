@@ -47,35 +47,62 @@ class Arithmetic(pywerscene.PywerScene):
     def new_node(self, type_):
         if type_ == 'Constant':
             bluepint = {
-                'type': 'Constant',
+                'attribs': {
+                    'type': 'Constant'
+                },
                 'inputs': [],
-                'outputs': ['value']
+                'outputs': [
+                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                    {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                ]
             }
             node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
-            p = node.inputs[0]
-            node.inputs.remove(p)
-            node.inputs = []
-            node.adjust()
-            p.scene()
         elif type_ == 'Add':
             bluepint = {
-                'type': 'Add',
-                'inputs': ['in1', 'in2'],
-                'outputs': ['value']
+                'attribs': {
+                    'type': 'Add', 'color': (150, 0, 0, 255)
+                },
+                'inputs': [
+                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                    {'type': 'In1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                    {'type': 'In2', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                ],
+                'outputs': [
+                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                    {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                ]
             }
             node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
         elif type_ == 'Subtract':
             bluepint = {
-                'type': 'Subtract',
-                'inputs': ['in1', 'in2'],
-                'outputs': ['value']
+                'attribs': {
+                    'type': 'Subtract'
+                },
+                'inputs': [
+                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                    {'type': 'In1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                    {'type': 'In2', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                ],
+                'outputs': [
+                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                    {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                ]
             }
             node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
         elif type_ == 'Components':
             bluepint = {
-                'type': 'Components',
-                'inputs': ['RGB', ],
-                'outputs': ['Red', 'Green', 'Blue']
+                'attribs': {
+                    'type': 'Components'
+                }, 'inputs': [
+                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                    {'type': 'In1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                ],
+                'outputs': [
+                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                    {'type': 'Red', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                    {'type': 'Green', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                    {'type': 'Blue', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                ]
             }
             node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
 

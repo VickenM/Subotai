@@ -156,7 +156,8 @@ PENTAGON.addPolygon(QtGui.QPolygonF([
 
 class PywerPlug(PywerItem):
     ELLIPSE = ELLIPSE
-    PENTAGON=PENTAGON
+    PENTAGON = PENTAGON
+
     def __init__(self, *args, **kwargs):
         self.path = kwargs.pop('path', self.ELLIPSE)
         self.color = kwargs.pop('color', (255, 120, 150, 255))
@@ -167,7 +168,7 @@ class PywerPlug(PywerItem):
         self.setCacheMode(QtWidgets.QGraphicsItem.DeviceCoordinateCache)
 
         self.radius = 5
-        self.thickness = 1
+        self.thickness = 1.5
 
         self.edges = []
 
@@ -225,6 +226,8 @@ class PywerPlug(PywerItem):
 class PywerNode(PywerItem):
     def __init__(self, *args, **kwargs):
         self.node_obj = kwargs.pop('node_obj', None)
+        self.header_color = kwargs.pop('color', (35, 105, 140, 200))
+        # self.type_ = kwargs.pop('type', '')
         super(PywerNode, self).__init__(*args, **kwargs)
 
         self.width = 100
@@ -232,7 +235,7 @@ class PywerNode(PywerItem):
         self.radius = 5
         self.plug_spacing = 8
         self.header_height = 20
-        self.header_color = (35, 105, 140, 200)
+        # self.header_color = (35, 105, 140, 200)
 
         self.base_color = (25, 25, 25, 200)
         self.selected_color = (255, 165, 0, 255)
@@ -251,29 +254,15 @@ class PywerNode(PywerItem):
         self.label.setDefaultTextColor(QtCore.Qt.white)
         self.label.setPos(self.pos().x(), self.pos().y() - 20)
 
-        # path = QtGui.QPainterPath()
-        # path.addPolygon(QtGui.QPolygonF([
-        #     QtCore.QPointF(0, 0),
-        #     QtCore.QPointF(5, 0),
-        #     QtCore.QPointF(10, 5),
-        #     QtCore.QPointF(5, 10),
-        #     QtCore.QPointF(0, 10),
-        #     QtCore.QPointF(0, 0)
-        # ]))
-        plug = PywerPlug(path=PywerPlug.PENTAGON, color=(255, 255, 255, 255))
-        self.add_input(plug=plug)
-        plug = PywerPlug(path=PywerPlug.PENTAGON, color=(255, 255, 255, 255))
-        self.add_output(plug=plug)
-
     @classmethod
     def from_dict(cls, blueprint):
-        node = cls()
-        node.type_ = blueprint.get('type', '')
+        attribs = blueprint.get('attribs', {})
+        node = cls(**attribs)
 
         for i in blueprint.get('inputs', []):
-            node.add_input(PywerPlug(type=i, path=PywerPlug.ELLIPSE))
+            node.add_input(PywerPlug(**i))
         for i in blueprint.get('outputs', []):
-            node.add_output(PywerPlug(type=i))
+            node.add_output(PywerPlug(**i))
         return node
 
     def add_input(self, plug):
@@ -287,12 +276,12 @@ class PywerNode(PywerItem):
         self.adjust()
 
     def adjust(self):
-        y = self.plug_spacing
+        y = self.plug_spacing# + (self.header_height / 2)
         for p in self.inputs:
             y += 2 * p.radius + self.plug_spacing
             p.setPos(QtCore.QPointF(p.radius, y))
 
-        y = self.plug_spacing
+        y = self.plug_spacing# + (self.header_height / 2)
         for p in self.outputs:
             y += 2 * p.radius + self.plug_spacing
             p.setPos(QtCore.QPointF(self.width - (3 * p.radius), y))
@@ -312,13 +301,13 @@ class PywerNode(PywerItem):
         color1 = QtGui.QColor(*self.header_color)
         color2 = QtGui.QColor(*self.base_color)
 
-        gradient_amount = 2
+        gradient_amount = 5
         gradient = QtGui.QLinearGradient(50, self.header_height - gradient_amount, 50, self.header_height)
         gradient.setColorAt(0, color1)
         gradient.setColorAt(1, color2)
 
         if self.isSelected():
-            pen = QtGui.QPen(QtGui.QColor(*self.selected_color))
+            pen = QtGui.QPen(QtGui.QColor(*self.selected_color), 1.5)
             painter.setPen(pen)
 
         for plug in self.inputs + self.outputs:
