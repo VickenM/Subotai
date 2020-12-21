@@ -12,10 +12,12 @@ class PywerView(QtWidgets.QGraphicsView):
         self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
-        self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
+        self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self.setMouseTracking(True)
+
+        self._scale = 1.0
         self.scale(1.0, 1.0)
 
         self.drag_edge = None
@@ -69,6 +71,17 @@ class PywerView(QtWidgets.QGraphicsView):
     def mouseDoubleClickEvent(self, event):
         self.mousePressEvent(event)
 
+    def wheelEvent(self, event):
+        if (event.modifiers() and QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
+            amount = event.angleDelta().y() / 10
+            amount = amount / 360
+            self._scale = self._scale + amount
+
+            self.resetMatrix()
+            self.scale(self._scale, self._scale)
+            return
+        return super(PywerView, self).wheelEvent(event)
+
     def _drag_edge(self, position):
         plug = self.get_plug_at(position=position)
         if plug and plug.edges and (plug == plug.edges[0].target_plug):
@@ -113,6 +126,5 @@ class PywerView(QtWidgets.QGraphicsView):
         if button == QtCore.Qt.LeftButton:
             self._drop_edge(position=event.pos())
             self.scene().emit_selected_nodes()
-
 
         super(PywerView, self).mouseReleaseEvent(event)

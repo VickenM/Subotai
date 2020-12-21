@@ -25,13 +25,11 @@ def deleted_nodes(data):
 
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def connected_plugs(plug1, plug2):
-    print('connected')
-    # print(plug1, plug2)
+    print('connecting {}.{} {}.{}'.format(plug1.parentItem().type_, plug1.type_, plug2.parentItem().type_, plug2.type_))
 
 
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def disconnected_plugs(plug1, plug2):
-    # print(plug1, plug2)
     print('disconnected')
 
 
@@ -133,7 +131,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         view = pywerlines.pywerview.PywerView()
-        scene = Arithmetic()  # pywerscene.PywerScene()
+        scene = Arithmetic()
         scene.setSceneRect(0, 0, 5000, 5000)
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
@@ -187,20 +185,12 @@ class MainWindow(QWidget):
         elif event.key() == QtCore.Qt.Key_Space:
             self.scene.eval()
 
+def main():
+    app = QApplication(sys.argv)
+    main_window = MainWindow()
+    main_window.show()
+    return app, main_window
 
 if __name__ == "__main__":
-    def main():
-        app = QApplication(sys.argv)
-        app_prototype = MainWindow()
-        app_prototype.show()
-
-        sys.exit(app.exec_())
-
-
-    if __name__ == "__main__":
-        if len(sys.argv) == 1:
-            main()
-        else:
-            import cProfile
-
-            cProfile.run('main()')
+    app, main_window = main()
+    sys.exit(app.exec_())

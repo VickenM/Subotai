@@ -88,7 +88,6 @@ class PywerScene(QGraphicsScene):
         self.remove_nodes(nodes)
 
     def add_node(self, node):
-        # node = pyweritems.PywerNode()
         self.addItem(node)
         self.nodes_added.emit([node])
         return node
