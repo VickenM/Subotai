@@ -44,7 +44,7 @@ class Arithmetic(pywerscene.PywerScene):
 
     def new_node(self, type_):
         if type_ == 'Constant':
-            bluepint = {
+            blueprint = {
                 'attribs': {
                     'type': 'Constant', 'color': (55, 150, 55, 255)
                 },
@@ -54,9 +54,9 @@ class Arithmetic(pywerscene.PywerScene):
                     {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
                 ]
             }
-            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
         elif type_ == 'Add':
-            bluepint = {
+            blueprint = {
                 'attribs': {
                     'type': 'Add'
                 },
@@ -70,9 +70,9 @@ class Arithmetic(pywerscene.PywerScene):
                     {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
                 ]
             }
-            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
         elif type_ == 'Subtract':
-            bluepint = {
+            blueprint = {
                 'attribs': {
                     'type': 'Subtract'
                 },
@@ -86,9 +86,9 @@ class Arithmetic(pywerscene.PywerScene):
                     {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
                 ]
             }
-            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
         elif type_ == 'Components':
-            bluepint = {
+            blueprint = {
                 'attribs': {
                     'type': 'Components', 'color': (150, 0, 0, 255)
                 }, 'inputs': [
@@ -102,10 +102,10 @@ class Arithmetic(pywerscene.PywerScene):
                     {'type': 'Blue', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
                 ]
             }
-            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
 
         elif type_ == 'Output':
-            bluepint = {
+            blueprint = {
                 'attribs': {
                     'type': 'Output'
                 }, 'inputs': [
@@ -114,8 +114,12 @@ class Arithmetic(pywerscene.PywerScene):
                 ],
                 'outputs': []
             }
-            node = pyweritems.PywerNode.from_dict(blueprint=bluepint)
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
 
+        return node
+
+    def create_node_of_type(self, type_):
+        node = self.new_node(type_)
         self.add_node(node)
         return node
 
@@ -151,32 +155,40 @@ class MainWindow(QWidget):
         self.scene = scene
         self.view = view
 
+        # c1 = scene.create_node_of_type('Constant')
+        # c2 = scene.create_node_of_type('Constant')
+        # a = scene.create_node_of_type('Add')
+        # scene.create_edge(c1.outputs[1], a.inputs[1])
+        # scene.create_edge(c2.outputs[1], a.inputs[2])
+
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_A:
-            node = self.scene.new_node('Add')
+            node = self.scene.create_node_of_type('Add')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_S:
-            node = self.scene.new_node('Subtract')
+            node = self.scene.create_node_of_type('Subtract')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_C:
-            node = self.scene.new_node('Constant')
+            node = self.scene.create_node_of_type('Constant')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_R:
-            node = self.scene.new_node('Components')
+            node = self.scene.create_node_of_type('Components')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_O:
-            node = self.scene.new_node('Output')
+            node = self.scene.create_node_of_type('Output')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_G:
-            group = pyweritems.PywerGroup()
-            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-            group.setPos(position)
-            self.scene.addItem(group)
+            if (event.modifiers() and QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
+                self.scene.group_selected_nodes()
+            else:
+                group = self.scene.create_group()
+                position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+                group.setPos(position)
         elif event.key() == QtCore.Qt.Key_Period:
             self.scene.toggle_labels()
         elif event.key() == QtCore.Qt.Key_Delete:
@@ -185,11 +197,13 @@ class MainWindow(QWidget):
         elif event.key() == QtCore.Qt.Key_Space:
             self.scene.eval()
 
+
 def main():
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
     return app, main_window
+
 
 if __name__ == "__main__":
     app, main_window = main()

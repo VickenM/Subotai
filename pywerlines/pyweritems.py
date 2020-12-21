@@ -176,9 +176,6 @@ class PywerPlug(PywerItem):
 
         self.edges = []
 
-        if not self.path:
-            self.path = ELLIPSE
-
     def boundingRect(self):
         return self.path.boundingRect()
 
@@ -334,7 +331,6 @@ class PywerNode(PywerItem):
             rect = plug.boundingRect()
             pos = plug.pos()
             x, y = pos.x() + rect.right() + 5, pos.y() + rect.bottom()
-
             painter.drawText(x, y, plug.type_)
 
         for plug in self.outputs:
@@ -421,11 +417,8 @@ class PywerGroup(PywerItem):
         self.label.setPos(self.pos().x(), self.pos().y() - 20)
 
         self.resizer = Resizer(parent=self)
-        resizer_width = self.resizer.rect.width() / 2
-        resizer_offset = QtCore.QPointF(resizer_width * 2, resizer_width * 2)
-        rect = QtCore.QRectF(0, 0, self.width, self.height)
-        self.resizer.setPos(rect.bottomRight() - resizer_offset)
         self.resizer.resize_signal.connect(self.resize)
+        self.adjust()
 
         self.setZValue(-1)
 
@@ -438,6 +431,12 @@ class PywerGroup(PywerItem):
         self.height = rect.height()
         self.prepareGeometryChange()
         self.update()
+
+    def adjust(self):
+        resizer_width = self.resizer.rect.width() / 2
+        resizer_offset = QtCore.QPointF(resizer_width * 2, resizer_width * 2)
+        rect = QtCore.QRectF(0, 0, self.width, self.height)
+        self.resizer.setPos(rect.bottomRight() - resizer_offset)
 
     def boundingRect(self):
         bbox = QtCore.QRectF(0, 0, self.width, self.height)

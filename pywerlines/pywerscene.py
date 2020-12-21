@@ -13,13 +13,38 @@ class PywerScene(QGraphicsScene):
     def __init_(self, **kwargs):
         super(PywerScene, self).__init__(**kwargs)
 
+    def emit_selected_nodes(self):
+        selected_nodes = self.get_selected_nodes()
+        if selected_nodes:
+            self.nodes_selected.emit(selected_nodes)
+
+    def emit_deleted_nodes(self, nodes):
+        self.nodes_deleted.emit(nodes)
+
+    def emit_connected_plugs(self, plug1, plug2):
+        self.plugs_connected.emit(plug1, plug2)
+
+    def emit_disconnected_plugs(self, plug1, plug2):
+        self.plugs_disconnected.emit(plug1, plug2)
+
     def addItem(self, item):
         super(PywerScene, self).addItem(item)
 
     def removeItem(self, item):
-        for child_item in item.childItems():
-            super().removeItem(child_item)
-        super().removeItem(item)
+        super(PywerScene, self).removeItem(item)
+
+    def _remove_node(self, node):
+        for plug in node.inputs + node.outputs:
+            while len(plug.edges):
+                edge = plug.edges[0]
+                self.remove_edge(edge)
+
+                all_items = self.items()
+                if edge.source_plug in all_items:
+                    edge.source_plug.update()
+                if edge.target_plug in all_items:
+                    edge.target_plug.update()
+        self.removeItem(node)
 
     def can_connect(self, source_plug, target_plug):
         if not (source_plug and target_plug):
@@ -57,19 +82,6 @@ class PywerScene(QGraphicsScene):
     def get_selected_groups(self):
         return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerGroup)]
 
-    def _remove_node(self, node):
-        for plug in node.inputs + node.outputs:
-            while len(plug.edges):
-                edge = plug.edges[0]
-                self.remove_edge(edge)
-
-                all_items = self.items()
-                if edge.source_plug in all_items:
-                    edge.source_plug.update()
-                if edge.target_plug in all_items:
-                    edge.target_plug.update()
-        self.removeItem(node)
-
     def remove_node(self, node):
         self._remove_node(node)
         self.emit_deleted_nodes([node])
@@ -79,18 +91,59 @@ class PywerScene(QGraphicsScene):
             self._remove_node(node)
         self.emit_deleted_nodes(nodes)
 
+    def remove_selected_nodes(self):
+        nodes = self.get_selected_nodes()
+        self.remove_nodes(nodes)
+
     def remove_selected_groups(self):
         for group in self.get_selected_groups():
             self.removeItem(group)
 
-    def remove_selected_nodes(self):
+    def create_group(self):
+        group = pyweritems.PywerGroup()
+        self.addItem(group)
+        return group
+
+    def group_selected_nodes(self):
         nodes = self.get_selected_nodes()
-        self.remove_nodes(nodes)
+        if not nodes:
+            return
+
+        top = left = float("inf")
+        bottom = right = 0
+        for node in nodes:
+            pos = node.pos()
+            if pos.y() < top:
+                top = pos.y()
+            if pos.y() + node.height > bottom:
+                bottom = pos.y() + node.height
+            if pos.x() < left:
+                left = pos.x()
+            if pos.x() + node.width > right:
+                right = pos.x() + node.width
+
+        group = pyweritems.PywerGroup()
+        top -= group.header_height
+        left -= 10
+        bottom += 10
+        right += 10
+
+        position = QtCore.QPointF(left, top)
+        group.width = right - left
+        group.height = abs(bottom - top)
+        group.adjust()
+        group.setPos(position)
+        self.addItem(group)
+        return group
 
     def add_node(self, node):
         self.addItem(node)
         self.nodes_added.emit([node])
         return node
+
+    # abstract
+    def create_node_of_type(self, type_):
+        pass
 
     def list_node_types(self):
         return []
@@ -99,20 +152,4 @@ class PywerScene(QGraphicsScene):
         all_nodes = [item for item in self.items() if isinstance(item, pyweritems.PywerNode) or \
                      isinstance(item, pyweritems.PywerGroup)]
         for node in all_nodes:
-            # print(node.label.isVisible())
-            # node.label.setVisible(False)
             node.label.setVisible(not node.label.isVisible())
-
-    def emit_selected_nodes(self):
-        selected_nodes = self.get_selected_nodes()
-        if selected_nodes:
-            self.nodes_selected.emit(selected_nodes)
-
-    def emit_deleted_nodes(self, nodes):
-        self.nodes_deleted.emit(nodes)
-
-    def emit_connected_plugs(self, plug1, plug2):
-        self.plugs_connected.emit(plug1, plug2)
-
-    def emit_disconnected_plugs(self, plug1, plug2):
-        self.plugs_disconnected.emit(plug1, plug2)
