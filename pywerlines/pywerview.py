@@ -11,11 +11,14 @@ class PywerView(QtWidgets.QGraphicsView):
 
         self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
-        self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
-        self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+        self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
+        self.setResizeAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self.setMouseTracking(True)
+
+        # self.setTransformationAnchor(self.NoAnchor)
+        # self.setResizeAnchor(self.NoAnchor)
 
         self._scale = 1.0
         self.scale(1.0, 1.0)
@@ -72,14 +75,34 @@ class PywerView(QtWidgets.QGraphicsView):
         self.mousePressEvent(event)
 
     def wheelEvent(self, event):
-        if (event.modifiers() and QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
-            amount = event.angleDelta().y() / 10
-            amount = amount / 360
-            self._scale = self._scale + amount
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            zoomInFactor = 1.10
+            zoomOutFactor = 1 / zoomInFactor
 
-            self.resetMatrix()
-            self.scale(self._scale, self._scale)
+            # Save the scene pos
+            oldPos = self.mapToScene(event.pos())
+
+            # Zoom
+            if event.angleDelta().y() > 0:
+                zoomFactor = zoomInFactor
+            else:
+                zoomFactor = zoomOutFactor
+            self.scale(zoomFactor, zoomFactor)
+
+            # Get the new position
+            newPos = self.mapToScene(event.pos())
+
+            # Move scene to old position
+            delta = newPos - oldPos
+            self.translate(delta.x(), delta.y())
             return
+            # amount = event.angleDelta().y() / 10
+            # amount = amount / 360
+            # self._scale = self._scale + amount
+            #
+            # self.resetMatrix()
+            # self.scale(self._scale, self._scale)
+            # return
         return super(PywerView, self).wheelEvent(event)
 
     def _drag_edge(self, position):

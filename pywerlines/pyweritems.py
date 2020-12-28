@@ -136,7 +136,7 @@ class PywerEdge(PywerItem):
 
         pen = QtGui.QPen(QtGui.QColor(*self.color))
 
-        pen.setWidthF(1.0)
+        pen.setWidthF(1.5)
         painter.setPen(pen)
         painter.drawPath(shape)
 
@@ -165,7 +165,7 @@ class PywerPlug(PywerItem):
 
     def __init__(self, *args, **kwargs):
         self.path = kwargs.pop('path', self.ELLIPSE)
-        self.color = kwargs.pop('color', (255, 120, 150, 255))
+        self.color = kwargs.pop('color', (255, 150, 180, 255))
 
         super(PywerPlug, self).__init__(*args, **kwargs)
         self.setFlag(QtWidgets.QGraphicsItem.ItemNegativeZStacksBehindParent)
@@ -249,6 +249,20 @@ class PywerNode(PywerItem):
         self.label.setDefaultTextColor(QtCore.Qt.white)
         self.label.setPos(self.pos().x(), self.pos().y() - 20)
 
+        self.resizer = Resizer(parent=self)
+        self.resizer.setConstrainY(True)
+        self.resizer.resize_signal.connect(self.resize)
+        self.adjust()
+
+    @Slot(QtCore.QPointF)
+    def resize(self, change):
+        rect = QtCore.QRectF(0, 0, self.width, self.height).adjusted(0, 0, change.x(), change.y())
+        self.width = rect.width()
+        self.height = rect.height()
+        self.prepareGeometryChange()
+        self.adjust()
+        self.updateEdges()
+
     @classmethod
     def from_dict(cls, blueprint):
         attribs = blueprint.get('attribs', {})
@@ -264,11 +278,13 @@ class PywerNode(PywerItem):
         plug.setParentItem(self)
         self.inputs.append(plug)
         self.adjust()
+        self.resizer.setMinSize(QtCore.QPointF(100, self.height))
 
     def add_output(self, plug):
         plug.setParentItem(self)
         self.outputs.append(plug)
         self.adjust()
+        self.resizer.setMinSize(QtCore.QPointF(100, self.height))
 
     def adjust(self):
         y = self.plug_spacing + self.header_height
@@ -281,8 +297,18 @@ class PywerNode(PywerItem):
             p.setPos(QtCore.QPointF(self.width - (1.5 * p.boundingRect().width()), y))
             y += p.boundingRect().height() + self.plug_spacing
 
-        self.height = max(
-            [plug.y() + plug.boundingRect().height() + self.plug_spacing for plug in self.inputs + self.outputs])
+        if self.inputs + self.outputs:
+            self.height = max(
+                [plug.y() + plug.boundingRect().height() + self.plug_spacing for plug in self.inputs + self.outputs])
+
+        self.height = max([self.height, self.resizer.pos().y() + self.resizer.rect.height()])
+
+        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, False)
+        resizer_width = self.resizer.rect.width() / 2
+        resizer_offset = QtCore.QPointF(resizer_width * 2, resizer_width * 2)
+        rect = QtCore.QRectF(0, 0, self.width, self.height)
+        self.resizer.setPos(rect.bottomRight() - resizer_offset)
+        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, True)
 
     def boundingRect(self):
         bbox = QtCore.QRectF(0, 0, self.width, self.height).adjusted(-0.5, -0.5, 0.5, 0.5)
@@ -340,11 +366,14 @@ class PywerNode(PywerItem):
             x, y = pos.x() - width - 5, pos.y() + rect.bottom()
             painter.drawText(x, y, plug.type_)
 
+    def updateEdges(self):
+        for plug in self.inputs + self.outputs:
+            for edge in plug.edges:
+                edge.adjust()
+
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
-            for plug in self.inputs + self.outputs:
-                for edge in plug.edges:
-                    edge.adjust()
+            self.updateEdges()
 
         return super(PywerNode, self).itemChange(change, value)
 
@@ -356,10 +385,30 @@ class Resizer(QtWidgets.QGraphicsObject):
         super().__init__(parent)
         self.rect = rect
 
+        self._constrainX = False
+        self._constrainY = False
+
+        self._min_size = QtCore.QPointF(0, 0)
+
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
         self.setAcceptHoverEvents(True)
+
+    def setMinSize(self, size):
+        self._min_size = size
+
+    def setConstrainX(self, value):
+        self._constrainX = value
+
+    def setConstrainY(self, value):
+        self._constrainY = value
+
+    def constrainX(self):
+        return self._constrainX
+
+    def constrainY(self):
+        return self._constrainY
 
     def boundingRect(self):
         return self.rect
@@ -377,7 +426,17 @@ class Resizer(QtWidgets.QGraphicsObject):
 
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsItem.ItemPositionChange:
+            width = self.boundingRect().width()
+            height = self.boundingRect().height()
             if self.isSelected():
+                if self.constrainY():
+                    value.setY(self.pos().y())
+                if self.constrainX():
+                    value.setX(self.pos().x())
+                if value.x() < self._min_size.x() - width:
+                    value.setX(self._min_size.x() - width)
+                if value.y() < self._min_size.y() - height:
+                    value.setY(self._min_size.y() - height)
                 self.resize_signal.emit(value - self.pos())
         return value
 
@@ -489,7 +548,9 @@ class PywerGroup(PywerItem):
         self.contained_nodes = []
         bounding_rect = self.sceneBoundingRect()
 
-        all_nodes = [item for item in self.scene().items() if isinstance(item, PywerNode)]
+        all_nodes = [item for item in self.scene().items() if isinstance(item, PywerNode) or \
+                     (isinstance(item, PywerGroup) and item != self)
+                     ]
         for node in all_nodes:
             if bounding_rect.contains(node.sceneBoundingRect()):
                 self.contained_nodes.append(node)

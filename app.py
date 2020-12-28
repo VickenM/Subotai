@@ -7,6 +7,8 @@ from PySide2.QtCore import Slot
 
 from pywerlines import pyweritems, pywerscene
 
+import nodes
+
 
 @Slot(list)
 def selected_nodes(data):
@@ -62,8 +64,8 @@ class Arithmetic(pywerscene.PywerScene):
                 },
                 'inputs': [
                     {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'In1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                    {'type': 'In2', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                    {'type': 'Operand 1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                    {'type': 'Operand 2', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
                 ],
                 'outputs': [
                     {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
