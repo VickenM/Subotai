@@ -1,5 +1,6 @@
 from PySide2 import QtWidgets
 from PySide2 import QtCore, QtGui
+from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import Slot
 
 
@@ -441,13 +442,11 @@ class Resizer(QtWidgets.QGraphicsObject):
         return value
 
     def hoverEnterEvent(self, event):
-        from PySide2.QtWidgets import QApplication
         QApplication.setOverrideCursor(QtCore.Qt.SizeFDiagCursor)
         return super(Resizer, self).hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event):
-        from PySide2.QtWidgets import QApplication
-        QApplication.setOverrideCursor(QtCore.Qt.ArrowCursor)
+        QApplication.restoreOverrideCursor()
         return super(Resizer, self).hoverLeaveEvent(event)
 
 

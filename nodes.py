@@ -37,10 +37,11 @@ class Node(QtCore.QObject):
 
     @Slot()
     def trigger(self):
-        self.count += 1
-        if self.count >= self.connections:
-            self.compute()
-            self.count = 0
+        self.compute()
+        # self.count += 1
+        # if self.count >= self.connections:
+        #     self.compute()
+        #     self.count = 0
 
     def connect_from(self, signal):
         signal.connect(self.trigger)
@@ -76,11 +77,24 @@ class Node(QtCore.QObject):
         return self.outputs[output]
 
 
+class Parameter(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.params['param'] = Value('')
+        self.outputs = {
+            'value': self.params['param']
+        }
+        self.inputs = {}
+
+
 class DirChanged(Node):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.params['directory'] = Value('d:\\temp')
-        self.outputs['directory'] = self.params['directory']
+        self.outputs = {
+            'directory': self.params['directory'],
+            'changed files': Value('')
+        }
         self.inputs = {}
 
 
@@ -88,26 +102,31 @@ class Zip(Node):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.params['source'] = Value('D:\\dummy')
         self.params['zipfile'] = Value('D:\\temp\\output.zip')
         self.outputs = {
             'zipfile': self.params['zipfile']
         }
         self.inputs = {
-            'source': None
+            'source': None,
+            'zipfile': self.params['zipfile']
         }
 
     def compute(self):
-        source = self.inputs['source']()
+        source = self.inputs['source'] or self.params['source']
+        zip_file = self.inputs['source'] or self.params['zipfile']
+
+        # source = self.inputs['source']()
 
         from zipfile import ZipFile
         import os
         fullpaths = []
-        for root, directories, files in os.walk(source):
+        for root, directories, files in os.walk(source()):
             for filename in files:
                 fullpath = os.path.join(root, filename)
                 fullpaths.append(fullpath)
 
-        with ZipFile(self.params['zipfile'](), 'w') as z:
+        with ZipFile(zip_file(), 'w') as z:
             for fullpath in fullpaths:
                 z.write(fullpath)
 
@@ -120,17 +139,19 @@ class CopyFile(Node):
 
         self.params['destfile'] = Value('D:\\temp\\dummy.txt')
         self.outputs = {
-            'destfile', self.params['destfile']
+            'destfile': self.params['destfile']
         }
         self.inputs = {
-            'source': None
+            'source': None,
+            'destination': self.params['destfile']
         }
 
     def compute(self):
         import shutil
 
         source = self.inputs['source']()
-        shutil.copyfile(source, self.params['destfile']())
+        dest = self.inputs['destination'] or self.params['destfile']
+        shutil.copyfile(source, dest())
 
         super().compute()
 
@@ -157,6 +178,9 @@ class Email(Node):
         self.outputs = {
         }
         self.inputs = {
+            'recipients': None,
+            'subject': None,
+            'message': None,
             'attachments': None
         }
 
@@ -196,6 +220,7 @@ class Email(Node):
 
     def compute(self):
         attachments = self.inputs['attachments'] or self.params['attachments']
+        print(attachments())
 
         self.send_mail(
             send_from=self.params['sender'](),

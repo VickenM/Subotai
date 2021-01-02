@@ -128,7 +128,13 @@ class PywerView(QtWidgets.QGraphicsView):
             if self.scene().can_connect(dragged_from_plug, mouse_over_plug):
                 self.drag_edge.connect_plugs(dragged_from_plug, mouse_over_plug)
                 if mouse_over_plug != self.disconnected_plug:
-                    self.scene().emit_connected_plugs(dragged_from_plug, mouse_over_plug)
+                    if dragged_from_plug in dragged_from_plug.parentItem().outputs:
+                        source_plug = dragged_from_plug
+                        target_plug = mouse_over_plug
+                    else:
+                        source_plug = mouse_over_plug
+                        target_plug = dragged_from_plug
+                    self.scene().emit_connected_plugs(source_plug, target_plug)
             else:
                 dragged_from_plug.remove_edge(self.drag_edge)
                 self.scene().removeItem(self.drag_edge)

@@ -29,94 +29,188 @@ def deleted_nodes(data):
 def connected_plugs(plug1, plug2):
     print('connecting {}.{} {}.{}'.format(plug1.parentItem().type_, plug1.type_, plug2.parentItem().type_, plug2.type_))
 
+    source = plug1.parentItem().node_obj
+    target = plug2.parentItem().node_obj
+
+    if plug1.type_ == 'event' and plug2.type_ == 'event':
+        target.connect_from(source.computed)
+    else:
+        output = plug1.type_
+        input_ = plug2.type_
+
+        # TODO: this condition is hack. just doing for proof of concept.
+        #       To allow for the ItemList items input plug that allows multiple input connections
+        if type(target.inputs[input_]) == list:
+            print('appending')
+            target.inputs[input_].append(source.get_output(output))
+            print(len(target.inputs[input_]))
+
+        else:
+            target.inputs[input_] = source.get_output(output)
+
 
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def disconnected_plugs(plug1, plug2):
     print('disconnected')
 
 
-class Arithmetic(pywerscene.PywerScene):
+class EventFlow(pywerscene.PywerScene):
     def list_node_types(self):
-        return [
-            'Add',
-            'Subtract',
-            'Multiply',
-            'Divide'
-        ]
+        return nodes.list_nodes()
 
     def new_node(self, type_):
-        if type_ == 'Constant':
+        if type_ == 'DirChanged':
+            mnode = nodes.DirChanged()
+            mnode.set_param('directory', 'D:\\projects\\python\\node2\\tmp\\src')
             blueprint = {
                 'attribs': {
-                    'type': 'Constant', 'color': (55, 150, 55, 255)
+                    'type': 'DirChanged', 'color': (150, 0, 0, 255)
                 },
                 'inputs': [],
                 'outputs': [
-                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
+                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
                 ]
             }
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-        elif type_ == 'Add':
-            blueprint = {
-                'attribs': {
-                    'type': 'Add'
-                },
-                'inputs': [
-                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'Operand 1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                    {'type': 'Operand 2', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                ],
-                'outputs': [
-                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                ]
-            }
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-        elif type_ == 'Subtract':
-            blueprint = {
-                'attribs': {
-                    'type': 'Subtract'
-                },
-                'inputs': [
-                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'In1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                    {'type': 'In2', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                ],
-                'outputs': [
-                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'Value', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                ]
-            }
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-        elif type_ == 'Components':
-            blueprint = {
-                'attribs': {
-                    'type': 'Components', 'color': (150, 0, 0, 255)
-                }, 'inputs': [
-                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'In1', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                ],
-                'outputs': [
-                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'Red', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                    {'type': 'Green', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                    {'type': 'Blue', 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)},
-                ]
-            }
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
 
-        elif type_ == 'Output':
+            for output in mnode.get_output_names():
+                blueprint['outputs'].append(
+                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            for input in mnode.get_input_names():
+                blueprint['inputs'].append(
+                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
+            node.node_obj = mnode
+        elif type_ == 'Zip':
+            mnode = nodes.Zip()
+            mnode.set_param('zipfile', 'D:\\projects\\python\\node2\\tmp\\output.zip')
             blueprint = {
                 'attribs': {
-                    'type': 'Output'
-                }, 'inputs': [
-                    {'type': '', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                    {'type': 'Multi', 'path': pyweritems.PywerPlug.RECTANGLE, 'color': (255, 120, 150, 255)},
+                    'type': 'Zip', 'color': (35, 105, 140, 200)
+                },
+                'inputs': [
+                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
                 ],
-                'outputs': []
+                'outputs': [
+                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
+                ]
             }
+
+            for output in mnode.get_output_names():
+                blueprint['outputs'].append(
+                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            for input in mnode.get_input_names():
+                blueprint['inputs'].append(
+                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
             node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
+            node.node_obj = mnode
+        elif type_ == 'CopyFile':
+            mnode = nodes.CopyFile()
+            mnode.set_param('destfile', 'D:\\projects\\python\\node2\\tmp\\output2.zip')
+            blueprint = {
+                'attribs': {
+                    'type': 'CopyFile', 'color': (35, 105, 140, 200)
+                },
+                'inputs': [
+                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                ],
+                'outputs': [
+                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
+                ]
+            }
+
+            for output in mnode.get_output_names():
+                blueprint['outputs'].append(
+                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            for input in mnode.get_input_names():
+                blueprint['inputs'].append(
+                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
+            node.node_obj = mnode
+        elif type_ == 'Email':
+            mnode = nodes.Email()
+            mnode.set_param('sender', 'vicken.mavlian@gmail.com')
+            mnode.set_param('recipients', ['vicken.mavlian@gmail.com'])
+            mnode.set_param('subject', "wicked zip file")
+            mnode.set_param('message', "whats up man, take this file")
+            mnode.set_param('server', "smtp.gmail.com")
+            mnode.set_param('port', 587)
+            mnode.set_param('username', 'vicken.mavlian@gmail.com')
+            mnode.set_param('password', '22 acacia avenue')
+            mnode.set_param('use_tls', True)
+            blueprint = {
+                'attribs': {
+                    'type': 'Email', 'color': (35, 105, 140, 200)
+                },
+                'inputs': [
+                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                ],
+                'outputs': [
+                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
+                ]
+            }
+
+            for output in mnode.get_output_names():
+                blueprint['outputs'].append(
+                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            for input in mnode.get_input_names():
+                blueprint['inputs'].append(
+                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
+            node.node_obj = mnode
+        elif type_ == 'ItemList':
+            mnode = nodes.ItemList()
+            blueprint = {
+                'attribs': {
+                    'type': 'ItemList', 'color': (55, 150, 55, 255)
+                },
+                'inputs': [
+                    # {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
+                ],
+                'outputs': [
+                    # {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
+                ]
+            }
+
+            for output in mnode.get_output_names():
+                blueprint['outputs'].append(
+                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            for input in mnode.get_input_names():
+                blueprint['inputs'].append(
+                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
+            node.node_obj = mnode
+        elif type_ == 'Parameter':
+            mnode = nodes.Parameter()
+            blueprint = {
+                'attribs': {
+                    'type': 'Parameter', 'color': (150, 150, 150, 255)
+                },
+                'inputs': [
+                ],
+                'outputs': [
+                ]
+            }
+
+            for output in mnode.get_output_names():
+                blueprint['outputs'].append(
+                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            for input in mnode.get_input_names():
+                blueprint['inputs'].append(
+                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
+
+            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
+            node.node_obj = mnode
 
         return node
 
@@ -126,10 +220,12 @@ class Arithmetic(pywerscene.PywerScene):
         return node
 
     def create_edge(self, source_plug, target_plug):
-        super(Arithmetic, self).create_edge(source_plug, target_plug)
+        super(EventFlow, self).create_edge(source_plug, target_plug)
 
     def eval(self):
-        print('evaluating')
+        selected_node = self.get_selected_nodes()[0]
+        mnode = selected_node.node_obj
+        mnode.compute()
 
 
 class MainWindow(QWidget):
@@ -137,7 +233,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         view = pywerlines.pywerview.PywerView()
-        scene = Arithmetic()
+        scene = EventFlow()
         scene.setSceneRect(0, 0, 5000, 5000)
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
@@ -157,31 +253,29 @@ class MainWindow(QWidget):
         self.scene = scene
         self.view = view
 
-        # c1 = scene.create_node_of_type('Constant')
-        # c2 = scene.create_node_of_type('Constant')
-        # a = scene.create_node_of_type('Add')
-        # scene.create_edge(c1.outputs[1], a.inputs[1])
-        # scene.create_edge(c2.outputs[1], a.inputs[2])
-
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_A:
-            node = self.scene.create_node_of_type('Add')
+        if event.key() == QtCore.Qt.Key_D:
+            node = self.scene.create_node_of_type('DirChanged')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_S:
-            node = self.scene.create_node_of_type('Subtract')
+        elif event.key() == QtCore.Qt.Key_Z:
+            node = self.scene.create_node_of_type('Zip')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_C:
-            node = self.scene.create_node_of_type('Constant')
+            node = self.scene.create_node_of_type('CopyFile')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_R:
-            node = self.scene.create_node_of_type('Components')
+        elif event.key() == QtCore.Qt.Key_E:
+            node = self.scene.create_node_of_type('Email')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_O:
-            node = self.scene.create_node_of_type('Output')
+        elif event.key() == QtCore.Qt.Key_I:
+            node = self.scene.create_node_of_type('ItemList')
+            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+            node.setPos(position)
+        elif event.key() == QtCore.Qt.Key_P:
+            node = self.scene.create_node_of_type('Parameter')
             position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
             node.setPos(position)
         elif event.key() == QtCore.Qt.Key_G:
