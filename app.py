@@ -29,7 +29,7 @@ import appnode
 @Slot(list)
 def selected_nodes(data):
     pass
-    #print(data)
+    # print(data)
 
 
 @Slot(list)
@@ -40,7 +40,7 @@ def added_nodes(data):
 @Slot(list)
 def deleted_nodes(data):
     pass
-    #print(data)
+    # print(data)
 
 
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
@@ -68,9 +68,14 @@ def disconnected_plugs(plug1, plug2):
     source = plug1.parentItem().node_obj
     target = plug2.parentItem().node_obj
 
-    if plug1.type_ == 'event' and plug2.type_ == 'event':
+    from eventnodes import signal
+    source_signal = isinstance(plug1.plug_obj, signal.Signal)
+    target_signal = isinstance(plug2.plug_obj, signal.Signal)
+
+    # if plug1.type_ == 'event' and plug2.type_ == 'event':
+    if all([source_signal, target_signal]):
         signal_obj = plug1.plug_obj
-        target.disconnect_from(signal_obj.computed)
+        target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
     else:
         input = plug1.plug_obj
         output = plug2.plug_obj
