@@ -38,10 +38,6 @@ class Node(QtCore.QObject):
     @Slot()
     def trigger(self):
         self.compute()
-        # self.count += 1
-        # if self.count >= self.connections:
-        #     self.compute()
-        #     self.count = 0
 
     def connect_from(self, signal):
         signal.connect(self.trigger)
@@ -52,14 +48,13 @@ class Node(QtCore.QObject):
         self.connections -= 1
 
     def compute(self):
-        print(self, self.count)
         self.computed.emit()
 
     def list_param_names(self):
         return list(self.params.keys())
 
     def get_param(self, param):
-        return self.param[param]()
+        return self.params[param]()
 
     def set_param(self, param, value):
         self.params[param].value = value
@@ -67,8 +62,14 @@ class Node(QtCore.QObject):
     def get_input_names(self):
         return list(self.inputs.keys())
 
-    def get_input(self, output):
-        return self.inputs[output]
+    def get_input(self, input_):
+        # return self.inputs[input_]
+        if not self.inputs[input_]:
+            return None
+
+        node_obj, output = self.inputs[input_]
+        # print(self, node_obj, output, node_obj.get_output(output), node_obj.get_output(output)())
+        return node_obj.get_output(output)
 
     def get_output_names(self):
         return list(self.outputs.keys())
@@ -92,10 +93,31 @@ class DirChanged(Node):
         super().__init__(*args, **kwargs)
         self.params['directory'] = Value('d:\\temp')
         self.outputs = {
-            'directory': self.params['directory'],
-            'changed files': Value('')
+            'directory': None,
+            'changed files': None
         }
         self.inputs = {}
+
+    def compute(self):
+        self.outputs['directory'] = self.params['directory']
+        super().compute()
+
+
+class Timer(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.params['interval'] = Value(5000)
+
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.trigger)
+
+    @Slot()
+    def trigger(self):
+        self.compute()
+
+    def set_param(self, param, value):
+        super().set_param(param, value)
+        self.timer.start(self.get_param('interval'))
 
 
 class Zip(Node):
@@ -105,21 +127,19 @@ class Zip(Node):
         self.params['source'] = Value('D:\\dummy')
         self.params['zipfile'] = Value('D:\\temp\\output.zip')
         self.outputs = {
-            'zipfile': self.params['zipfile']
+            'zipfile': None
         }
         self.inputs = {
             'source': None,
-            'zipfile': self.params['zipfile']
         }
 
     def compute(self):
-        source = self.inputs['source'] or self.params['source']
-        zip_file = self.inputs['source'] or self.params['zipfile']
-
-        # source = self.inputs['source']()
+        source = self.get_input('source') or self.params['source']
+        zip_file = self.params['zipfile']
 
         from zipfile import ZipFile
         import os
+
         fullpaths = []
         for root, directories, files in os.walk(source()):
             for filename in files:
@@ -130,6 +150,7 @@ class Zip(Node):
             for fullpath in fullpaths:
                 z.write(fullpath)
 
+        self.outputs['zipfile'] = self.params['zipfile']
         super().compute()
 
 
@@ -139,19 +160,23 @@ class CopyFile(Node):
 
         self.params['destfile'] = Value('D:\\temp\\dummy.txt')
         self.outputs = {
-            'destfile': self.params['destfile']
+            'destfile': None
         }
         self.inputs = {
             'source': None,
-            'destination': self.params['destfile']
+            'destination': None
         }
 
     def compute(self):
         import shutil
 
-        source = self.inputs['source']()
-        dest = self.inputs['destination'] or self.params['destfile']
+        source = self.get_input('source')()
+        dest = self.get_input('destination') or self.params['destfile']
+        print(self.get_input('destination'))
+        print(self.params['destfile'])
         shutil.copyfile(source, dest())
+
+        self.outputs['destfile'] = dest
 
         super().compute()
 
@@ -219,15 +244,20 @@ class Email(Node):
         smtp.quit()
 
     def compute(self):
-        attachments = self.inputs['attachments'] or self.params['attachments']
+        attachments = self.get_input('attachments') or self.params['attachments']
         print(attachments())
+
+        recipients = self.get_input('recipients') or self.params['recipients']
+        subject = self.get_input('subject') or self.params['subject']
+        message = self.get_input('message') or self.params['message']
+        attachments = self.get_input('attachments') or self.params['attachments']
 
         self.send_mail(
             send_from=self.params['sender'](),
-            send_to=self.params['recipients'](),
+            send_to=recipients(),
             files=attachments(),
-            subject=self.params['subject'](),
-            message=self.params['message'](),
+            subject=subject(),
+            message=message(),
             server=self.params['server'](),
             port=self.params['port'](),
             username=self.params['username'](),
@@ -243,14 +273,58 @@ class ItemList(Node):
 
         self.params['items'] = Value([])
 
-        self.outputs = {'items': self.params['items']}
+        self.outputs = {'items': None}
         self.inputs = {'items': []}
 
     def compute(self):
-        if self.inputs['items']:
-            self.params['items'].value = [item() for item in self.inputs['items']]
+        if self.get_input('items'):
+            self.params['items'].value = [item() for item in self.get_input('items')]
 
         super().compute()
+
+
+class Switch(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.outputs = {'output': None}
+        self.inputs = {}
+
+    def compute(self):
+        if self.get_input('items'):
+            self.params['items'].value = [item() for item in self.get_input('items')]
+
+        super().compute()
+
+
+class ForEach(Node):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.outputs = {
+            'item': None,
+            'index': Value(0),
+            'limit': Value(0),
+        }
+        self.inputs = {'items': []}
+
+    def get_input(self, input_):
+        if not self.inputs[input_]:
+            return []
+
+        return [node_obj.get_output(output) for node_obj, output in self.inputs[input_]]
+
+        # node_obj, output = self.inputs[input_]
+        # return node_obj.get_output(output)
+
+    def compute(self):
+        count = len(self.get_input('items'))
+        for index, item in enumerate(self.get_input('items')):
+            self.outputs['item'] = item
+            self.outputs['index'].value = index
+            self.outputs['index'].value = count
+            print(index)
+            super().compute()
 
 
 if __name__ == '__main__':
@@ -272,7 +346,7 @@ if __name__ == '__main__':
     e.set_param('server', "smtp.gmail.com")
     e.set_param('port', 587)
     e.set_param('username', 'vicken.mavlian@gmail.com')
-    e.set_param('password', '22 acacia avenue')
+    e.set_param('password', '')
     e.set_param('use_tls', True)
     e.inputs['attachments'] = i.get_output('items')
 

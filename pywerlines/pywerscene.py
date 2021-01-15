@@ -15,8 +15,8 @@ class PywerScene(QGraphicsScene):
 
     def emit_selected_nodes(self):
         selected_nodes = self.get_selected_nodes()
-        if selected_nodes:
-            self.nodes_selected.emit(selected_nodes)
+        # if selected_nodes:
+        self.nodes_selected.emit(selected_nodes)
 
     def emit_deleted_nodes(self, nodes):
         self.nodes_deleted.emit(nodes)

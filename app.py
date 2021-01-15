@@ -1,18 +1,35 @@
 import sys
 import pywerlines.pywerview
 
-from PySide2.QtWidgets import QApplication, QLabel, QMainWindow, QDockWidget, QWidget, QVBoxLayout, QGraphicsScene
+from PySide2.QtWidgets import QApplication, QLabel, QMainWindow, QDockWidget, QWidget, QHBoxLayout, QGraphicsScene, \
+    QSplitter
 from PySide2 import QtCore
+from PySide2.QtGui import QIcon
 from PySide2.QtCore import Slot
 
+from toolbox import ToolBox, ToolItem
+from parameters import Parameters
 from pywerlines import pyweritems, pywerscene
 
 import nodes
 
+import eventnodes.parameter
+import eventnodes.timer
+import eventnodes.zipfile
+import eventnodes.copyfile
+import eventnodes.dirchange
+import eventnodes.fileschanged
+import eventnodes.email
+import eventnodes.consolewriter
+import eventnodes.foreach
+import eventnodes.collector
+import appnode
+
 
 @Slot(list)
 def selected_nodes(data):
-    print(data)
+    pass
+    #print(data)
 
 
 @Slot(list)
@@ -22,36 +39,43 @@ def added_nodes(data):
 
 @Slot(list)
 def deleted_nodes(data):
-    print(data)
+    pass
+    #print(data)
 
 
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def connected_plugs(plug1, plug2):
-    print('connecting {}.{} {}.{}'.format(plug1.parentItem().type_, plug1.type_, plug2.parentItem().type_, plug2.type_))
-
     source = plug1.parentItem().node_obj
     target = plug2.parentItem().node_obj
 
-    if plug1.type_ == 'event' and plug2.type_ == 'event':
-        target.connect_from(source.computed)
+    from eventnodes import signal
+    source_signal = isinstance(plug1.plug_obj, signal.Signal)
+    target_signal = isinstance(plug2.plug_obj, signal.Signal)
+
+    # if plug1.type_ == 'event' and plug2.type_ == 'event':
+    if all([source_signal, target_signal]):
+        signal_obj = plug1.plug_obj
+        target.connect_from(signal_obj.computed, trigger=plug2.type_)
     else:
-        output = plug1.type_
-        input_ = plug2.type_
+        input = plug1.plug_obj
+        output = plug2.plug_obj
 
-        # TODO: this condition is hack. just doing for proof of concept.
-        #       To allow for the ItemList items input plug that allows multiple input connections
-        if type(target.inputs[input_]) == list:
-            print('appending')
-            target.inputs[input_].append(source.get_output(output))
-            print(len(target.inputs[input_]))
-
-        else:
-            target.inputs[input_] = source.get_output(output)
+        output.connect(input)
 
 
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def disconnected_plugs(plug1, plug2):
-    print('disconnected')
+    source = plug1.parentItem().node_obj
+    target = plug2.parentItem().node_obj
+
+    if plug1.type_ == 'event' and plug2.type_ == 'event':
+        signal_obj = plug1.plug_obj
+        target.disconnect_from(signal_obj.computed)
+    else:
+        input = plug1.plug_obj
+        output = plug2.plug_obj
+
+        output.disconnect()
 
 
 class EventFlow(pywerscene.PywerScene):
@@ -59,160 +83,43 @@ class EventFlow(pywerscene.PywerScene):
         return nodes.list_nodes()
 
     def new_node(self, type_):
-        if type_ == 'DirChanged':
-            mnode = nodes.DirChanged()
-            mnode.set_param('directory', 'D:\\projects\\python\\node2\\tmp\\src')
-            blueprint = {
-                'attribs': {
-                    'type': 'DirChanged', 'color': (150, 0, 0, 255)
-                },
-                'inputs': [],
-                'outputs': [
-                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
-                ]
-            }
-
-            for output in mnode.get_output_names():
-                blueprint['outputs'].append(
-                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            for input in mnode.get_input_names():
-                blueprint['inputs'].append(
-                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-            node.node_obj = mnode
+        if type_ == 'Parameter':
+            node = appnode.ParamNode.from_event_node(eventnodes.parameter.Parameter())
+        elif type_ == 'Timer':
+            node = appnode.EventNode.from_event_node(eventnodes.timer.TimerNode())
+        elif type_ == 'DirChanged':
+            node = appnode.EventNode.from_event_node(eventnodes.dirchange.DirChanged())
+        elif type_ == 'FilesChanged':
+            node = appnode.EventNode.from_event_node(eventnodes.fileschanged.FilesChanged())
+        elif type_ == 'ConsoleWriter':
+            node = appnode.EventNode.from_event_node(eventnodes.consolewriter.ConsoleWriter())
         elif type_ == 'Zip':
-            mnode = nodes.Zip()
-            mnode.set_param('zipfile', 'D:\\projects\\python\\node2\\tmp\\output.zip')
-            blueprint = {
-                'attribs': {
-                    'type': 'Zip', 'color': (35, 105, 140, 200)
-                },
-                'inputs': [
-                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                ],
-                'outputs': [
-                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
-                ]
-            }
-
-            for output in mnode.get_output_names():
-                blueprint['outputs'].append(
-                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            for input in mnode.get_input_names():
-                blueprint['inputs'].append(
-                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-            node.node_obj = mnode
+            node = appnode.EventNode.from_event_node(eventnodes.zipfile.ZipFile())
         elif type_ == 'CopyFile':
-            mnode = nodes.CopyFile()
-            mnode.set_param('destfile', 'D:\\projects\\python\\node2\\tmp\\output2.zip')
-            blueprint = {
-                'attribs': {
-                    'type': 'CopyFile', 'color': (35, 105, 140, 200)
-                },
-                'inputs': [
-                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                ],
-                'outputs': [
-                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
-                ]
-            }
-
-            for output in mnode.get_output_names():
-                blueprint['outputs'].append(
-                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            for input in mnode.get_input_names():
-                blueprint['inputs'].append(
-                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-            node.node_obj = mnode
+            node = appnode.EventNode.from_event_node(eventnodes.copyfile.CopyFile())
         elif type_ == 'Email':
-            mnode = nodes.Email()
-            mnode.set_param('sender', 'vicken.mavlian@gmail.com')
-            mnode.set_param('recipients', ['vicken.mavlian@gmail.com'])
-            mnode.set_param('subject', "wicked zip file")
-            mnode.set_param('message', "whats up man, take this file")
-            mnode.set_param('server', "smtp.gmail.com")
-            mnode.set_param('port', 587)
-            mnode.set_param('username', 'vicken.mavlian@gmail.com')
-            mnode.set_param('password', '22 acacia avenue')
-            mnode.set_param('use_tls', True)
-            blueprint = {
-                'attribs': {
-                    'type': 'Email', 'color': (35, 105, 140, 200)
-                },
-                'inputs': [
-                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                ],
-                'outputs': [
-                    {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
-                ]
-            }
-
-            for output in mnode.get_output_names():
-                blueprint['outputs'].append(
-                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            for input in mnode.get_input_names():
-                blueprint['inputs'].append(
-                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-            node.node_obj = mnode
-        elif type_ == 'ItemList':
-            mnode = nodes.ItemList()
-            blueprint = {
-                'attribs': {
-                    'type': 'ItemList', 'color': (55, 150, 55, 255)
-                },
-                'inputs': [
-                    # {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)},
-                ],
-                'outputs': [
-                    # {'type': 'event', 'path': pyweritems.PywerPlug.PENTAGON, 'color': (255, 255, 255, 255)}
-                ]
-            }
-
-            for output in mnode.get_output_names():
-                blueprint['outputs'].append(
-                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            for input in mnode.get_input_names():
-                blueprint['inputs'].append(
-                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-            node.node_obj = mnode
-        elif type_ == 'Parameter':
-            mnode = nodes.Parameter()
-            blueprint = {
-                'attribs': {
-                    'type': 'Parameter', 'color': (150, 150, 150, 255)
-                },
-                'inputs': [
-                ],
-                'outputs': [
-                ]
-            }
-
-            for output in mnode.get_output_names():
-                blueprint['outputs'].append(
-                    {'type': output, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            for input in mnode.get_input_names():
-                blueprint['inputs'].append(
-                    {'type': input, 'path': pyweritems.PywerPlug.ELLIPSE, 'color': (255, 120, 150, 255)})
-
-            node = pyweritems.PywerNode.from_dict(blueprint=blueprint)
-            node.node_obj = mnode
-
+            node = appnode.EventNode.from_event_node(eventnodes.email.Email())
+        elif type_ == 'Collector':
+            node = appnode.EventNode.from_event_node(eventnodes.collector.Collector())
+        elif type_ == 'ForEach':
+            node = appnode.EventNode.from_event_node(eventnodes.foreach.ForEach())
         return node
+
+    def can_connect(self, source_plug, target_plug):
+        if not super().can_connect(source_plug, target_plug):
+            return False
+
+        import eventnodes.signal
+        source_signal = isinstance(source_plug.plug_obj, eventnodes.signal.Signal)
+        target_signal = isinstance(target_plug.plug_obj, eventnodes.signal.Signal)
+        if source_signal and target_signal:
+            return True
+
+        # if any is a signal but all are not, then only one of them is
+        if any([source_signal, target_signal]) and not all([source_signal, target_signal]):
+            return False
+
+        return source_plug.plug_obj.type == target_plug.plug_obj.type
 
     def create_node_of_type(self, type_):
         node = self.new_node(type_)
@@ -238,9 +145,30 @@ class MainWindow(QWidget):
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
 
-        layout = QVBoxLayout()
+        toolbox = ToolBox()
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="DirChanged", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="FilesChanged", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Timer", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="CopyFile", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Zip", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Email", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Parameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ForEach", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Collector", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ConsoleWriter", sections=['Data']))
+        toolbox.itemClicked.connect(self.toolbox_item_selected)
+
+        self.parameters = Parameters()
+
+        splitter = QSplitter(parent=self)
+        splitter.addWidget(toolbox)
+        splitter.addWidget(view)
+        splitter.addWidget(self.parameters)
+        splitter.setSizes([100, 400, 100])
+
+        layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(view)
+        layout.addWidget(splitter)
 
         self.setLayout(layout)
 
@@ -249,6 +177,8 @@ class MainWindow(QWidget):
         scene.nodes_added.connect(added_nodes)
         scene.plugs_connected.connect(connected_plugs)
         scene.plugs_disconnected.connect(disconnected_plugs)
+
+        scene.nodes_selected.connect(self.selected_nodes)
 
         self.scene = scene
         self.view = view
@@ -292,6 +222,20 @@ class MainWindow(QWidget):
             self.scene.remove_selected_groups()
         elif event.key() == QtCore.Qt.Key_Space:
             self.scene.eval()
+
+    @Slot(str)
+    def toolbox_item_selected(self, item):
+        node = self.scene.create_node_of_type(item)
+        position = QtCore.QPointF(self.view.mapToScene(100, 100))
+        # position = QtCore.QPointF(100, 100)
+        node.setPos(position)
+
+    @Slot(list)
+    def selected_nodes(self, nodes):
+        if nodes:
+            self.parameters.set_node_obj(nodes[0].node_obj)
+        else:
+            self.parameters.set_node_obj(None)
 
 
 def main():

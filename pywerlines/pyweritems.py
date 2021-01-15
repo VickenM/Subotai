@@ -165,6 +165,8 @@ class PywerPlug(PywerItem):
     RECTANGLE = RECTANGLE
 
     def __init__(self, *args, **kwargs):
+        self.plug_obj = kwargs.pop('plug_obj', None)
+
         self.path = kwargs.pop('path', self.ELLIPSE)
         self.color = kwargs.pop('color', (255, 150, 180, 255))
 
