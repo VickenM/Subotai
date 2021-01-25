@@ -37,7 +37,6 @@ class DirChanged(EventNode):
             self.watcher.addPath(directory)
 
     def compute(self):
-        print('dir changed')
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
 

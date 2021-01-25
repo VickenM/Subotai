@@ -6,8 +6,9 @@ from functools import partial
 
 
 class ListWidget(QtWidgets.QWidget):
-    def __init__(self, param):
+    def __init__(self, node_obj, param):
         super().__init__()
+        self.node_obj = node_obj
         self.param = param
 
         self.layout = QtWidgets.QHBoxLayout()
@@ -63,6 +64,7 @@ class ListWidget(QtWidgets.QWidget):
 
         from eventnodes.params import StringParam
         self.param.value = [StringParam(name='', value=i) for i in items]
+        self.node_obj.update()
 
 
 class Parameters(QtWidgets.QWidget):
@@ -113,7 +115,7 @@ class Parameters(QtWidgets.QWidget):
                     widget.setValue(param.value)
                     widget.valueChanged.connect(partial(self.set_param_value, node_obj, param))
                 elif param.type == list:
-                    widget = ListWidget(param=param)
+                    widget = ListWidget(node_obj=node_obj, param=param)
                 elif param.type == bool:
                     widget = QtWidgets.QCheckBox()
                     widget.setChecked(param.value)

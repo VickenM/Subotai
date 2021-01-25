@@ -17,11 +17,13 @@ import eventnodes.parameter
 import eventnodes.timer
 import eventnodes.zipfile
 import eventnodes.copyfile
+import eventnodes.listdir
 import eventnodes.dirchange
 import eventnodes.fileschanged
 import eventnodes.email
 import eventnodes.consolewriter
 import eventnodes.foreach
+import eventnodes.condition
 import eventnodes.collector
 import appnode
 
@@ -102,12 +104,16 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.zipfile.ZipFile())
         elif type_ == 'CopyFile':
             node = appnode.EventNode.from_event_node(eventnodes.copyfile.CopyFile())
+        elif type_ == 'ListDir':
+            node = appnode.EventNode.from_event_node(eventnodes.listdir.ListDir())
         elif type_ == 'Email':
             node = appnode.EventNode.from_event_node(eventnodes.email.Email())
         elif type_ == 'Collector':
             node = appnode.EventNode.from_event_node(eventnodes.collector.Collector())
         elif type_ == 'ForEach':
             node = appnode.EventNode.from_event_node(eventnodes.foreach.ForEach())
+        elif type_ == 'Condition':
+            node = appnode.EventNode.from_event_node(eventnodes.condition.Condition())
         return node
 
     def can_connect(self, source_plug, target_plug):
@@ -155,10 +161,12 @@ class MainWindow(QWidget):
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="FilesChanged", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Timer", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="CopyFile", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ListDir", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Zip", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Email", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Parameter", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ForEach", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Condition", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Collector", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ConsoleWriter", sections=['Data']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)

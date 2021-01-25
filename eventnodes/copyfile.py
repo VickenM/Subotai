@@ -22,7 +22,7 @@ class CopyFile(ComputeNode):
 
         source = self.get_first_param('source')
         dest = self.get_first_param('destination')
-        shutil.copyfile(source(), dest())
+        shutil.copy2(source(), dest())
 
         output = self.get_first_param('destination', pluggable=OUTPUT_PLUG)
         output.value = dest.value

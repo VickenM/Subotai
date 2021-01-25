@@ -69,8 +69,11 @@ class ComputeNode(BaseNode):
         else:
             signal.connect(self.map_signal(trigger))
 
-    def disconnect_from(self, signal):
-        signal.disconnect(self.trigger)
+    def disconnect_from(self, signal, trigger=None):
+        if not trigger:
+            signal.disconnect(self.trigger)
+        else:
+            signal.disconnect(self.map_signal(trigger))
 
 
 class EventNode(ComputeNode):
