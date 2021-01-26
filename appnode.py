@@ -32,6 +32,7 @@ class ParamNode(pywerlines.pyweritems.PywerNode):
                 node.add_output(pywerlines.pyweritems.PywerPlug(**i))
 
         node.node_obj = node_obj
+        node_obj.ui_node = node
         return node
 
 
@@ -61,4 +62,5 @@ class EventNode(pywerlines.pyweritems.PywerNode):
                 node.add_output(pywerlines.pyweritems.PywerPlug(**i))
 
         node.node_obj = node_obj
+        node_obj.ui_node = node
         return node

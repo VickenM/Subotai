@@ -2,9 +2,8 @@ from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
 from .base import ComputeNode
-from .params import StringParam, ListParam, IntParam, PARAM
+from .params import StringParam, ListParam, IntParam, EnumParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
-
 
 class ForEach(ComputeNode):
     def __init__(self, *args, **kwargs):
@@ -15,7 +14,7 @@ class ForEach(ComputeNode):
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.signals.append(Signal(node=self, name='finished', pluggable=OUTPUT_PLUG))
         self.params.append(ListParam(name='items', value=[
-            StringParam('', value="D:\\projects\\python\\node2\\tmp\\sklavos.zip")
+            # StringParam('', value="D:\\projects\\python\\node2\\tmp\\sklavos.zip")
         ], pluggable=PARAM | INPUT_PLUG))
 
         self.params.append(StringParam(name='item', value='', pluggable=OUTPUT_PLUG))

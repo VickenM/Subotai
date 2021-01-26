@@ -92,6 +92,8 @@ class Parameters(QtWidgets.QWidget):
 
     def set_node_obj(self, node_obj):
         from eventnodes.params import INPUT_PLUG, OUTPUT_PLUG, PARAM, SUBTYPE_PASSWORD
+        from enum import Enum
+
         self.node_obj = node_obj
 
         while self.flayout.rowCount():
@@ -116,6 +118,11 @@ class Parameters(QtWidgets.QWidget):
                     widget.valueChanged.connect(partial(self.set_param_value, node_obj, param))
                 elif param.type == list:
                     widget = ListWidget(node_obj=node_obj, param=param)
+                elif param.type == Enum:
+                    widget = QtWidgets.QComboBox()
+                    widget.addItems(list(param.Operations.__members__))
+                    widget.setCurrentText(param.value.name)
+                    widget.currentTextChanged.connect(partial(self.set_enum_param_value, node_obj, param))
                 elif param.type == bool:
                     widget = QtWidgets.QCheckBox()
                     widget.setChecked(param.value)
@@ -123,6 +130,10 @@ class Parameters(QtWidgets.QWidget):
                 else:
                     widget = QtWidgets.QLineEdit(str(param.value))
                 self.flayout.addRow(param.name, widget)
+
+    def set_enum_param_value(self, node_obj, param, value):
+        param.value = param.Operations.__members__[value]
+
 
     def set_param_value(self, node_obj, param, value):
         param.value = value

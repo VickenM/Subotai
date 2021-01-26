@@ -9,6 +9,7 @@ class BaseNode(QtCore.QObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.params = []
+        self.ui_node = None
 
     def get_params(self):
         return self.params
@@ -30,7 +31,7 @@ class BaseNode(QtCore.QObject):
                         return p
 
     def update(self):
-        pass
+        self.ui_node.update()
 
 
 class ComputeNode(BaseNode):

@@ -1,5 +1,6 @@
 from abc import abstractmethod
 
+NONE = 0
 INPUT_PLUG = 1
 OUTPUT_PLUG = 2
 PARAM = 4
@@ -8,12 +9,12 @@ SUBTYPE_PASSWORD = 1
 
 
 class Param(object):
-    def __init__(self, name, value=None, pluggable=None):
+    def __init__(self, name, value=None, pluggable=NONE):
         self.name = name
         self._type = None  # int or float or str or list or dict or tuple
         self._subtype = None
         self._value = value
-        self.pluggable = pluggable  # None means its just a param on the node. otherwise, INPUT_PLUG or OUTPUT_PLUG to make it connectible
+        self.pluggable = pluggable  # NONE means its just a param on the node. otherwise, INPUT_PLUG or OUTPUT_PLUG to make it connectible
         self.connection = None
 
     @abstractmethod
@@ -120,4 +121,14 @@ class ListParam(Param):
         super().__init__(name=name, pluggable=pluggable)
         self.name = name
         self._type = list
+        self._value = value
+
+
+from enum import Enum
+
+class EnumParam(Param):
+    def __init__(self, name='', value=Enum, pluggable=None, subtype=None):
+        super().__init__(name=name, pluggable=pluggable)
+        self.name = name
+        self._type = Enum
         self._value = value

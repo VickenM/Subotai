@@ -2,8 +2,17 @@ from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
 from .base import ComputeNode
-from .params import StringParam, ListParam, IntParam, PARAM
+from .params import StringParam, ListParam, IntParam, EnumParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
+
+from enum import Enum, auto
+
+
+class CompareParam(EnumParam):
+    class Operations(Enum):
+        less_than = auto()
+        greater_than = auto()
+        equal = auto()
 
 
 class Condition(ComputeNode):
@@ -15,17 +24,30 @@ class Condition(ComputeNode):
         self.signals.append(Signal(node=self, name='true', pluggable=OUTPUT_PLUG))
         self.signals.append(Signal(node=self, name='false', pluggable=OUTPUT_PLUG))
 
-        self.params.append(IntParam(name='value1', value=0, pluggable=INPUT_PLUG|PARAM))
-        self.params.append(IntParam(name='value2', value=0, pluggable=INPUT_PLUG|PARAM))
+        self.params.append(CompareParam(name='operation', value=CompareParam.Operations.equal, pluggable=PARAM))
+        self.params.append(IntParam(name='value1', value=0, pluggable=INPUT_PLUG | PARAM))
+        self.params.append(IntParam(name='value2', value=0, pluggable=INPUT_PLUG | PARAM))
 
     def compute(self):
         t = self.get_first_signal('true')
         f = self.get_first_signal('false')
 
+        op = self.get_first_param('operation')
         value1 = self.get_first_param('value1')
         value2 = self.get_first_param('value2')
 
-        if value1.value > value2.value:
-            t.emit_event()
-        else:
-            f.emit_event()
+        if op.value == op.Operations.greater_than:
+            if value1.value > value2.value:
+                t.emit_event()
+            else:
+                f.emit_event()
+        elif op.value == op.Operations.less_than:
+            if value1.value < value2.value:
+                t.emit_event()
+            else:
+                f.emit_event()
+        elif op.value == op.Operations.equal:
+            if value1.value == value2.value:
+                t.emit_event()
+            else:
+                f.emit_event()

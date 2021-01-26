@@ -14,6 +14,8 @@ from pywerlines import pyweritems, pywerscene
 import nodes
 
 import eventnodes.parameter
+import eventnodes.inttostr
+import eventnodes.math
 import eventnodes.timer
 import eventnodes.zipfile
 import eventnodes.copyfile
@@ -92,6 +94,10 @@ class EventFlow(pywerscene.PywerScene):
     def new_node(self, type_):
         if type_ == 'Parameter':
             node = appnode.ParamNode.from_event_node(eventnodes.parameter.Parameter())
+        elif type_ == 'IntToStr':
+            node = appnode.ParamNode.from_event_node(eventnodes.inttostr.IntToStr())
+        elif type_ == 'Math':
+            node = appnode.ParamNode.from_event_node(eventnodes.math.Math())
         elif type_ == 'Timer':
             node = appnode.EventNode.from_event_node(eventnodes.timer.TimerNode())
         elif type_ == 'DirChanged':
@@ -165,10 +171,12 @@ class MainWindow(QWidget):
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Zip", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Email", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Parameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ForEach", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Condition", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Collector", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ConsoleWriter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="IntToStr", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Math", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ForEach", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Condition", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Collector", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ConsoleWriter", sections=['I/O']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
 
         self.parameters = Parameters()
