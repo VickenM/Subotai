@@ -14,6 +14,7 @@ class MathOpParam(EnumParam):
         subtract = auto()
         multiply = auto()
         divide = auto()
+        modulo = auto()
 
 
 class MathParam(IntParam):
@@ -43,6 +44,8 @@ class MathParam(IntParam):
             return first.value * second.value
         elif op.value == op.Operations.divide:
             return first.value / second.value
+        elif op.value == op.Operations.modulo:
+            return first.value % second.value
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()

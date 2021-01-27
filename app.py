@@ -25,8 +25,16 @@ import eventnodes.fileschanged
 import eventnodes.email
 import eventnodes.consolewriter
 import eventnodes.foreach
+import eventnodes.splitstring
+import eventnodes.joinstrings
+import eventnodes.slicelist
 import eventnodes.condition
 import eventnodes.collector
+import eventnodes.image.open
+import eventnodes.image.save
+import eventnodes.image.crop
+import eventnodes.image.resize
+import eventnodes.image.thumbnail
 import appnode
 
 
@@ -118,8 +126,24 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.collector.Collector())
         elif type_ == 'ForEach':
             node = appnode.EventNode.from_event_node(eventnodes.foreach.ForEach())
+        elif type_ == 'SplitString':
+            node = appnode.EventNode.from_event_node(eventnodes.splitstring.SplitString())
+        elif type_ == 'JoinStrings':
+            node = appnode.ParamNode .from_event_node(eventnodes.joinstrings.JoinStrings())
+        elif type_ == 'SliceList':
+            node = appnode.ParamNode.from_event_node(eventnodes.slicelist.SliceList())
         elif type_ == 'Condition':
             node = appnode.EventNode.from_event_node(eventnodes.condition.Condition())
+        elif type_ == 'OpenImage':
+            node = appnode.EventNode.from_event_node(eventnodes.image.open.Open())
+        elif type_ == 'SaveImage':
+            node = appnode.EventNode.from_event_node(eventnodes.image.save.Save())
+        elif type_ == 'CropImage':
+            node = appnode.EventNode.from_event_node(eventnodes.image.crop.Crop())
+        elif type_ == 'ResizeImage':
+            node = appnode.EventNode.from_event_node(eventnodes.image.resize.Resize())
+        elif type_ == 'ThumbnailImage':
+            node = appnode.EventNode.from_event_node(eventnodes.image.thumbnail.Thumbnail())
         return node
 
     def can_connect(self, source_plug, target_plug):
@@ -173,10 +197,18 @@ class MainWindow(QWidget):
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Parameter", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="IntToStr", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Math", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="SliceList", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="SplitString", sections=['String']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="JoinStrings", sections=['String']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ForEach", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Condition", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Collector", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ConsoleWriter", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="OpenImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="SaveImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="CropImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ResizeImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ThumbnailImage", sections=['Image']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
 
         self.parameters = Parameters()

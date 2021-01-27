@@ -100,6 +100,11 @@ class Parameters(QtWidgets.QWidget):
             self.flayout.removeRow(0)
 
         if node_obj:
+
+            header = QtWidgets.QLabel(self.node_obj.type)
+            self.flayout.addRow('', header)
+
+
             for param in self.node_obj.get_params():
                 if not param.get_pluggable() & PARAM:
                     continue
@@ -112,7 +117,7 @@ class Parameters(QtWidgets.QWidget):
                         widget.setEchoMode(widget.Password)
                 elif param.type == int:
                     widget = QtWidgets.QSpinBox()
-                    widget.setMinimum(0)
+                    widget.setMinimum(-10000)
                     widget.setMaximum(10000)
                     widget.setValue(param.value)
                     widget.valueChanged.connect(partial(self.set_param_value, node_obj, param))
@@ -128,12 +133,13 @@ class Parameters(QtWidgets.QWidget):
                     widget.setChecked(param.value)
                     widget.stateChanged.connect(partial(self.set_bool_param_value, node_obj, param))
                 else:
-                    widget = QtWidgets.QLineEdit(str(param.value))
+                    print('parameters.py: unknown param.type', param.type)
+                    continue
+                    # widget = QtWidgets.QLineEdit(str(param.value))
                 self.flayout.addRow(param.name, widget)
 
     def set_enum_param_value(self, node_obj, param, value):
         param.value = param.Operations.__members__[value]
-
 
     def set_param_value(self, node_obj, param, value):
         param.value = value

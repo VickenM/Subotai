@@ -158,11 +158,18 @@ PENTAGON.addPolygon(QtGui.QPolygonF([
 RECTANGLE = QtGui.QPainterPath()
 RECTANGLE.addRect(QtCore.QRect(0, 0, 10, 20))
 
+CUBES = QtGui.QPainterPath()
+CUBES.addRect(QtCore.QRect(0, 0, 5, 5))
+CUBES.addRect(QtCore.QRect(0, 10, 5, 5))
+CUBES.addRect(QtCore.QRect(10, 0, 5, 5))
+CUBES.addRect(QtCore.QRect(10, 10, 5, 5))
+
 
 class PywerPlug(PywerItem):
     ELLIPSE = ELLIPSE
     PENTAGON = PENTAGON
     RECTANGLE = RECTANGLE
+    CUBES = CUBES
 
     def __init__(self, *args, **kwargs):
         self.plug_obj = kwargs.pop('plug_obj', None)

@@ -2,6 +2,8 @@ import pywerlines.pyweritems
 import eventnodes.params
 import eventnodes.signal
 
+from PIL import Image
+
 
 def plug_color(param):
     if param.type == str:
@@ -12,6 +14,8 @@ def plug_color(param):
         return (120, 150, 255, 255)
     elif param.type == list:
         return (255, 255, 120, 255)
+    elif param.type == Image:
+        return (120, 255, 120, 255)
     else:
         return (200, 200, 200, 255)
 
