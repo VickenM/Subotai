@@ -10,6 +10,7 @@ class BaseNode(QtCore.QObject):
         super().__init__(*args, **kwargs)
         self.params = []
         self.ui_node = None
+        self.obj_id = None
 
     def get_params(self):
         return self.params

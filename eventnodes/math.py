@@ -16,6 +16,8 @@ class MathOpParam(EnumParam):
         divide = auto()
         modulo = auto()
 
+    enum = Operations
+
 
 class MathParam(IntParam):
     def __init__(self, first_param, second_param, op_param, name=None, pluggable=None):

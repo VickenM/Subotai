@@ -114,7 +114,7 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.fileschanged.FilesChanged())
         elif type_ == 'ConsoleWriter':
             node = appnode.EventNode.from_event_node(eventnodes.consolewriter.ConsoleWriter())
-        elif type_ == 'Zip':
+        elif type_ == 'ZipFile':
             node = appnode.EventNode.from_event_node(eventnodes.zipfile.ZipFile())
         elif type_ == 'CopyFile':
             node = appnode.EventNode.from_event_node(eventnodes.copyfile.CopyFile())
@@ -129,7 +129,7 @@ class EventFlow(pywerscene.PywerScene):
         elif type_ == 'SplitString':
             node = appnode.EventNode.from_event_node(eventnodes.splitstring.SplitString())
         elif type_ == 'JoinStrings':
-            node = appnode.ParamNode .from_event_node(eventnodes.joinstrings.JoinStrings())
+            node = appnode.ParamNode.from_event_node(eventnodes.joinstrings.JoinStrings())
         elif type_ == 'SliceList':
             node = appnode.ParamNode.from_event_node(eventnodes.slicelist.SliceList())
         elif type_ == 'Condition':
@@ -144,6 +144,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.image.resize.Resize())
         elif type_ == 'ThumbnailImage':
             node = appnode.EventNode.from_event_node(eventnodes.image.thumbnail.Thumbnail())
+        else:
+            return None
         return node
 
     def can_connect(self, source_plug, target_plug):
@@ -170,6 +172,21 @@ class EventFlow(pywerscene.PywerScene):
     def create_edge(self, source_plug, target_plug):
         super(EventFlow, self).create_edge(source_plug, target_plug)
 
+    def get_node_by_id(self, obj_id):
+        nodes = self.get_all_nodes()
+        for node in nodes:
+            if node.node_obj.obj_id == obj_id:
+                return node
+
+    def get_all_edges(self):
+        return [item for item in self.items() if isinstance(item, pyweritems.PywerEdge)]
+
+    def get_all_nodes(self):
+        return [item for item in self.items() if isinstance(item, pyweritems.PywerNode)]
+
+    def get_all_groups(self):
+        return [item for item in self.items() if isinstance(item, pyweritems.PywerGroup)]
+
     def eval(self):
         selected_node = self.get_selected_nodes()[0]
         mnode = selected_node.node_obj
@@ -192,7 +209,7 @@ class MainWindow(QWidget):
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Timer", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="CopyFile", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ListDir", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Zip", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ZipFile", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Email", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Parameter", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="IntToStr", sections=['Data']))
@@ -275,12 +292,79 @@ class MainWindow(QWidget):
             self.scene.remove_selected_groups()
         elif event.key() == QtCore.Qt.Key_Space:
             self.scene.eval()
+        elif event.key() == QtCore.Qt.Key_S:
+            data = {'nodes': [], 'edges': [], 'groups': []}
+            for node in self.scene.get_all_nodes():
+                data['nodes'].append(node.to_dict())
+
+            for edge in self.scene.get_all_edges():
+                edge_info = (str(edge.source_plug.parentItem().node_obj.obj_id) + '.' + edge.source_plug.type_,
+                             str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
+                data['edges'].append(edge_info)
+
+            import json
+            with open('./scene.json', 'w') as fp:
+                json.dump(data, fp, indent=4)
+
+
+        elif event.key() == QtCore.Qt.Key_O:
+            import json
+            with open('./scene.json', 'r') as fp:
+                data = json.load(fp)
+
+            for node in data['nodes']:
+                type_ = node['node_obj'].split('.')[-1]
+                n = self.scene.create_node_of_type(type_)
+                n.node_obj.obj_id = node['id']
+                n.setPos(*node['position'])
+
+                for pluggable, params in node.get('params', {}).items():
+                    pluggable = int(pluggable)
+                    for param, value in params.items():
+                        if type(value) == list:
+                            p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                            from eventnodes.params import StringParam
+                            s = []
+                            for item in value:
+                                s.append(StringParam(value=item))
+
+                            # print(p.value)
+                            p.value.clear()
+                            p.value.extend(s)
+                            continue
+
+                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                        from enum import Enum
+                        if issubclass(p.value.__class__, Enum):
+                            p._value = p.enum(value)
+                        else:
+                            p._value = value
+
+            for edge in data['edges']:
+                source, target = edge
+                s_obj_id, s_plug = source.split('.')
+                t_obj_id, t_plug = target.split('.')
+
+                s_node = self.scene.get_node_by_id(s_obj_id)
+                for o in s_node.outputs:
+                    if o.type_ == s_plug:
+                        source_plug = o
+                        break
+
+                t_node = self.scene.get_node_by_id(t_obj_id)
+                for o in t_node.inputs:
+                    if o.type_ == t_plug:
+                        target_plug = o
+                        break
+
+                self.scene.create_edge(source_plug, target_plug)
+
+            print(data)
 
     @Slot(str)
     def toolbox_item_selected(self, item):
         node = self.scene.create_node_of_type(item)
         position = QtCore.QPointF(self.view.mapToScene(100, 100))
-        # position = QtCore.QPointF(100, 100)
         node.setPos(position)
 
     @Slot(list)

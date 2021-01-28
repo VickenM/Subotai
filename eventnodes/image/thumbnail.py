@@ -30,7 +30,6 @@ class Thumbnail(BaseImageNode):
 
         img = image_().copy()
         img.thumbnail( (int(width()), int(height())) )
-        print(img)
         out_image_.value = img
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)

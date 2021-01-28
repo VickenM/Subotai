@@ -126,6 +126,7 @@ class ListParam(Param):
 
 from enum import Enum
 
+
 class EnumParam(Param):
     def __init__(self, name='', value=Enum, pluggable=None, subtype=None):
         super().__init__(name=name, pluggable=pluggable)

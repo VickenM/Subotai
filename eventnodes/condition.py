@@ -14,6 +14,8 @@ class CompareParam(EnumParam):
         greater_than = auto()
         equal = auto()
 
+    enum = Operations
+
 
 class Condition(ComputeNode):
     def __init__(self, *args, **kwargs):

@@ -25,7 +25,6 @@ class Resize(BaseImageNode):
         width = self.get_first_param('width', pluggable=INPUT_PLUG)
         height = self.get_first_param('height', pluggable=INPUT_PLUG)
 
-
         image_ = self.get_first_param('image', pluggable=INPUT_PLUG)
         out_image_ = self.get_first_param('image', pluggable=OUTPUT_PLUG)
 
