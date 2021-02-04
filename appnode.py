@@ -11,9 +11,9 @@ def plug_color(param):
     if param.type == str:
         return (255, 120, 150, 255)
     elif param.type == float:
-        return (120, 255, 120, 255)
+        return (200, 120, 255, 255)
     elif param.type == int:
-        return (120, 150, 255, 255)
+        return (80, 80, 255, 255)
     elif param.type == list:
         return (255, 255, 120, 255)
     elif param.type == Image:

@@ -1,26 +1,36 @@
 from .base import BaseNode, ComputeNode, EventNode
-from .params import IntParam, FloatParam, StringParam, ListParam
+from .params import IntParam, FloatParam, StringParam, ListParam, BoolParam
 from .params import INPUT_PLUG, OUTPUT_PLUG, PARAM
 
 
-class Parameter(BaseNode):
+class StringParameter(BaseNode):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Parameter'
+        self.type = 'StringParameter'
         self.color = (150, 150, 150, 255)
-        # self.params.append(ListParam(name='type', value=[
-        #     IntParam(value='Integer'),
-        #     FloatParam(value='Float'),
-        #     StringParam(value='String'),
-        # ], pluggable=PARAM))
         self.params.append(StringParam(name='param', value='', pluggable=OUTPUT_PLUG | PARAM))
 
-    def set_param_type(self, param_type):
-        if param_type == 'Integer':
-            self.param = IntParam(name='param', value=0, pluggable=OUTPUT_PLUG)
-        elif param_type == 'Float':
-            self.param = FloatParam(name='param', value=0.0, pluggable=OUTPUT_PLUG)
-        elif param_type == 'String':
-            self.param = StringParam(name='param', value='', pluggable=OUTPUT_PLUG)
-        elif param_type == 'List':
-            self.param = ListParam(name='param', value=[], pluggable=OUTPUT_PLUG)
+
+class IntegerParameter(BaseNode):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.type = 'IntegerParameter'
+        self.color = (150, 150, 150, 255)
+        self.params.append(IntParam(name='param', value=0, pluggable=OUTPUT_PLUG | PARAM))
+
+
+class FloatParameter(BaseNode):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.type = 'FloatParameter'
+        self.color = (150, 150, 150, 255)
+        self.params.append(FloatParam(name='param', value=0.0, pluggable=OUTPUT_PLUG | PARAM))
+
+
+class BooleanParameter(BaseNode):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.type = 'BooleanParameter'
+        self.color = (150, 150, 150, 255)
+        self.params.append(BoolParam(name='param', value=True, pluggable=OUTPUT_PLUG | PARAM))
+

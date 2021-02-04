@@ -1,9 +1,10 @@
 from PySide2 import QtCore
-from PySide2.QtCore import Slot, Signal
+from PySide2.QtCore import Slot, Signal, QEventLoop
 
 from .params import INPUT_PLUG, OUTPUT_PLUG, PARAM
 from abc import abstractmethod
 
+# q = QEventLoop()
 
 class BaseNode(QtCore.QObject):
     def __init__(self, *args, **kwargs):

@@ -25,6 +25,7 @@ import eventnodes.fileschanged
 import eventnodes.email
 import eventnodes.consolewriter
 import eventnodes.foreach
+import eventnodes.for_
 import eventnodes.splitstring
 import eventnodes.joinstrings
 import eventnodes.slicelist
@@ -100,8 +101,14 @@ class EventFlow(pywerscene.PywerScene):
         return nodes.list_nodes()
 
     def new_node(self, type_):
-        if type_ == 'Parameter':
-            node = appnode.ParamNode.from_event_node(eventnodes.parameter.Parameter())
+        if type_ == 'StringParameter':
+            node = appnode.ParamNode.from_event_node(eventnodes.parameter.StringParameter())
+        elif type_ == 'IntegerParameter':
+            node = appnode.ParamNode.from_event_node(eventnodes.parameter.IntegerParameter())
+        elif type_ == 'FloatParameter':
+            node = appnode.ParamNode.from_event_node(eventnodes.parameter.FloatParameter())
+        elif type_ == 'BooleanParameter':
+            node = appnode.ParamNode.from_event_node(eventnodes.parameter.BooleanParameter())
         elif type_ == 'IntToStr':
             node = appnode.ParamNode.from_event_node(eventnodes.inttostr.IntToStr())
         elif type_ == 'Math':
@@ -126,6 +133,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.collector.Collector())
         elif type_ == 'ForEach':
             node = appnode.EventNode.from_event_node(eventnodes.foreach.ForEach())
+        elif type_ == 'For':
+            node = appnode.EventNode.from_event_node(eventnodes.for_.For())
         elif type_ == 'SplitString':
             node = appnode.EventNode.from_event_node(eventnodes.splitstring.SplitString())
         elif type_ == 'JoinStrings':
@@ -211,12 +220,16 @@ class MainWindow(QWidget):
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ListDir", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ZipFile", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Email", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Parameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="StringParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="IntegerParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="FloatParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="BooleanParameter", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="IntToStr", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Math", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Math", sections=['Math']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="SliceList", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="SplitString", sections=['String']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="JoinStrings", sections=['String']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="For", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ForEach", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Condition", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Collector", sections=['Flow Control']))

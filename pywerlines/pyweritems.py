@@ -48,6 +48,7 @@ class PywerEdge(PywerItem):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
 
         self.arrow_size = 5.0
+        self.line_width = 1.5
         self.color = (255, 120, 150, 255)
 
         self.source_plug = None
@@ -137,7 +138,7 @@ class PywerEdge(PywerItem):
 
         pen = QtGui.QPen(QtGui.QColor(*self.color))
 
-        pen.setWidthF(1.5)
+        pen.setWidthF(self.line_width)
         painter.setPen(pen)
         painter.drawPath(shape)
 

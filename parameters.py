@@ -121,6 +121,12 @@ class Parameters(QtWidgets.QWidget):
                     widget.setMaximum(10000)
                     widget.setValue(param.value)
                     widget.valueChanged.connect(partial(self.set_param_value, node_obj, param))
+                elif param.type == float:
+                    widget = QtWidgets.QDoubleSpinBox()
+                    widget.setMinimum(-10000)
+                    widget.setMaximum(10000)
+                    widget.setValue(param.value)
+                    widget.valueChanged.connect(partial(self.set_param_value, node_obj, param))
                 elif param.type == list:
                     widget = ListWidget(node_obj=node_obj, param=param)
                 elif param.type == Enum:

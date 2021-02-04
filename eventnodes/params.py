@@ -79,10 +79,10 @@ class IntParam(Param):
 
 
 class FloatParam(Param):
-    def __init__(self, name='', value=0, minimum=None, maximum=None, pluggable=None, subtype=None):
+    def __init__(self, name='', value=0.0, minimum=-9999, maximum=9999, pluggable=None, subtype=None):
         super().__init__(name=name, pluggable=pluggable)
         self.name = name
-        self._type = int
+        self._type = float
         self._value = value
         self._minimum = minimum
         self._maximum = maximum
