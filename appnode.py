@@ -71,8 +71,6 @@ class EventNode(pywerlines.pyweritems.PywerNode):
     @classmethod
     def from_event_node(cls, node_obj):
         node = cls(type=node_obj.type, color=node_obj.color)
-        # import eventnodes.base
-        # node_obj.moveToThread(eventnodes.base.thread)
 
         for signal in node_obj.get_signals():
             if signal.get_pluggable() & eventnodes.signal.INPUT_PLUG:

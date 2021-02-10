@@ -39,8 +39,8 @@ class ZipFile(ComputeNode):
         output.value = zip_file.value
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-        signal.emit_event()
         self.stop_spinner_signal.emit()
+        signal.emit_event()
         super().compute()
 
 

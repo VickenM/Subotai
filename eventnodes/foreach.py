@@ -37,6 +37,7 @@ class ForEach(ComputeNode):
             item_output.value = item.value
             count_output.value = count
             index_output.value = index
-            signal.emit_event()
             self.stop_spinner_signal.emit()
+            signal.emit_event()
+
         finished.emit_event()

@@ -27,9 +27,8 @@ class CopyFile(ComputeNode):
 
             output = self.get_first_param('destination', pluggable=OUTPUT_PLUG)
             output.value = dest.value
-
-            signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-            signal.emit_event()
         finally:
             self.stop_spinner_signal.emit()
+            signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
+            signal.emit_event()
         super().compute()

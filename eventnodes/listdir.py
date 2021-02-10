@@ -29,7 +29,7 @@ class ListDir(ComputeNode):
         import os
         import glob
         import time
-        time.sleep(3)
+        time.sleep(1)
         files = []
         if recursive:
             for dirpath, dirnames, filenames in os.walk(directory):
@@ -53,5 +53,6 @@ class ListDir(ComputeNode):
             output_files.value.append(StringParam(name='', value=file))
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-        signal.emit_event()
         self.stop_spinner_signal.emit()
+        signal.emit_event()
+

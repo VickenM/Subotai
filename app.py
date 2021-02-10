@@ -57,6 +57,14 @@ def deleted_nodes(data):
     # print(data)
 
 
+@Slot()
+def start_thread():
+    eventnodes.base.thread = eventnodes.base.Worker()
+
+@Slot()
+def stop_thread():
+    eventnodes.base.thread.exit()
+
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def connected_plugs(plug1, plug2):
     source = plug1.parentItem().node_obj
@@ -102,9 +110,6 @@ class EventFlow(pywerscene.PywerScene):
         return nodes.list_nodes()
 
     def new_node(self, type_):
-        if not eventnodes.base.thread:
-            eventnodes.base.thread = eventnodes.base.Worker()
-
         if type_ == 'StringParameter':
             node = appnode.ParamNode.from_event_node(eventnodes.parameter.StringParameter())
         elif type_ == 'IntegerParameter':
@@ -395,8 +400,10 @@ class MainWindow(QWidget):
 
 def main():
     app = QApplication(sys.argv)
+    QtCore.QTimer(app).singleShot(0, start_thread)
     main_window = MainWindow()
     main_window.show()
+    app.lastWindowClosed.connect(stop_thread)
     return app, main_window
 
 

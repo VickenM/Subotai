@@ -40,6 +40,7 @@ class Condition(ComputeNode):
         value1 = self.get_first_param('value1')
         value2 = self.get_first_param('value2')
 
+        self.stop_spinner_signal.emit()
         if op.value == op.Operations.greater_than:
             if value1.value > value2.value:
                 t.emit_event()
@@ -55,4 +56,3 @@ class Condition(ComputeNode):
                 t.emit_event()
             else:
                 f.emit_event()
-        self.stop_spinner_signal.emit()

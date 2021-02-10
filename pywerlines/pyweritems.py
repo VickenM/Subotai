@@ -241,7 +241,7 @@ class PywerSpinner(PywerItem):
         self.timeline.valueChanged.connect(self.next_frame)
 
     def next_frame(self, frame):
-        self.color = QtGui.QColor(0, 255 * frame, 0, 100)
+        self.color = QtGui.QColor(0, 255 * frame, 0, 255 * frame)
         self.update()
 
     def boundingRect(self):
@@ -364,7 +364,7 @@ class PywerNode(PywerItem):
         self.resizer.setPos(rect.bottomRight() - resizer_offset)
         self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, True)
 
-        self.spinner.setPos(QtCore.QPointF(self.width - 20, -20))
+        self.spinner.setPos(QtCore.QPointF(self.width - 20, 0))
 
     def boundingRect(self):
         bbox = QtCore.QRectF(0, 0, self.width, self.height).adjusted(-0.5, -0.5, 0.5, 0.5)
