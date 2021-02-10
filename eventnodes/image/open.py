@@ -21,6 +21,7 @@ class Open(BaseImageNode):
         self.params.append(IntParam(name='height', value=0, pluggable=OUTPUT_PLUG))
 
     def compute(self):
+        self.start_spinner_signal.emit()
         file_ = self.get_first_param('file')
         image_ = self.get_first_param('image')
 
@@ -34,4 +35,5 @@ class Open(BaseImageNode):
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
+        self.stop_spinner_signal.emit()
         super().compute()

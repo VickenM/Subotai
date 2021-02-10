@@ -13,6 +13,7 @@ from pywerlines import pyweritems, pywerscene
 
 import nodes
 
+import eventnodes.base
 import eventnodes.parameter
 import eventnodes.inttostr
 import eventnodes.math
@@ -101,6 +102,9 @@ class EventFlow(pywerscene.PywerScene):
         return nodes.list_nodes()
 
     def new_node(self, type_):
+        if not eventnodes.base.thread:
+            eventnodes.base.thread = eventnodes.base.Worker()
+
         if type_ == 'StringParameter':
             node = appnode.ParamNode.from_event_node(eventnodes.parameter.StringParameter())
         elif type_ == 'IntegerParameter':
@@ -199,7 +203,8 @@ class EventFlow(pywerscene.PywerScene):
     def eval(self):
         selected_node = self.get_selected_nodes()[0]
         mnode = selected_node.node_obj
-        mnode.compute()
+        # mnode.compute()
+        mnode.calculate.emit()
 
 
 class MainWindow(QWidget):

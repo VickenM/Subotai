@@ -31,6 +31,8 @@ class Condition(ComputeNode):
         self.params.append(IntParam(name='value2', value=0, pluggable=INPUT_PLUG | PARAM))
 
     def compute(self):
+        self.start_spinner_signal.emit()
+
         t = self.get_first_signal('true')
         f = self.get_first_signal('false')
 
@@ -53,3 +55,4 @@ class Condition(ComputeNode):
                 t.emit_event()
             else:
                 f.emit_event()
+        self.stop_spinner_signal.emit()

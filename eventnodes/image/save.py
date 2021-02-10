@@ -20,6 +20,7 @@ class Save(BaseImageNode):
         self.params.append(StringParam(name='filename', value='', pluggable=PARAM | INPUT_PLUG))
 
     def compute(self):
+        self.start_spinner_signal.emit()
         file_ = self.get_first_param('filename')
         image_ = self.get_first_param('image')
 
@@ -28,4 +29,5 @@ class Save(BaseImageNode):
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
+        self.stop_spinner_signal.emit()
         super().compute()

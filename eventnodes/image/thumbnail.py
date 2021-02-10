@@ -22,6 +22,7 @@ class Thumbnail(BaseImageNode):
         self.params.append(ImageParam(name='image', value=None, pluggable=PARAM | OUTPUT_PLUG))
 
     def compute(self):
+        self.start_spinner_signal.emit()
         width = self.get_first_param('width', pluggable=INPUT_PLUG)
         height = self.get_first_param('height', pluggable=INPUT_PLUG)
 
@@ -34,4 +35,5 @@ class Thumbnail(BaseImageNode):
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
+        self.stop_spinner_signal.emit()
         super().compute()

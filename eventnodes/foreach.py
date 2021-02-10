@@ -1,7 +1,7 @@
 from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
-from .base import ComputeNode
+from .base import ComputeNode#, ThreadedComputeNode
 from .params import StringParam, ListParam, IntParam, EnumParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
@@ -22,6 +22,7 @@ class ForEach(ComputeNode):
         self.params.append(IntParam(name='count', value=0, pluggable=OUTPUT_PLUG))
 
     def compute(self):
+
         items = self.get_first_param('items')
         item_output = self.get_first_param('item', pluggable=OUTPUT_PLUG)
         index_output = self.get_first_param('index', pluggable=OUTPUT_PLUG)
@@ -32,8 +33,10 @@ class ForEach(ComputeNode):
 
         count = len(items.value)
         for index, item in enumerate(items.value):
+            self.start_spinner_signal.emit()
             item_output.value = item.value
             count_output.value = count
             index_output.value = index
             signal.emit_event()
+            self.stop_spinner_signal.emit()
         finished.emit_event()

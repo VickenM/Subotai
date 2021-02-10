@@ -1,4 +1,4 @@
-from .base import ComputeNode
+from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
@@ -14,6 +14,7 @@ class ConsoleWriter(ComputeNode):
         self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
 
     def compute(self):
+        self.start_spinner_signal.emit()
         prefix = self.get_first_param('prefix')
 
         from datetime import datetime
@@ -24,9 +25,9 @@ class ConsoleWriter(ComputeNode):
         message = self.get_first_param('message').value
 
         output = '{} {}'.format(date_time, message)
-
         print(output)
+
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
-
+        self.stop_spinner_signal.emit()
         super().compute()

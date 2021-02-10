@@ -231,6 +231,34 @@ class PywerPlug(PywerItem):
         return None
 
 
+class PywerSpinner(PywerItem):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.color = QtGui.QColor(0, 0, 0)
+        self.timeline = QtCore.QTimeLine()
+        self.timeline.setLoopCount(0)
+        self.timeline.setDuration(250)
+        self.timeline.valueChanged.connect(self.next_frame)
+
+    def next_frame(self, frame):
+        self.color = QtGui.QColor(0, 255 * frame, 0, 100)
+        self.update()
+
+    def boundingRect(self):
+        bbox = QtCore.QRectF(0, 0, 20, 20)
+        return bbox
+
+    def paint(self, painter, option, widget):
+        painter.setClipRect(option.exposedRect)
+
+        shape = QtGui.QPainterPath()
+        shape.addEllipse(QtCore.QPointF(10, 10, ), 5, 5)
+
+        painter.setBrush(self.color)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawPath(shape)
+
+
 class PywerNode(PywerItem):
     def __init__(self, *args, **kwargs):
         self.node_obj = kwargs.pop('node_obj', None)
@@ -260,10 +288,25 @@ class PywerNode(PywerItem):
         self.label.setDefaultTextColor(QtCore.Qt.white)
         self.label.setPos(self.pos().x(), self.pos().y() - 20)
 
+        self.spinner = PywerSpinner(parent=self)
+        self.spinner.hide()
+
         self.resizer = Resizer(parent=self)
         self.resizer.setConstrainY(True)
         self.resizer.resize_signal.connect(self.resize)
         self.adjust()
+
+    @Slot()
+    def start_spinner(self):
+        self.spinner.show()
+        # if self.spinner.timeline == self.spinner.timeline.NotRunning:
+        self.spinner.timeline.start()
+
+    @Slot()
+    def stop_spinner(self):
+        self.spinner.hide()
+        # if self.spinner.timeline == self.spinner.timeline.Running:
+        self.spinner.timeline.stop()
 
     @Slot(QtCore.QPointF)
     def resize(self, change):
@@ -320,6 +363,8 @@ class PywerNode(PywerItem):
         rect = QtCore.QRectF(0, 0, self.width, self.height)
         self.resizer.setPos(rect.bottomRight() - resizer_offset)
         self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, True)
+
+        self.spinner.setPos(QtCore.QPointF(self.width - 20, -20))
 
     def boundingRect(self):
         bbox = QtCore.QRectF(0, 0, self.width, self.height).adjusted(-0.5, -0.5, 0.5, 0.5)

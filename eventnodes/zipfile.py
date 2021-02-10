@@ -18,7 +18,7 @@ class ZipFile(ComputeNode):
         self.params.append(StringParam(name='zipfile', value='', pluggable=OUTPUT_PLUG))
 
     def compute(self):
-
+        self.start_spinner_signal.emit()
         source = self.get_first_param('source', pluggable=INPUT_PLUG)
         zip_file = self.get_first_param('zipfile', pluggable=INPUT_PLUG)
 
@@ -40,7 +40,7 @@ class ZipFile(ComputeNode):
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
-
+        self.stop_spinner_signal.emit()
         super().compute()
 
 

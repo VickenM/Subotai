@@ -1,7 +1,7 @@
 from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
-from .base import ComputeNode
+from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, BoolParam, IntParam, ListParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
@@ -20,6 +20,7 @@ class ListDir(ComputeNode):
         self.params.append(ListParam(name='files', value=[], pluggable=OUTPUT_PLUG))
 
     def compute(self):
+        self.start_spinner_signal.emit()
         directory = self.get_first_param('directory').value
         recursive = self.get_first_param('recursive').value
         pattern = self.get_first_param('pattern').value
@@ -27,6 +28,8 @@ class ListDir(ComputeNode):
 
         import os
         import glob
+        import time
+        time.sleep(3)
         files = []
         if recursive:
             for dirpath, dirnames, filenames in os.walk(directory):
@@ -51,4 +54,4 @@ class ListDir(ComputeNode):
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
-        super().compute()
+        self.stop_spinner_signal.emit()

@@ -1,7 +1,7 @@
 from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
-from .base import ComputeNode
+from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, IntParam, ListParam, BoolParam, PARAM, SUBTYPE_PASSWORD
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
@@ -63,6 +63,7 @@ class Email(ComputeNode):
         smtp.quit()
 
     def compute(self):
+        self.start_spinner_signal.emit()
         sender = self.get_first_param('sender')
         recipients = self.get_first_param('recipients')
         subject = self.get_first_param('subject')
@@ -74,16 +75,18 @@ class Email(ComputeNode):
         password = self.get_first_param('password')
         use_tls = self.get_first_param('use_tls')
 
-        self.send_mail(
-            send_from=sender(),
-            send_to=[i.value for i in recipients()],
-            files=[i.value for i in attachments()],
-            subject=subject(),
-            message=message(),
-            server=server(),
-            port=port(),
-            username=username(),
-            password=password(),
-            use_tls=use_tls()
-        )
-        super().compute()
+        try:
+            self.send_mail(
+                send_from=sender(),
+                send_to=[i.value for i in recipients()],
+                files=[i.value for i in attachments()],
+                subject=subject(),
+                message=message(),
+                server=server(),
+                port=port(),
+                username=username(),
+                password=password(),
+                use_tls=use_tls()
+            )
+        finally:
+            self.stop_spinner_signal.emit()

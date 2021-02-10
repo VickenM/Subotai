@@ -20,6 +20,7 @@ class For(ComputeNode):
         self.params.append(IntParam(name='current', value=0, pluggable=OUTPUT_PLUG))
 
     def compute(self):
+        self.start_spinner_signal.emit()
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         finished = self.get_first_signal('finished', pluggable=OUTPUT_PLUG)
 
@@ -33,3 +34,4 @@ class For(ComputeNode):
             current.value = i
             signal.emit_event()
         finished.emit_event()
+        self.stop_spinner_signal.emit()

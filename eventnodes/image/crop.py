@@ -24,6 +24,7 @@ class Crop(BaseImageNode):
         self.params.append(ImageParam(name='image', value='', pluggable=PARAM | OUTPUT_PLUG))
 
     def compute(self):
+        self.start_spinner_signal.emit()
         left = self.get_first_param('left', pluggable=INPUT_PLUG)
         right = self.get_first_param('right', pluggable=INPUT_PLUG)
         lower = self.get_first_param('lower', pluggable=INPUT_PLUG)
@@ -38,4 +39,5 @@ class Crop(BaseImageNode):
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
+        self.stop_spinner_signal.emit()
         super().compute()
