@@ -29,7 +29,7 @@ class ListDir(ComputeNode):
         import os
         import glob
         import time
-        time.sleep(1)
+        time.sleep(5)
         files = []
         if recursive:
             for dirpath, dirnames, filenames in os.walk(directory):

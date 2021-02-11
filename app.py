@@ -25,6 +25,7 @@ import eventnodes.dirchange
 import eventnodes.fileschanged
 import eventnodes.email
 import eventnodes.consolewriter
+import eventnodes.counter
 import eventnodes.foreach
 import eventnodes.for_
 import eventnodes.splitstring
@@ -43,7 +44,6 @@ import appnode
 @Slot(list)
 def selected_nodes(data):
     pass
-    # print(data)
 
 
 @Slot(list)
@@ -54,16 +54,18 @@ def added_nodes(data):
 @Slot(list)
 def deleted_nodes(data):
     pass
-    # print(data)
 
 
 @Slot()
 def start_thread():
     eventnodes.base.thread = eventnodes.base.Worker()
 
+
 @Slot()
 def stop_thread():
     eventnodes.base.thread.exit()
+    eventnodes.base.thread.wait(QtCore.QDeadlineTimer(10000))  # wait 10sec if the thread is still running
+
 
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def connected_plugs(plug1, plug2):
@@ -74,7 +76,6 @@ def connected_plugs(plug1, plug2):
     source_signal = isinstance(plug1.plug_obj, signal.Signal)
     target_signal = isinstance(plug2.plug_obj, signal.Signal)
 
-    # if plug1.type_ == 'event' and plug2.type_ == 'event':
     if all([source_signal, target_signal]):
         signal_obj = plug1.plug_obj
         target.connect_from(signal_obj.computed, trigger=plug2.type_)
@@ -94,7 +95,6 @@ def disconnected_plugs(plug1, plug2):
     source_signal = isinstance(plug1.plug_obj, signal.Signal)
     target_signal = isinstance(plug2.plug_obj, signal.Signal)
 
-    # if plug1.type_ == 'event' and plug2.type_ == 'event':
     if all([source_signal, target_signal]):
         signal_obj = plug1.plug_obj
         target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
@@ -140,6 +140,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.email.Email())
         elif type_ == 'Collector':
             node = appnode.EventNode.from_event_node(eventnodes.collector.Collector())
+        elif type_ == 'Counter':
+            node = appnode.EventNode.from_event_node(eventnodes.counter.Counter())
         elif type_ == 'ForEach':
             node = appnode.EventNode.from_event_node(eventnodes.foreach.ForEach())
         elif type_ == 'For':
@@ -241,6 +243,7 @@ class MainWindow(QWidget):
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="JoinStrings", sections=['String']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="For", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ForEach", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Counter", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Condition", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Collector", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ConsoleWriter", sections=['I/O']))
@@ -401,9 +404,10 @@ class MainWindow(QWidget):
 def main():
     app = QApplication(sys.argv)
     QtCore.QTimer(app).singleShot(0, start_thread)
+    app.startingUp()
     main_window = MainWindow()
     main_window.show()
-    app.lastWindowClosed.connect(stop_thread)
+    app.aboutToQuit.connect(stop_thread)
     return app, main_window
 
 
