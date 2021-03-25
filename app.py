@@ -38,6 +38,9 @@ import eventnodes.image.save
 import eventnodes.image.crop
 import eventnodes.image.resize
 import eventnodes.image.thumbnail
+import eventnodes.camera
+import eventnodes.facedetect
+import eventnodes.viewer
 import appnode
 
 
@@ -164,6 +167,13 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.image.resize.Resize())
         elif type_ == 'ThumbnailImage':
             node = appnode.EventNode.from_event_node(eventnodes.image.thumbnail.Thumbnail())
+        elif type_ == 'Camera':
+            node = appnode.EventNode.from_event_node(eventnodes.camera.Camera())
+        elif type_ == 'FaceDetect':
+            node = appnode.EventNode.from_event_node(eventnodes.facedetect.FaceDetect())
+        elif type_ == 'Viewer':
+            node = appnode.EventNode.from_event_node(eventnodes.viewer.Viewer())
+
         else:
             return None
         return node
@@ -252,6 +262,9 @@ class MainWindow(QWidget):
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="CropImage", sections=['Image']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ResizeImage", sections=['Image']))
         toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ThumbnailImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Camera", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="FaceDetect", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Viewer", sections=['I/O']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
 
         self.parameters = Parameters()
@@ -278,6 +291,74 @@ class MainWindow(QWidget):
 
         self.scene = scene
         self.view = view
+
+    def load_file(self, file_name):
+        import json
+        with open(file_name, 'r') as fp:
+            data = json.load(fp)
+
+        for node in data['nodes']:
+            type_ = node['node_obj'].split('.')[-1]
+            n = self.scene.create_node_of_type(type_)
+            n.node_obj.obj_id = node['id']
+            n.setPos(*node['position'])
+
+            for pluggable, params in node.get('params', {}).items():
+                pluggable = int(pluggable)
+                for param, value in params.items():
+                    if type(value) == list:
+                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                        from eventnodes.params import StringParam
+                        s = []
+                        for item in value:
+                            s.append(StringParam(value=item))
+
+                        # print(p.value)
+                        p.value.clear()
+                        p.value.extend(s)
+                        continue
+
+                    p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                    from enum import Enum
+                    if issubclass(p.value.__class__, Enum):
+                        p._value = p.enum(value)
+                    else:
+                        p._value = value
+
+        for edge in data['edges']:
+            source, target = edge
+            s_obj_id, s_plug = source.split('.')
+            t_obj_id, t_plug = target.split('.')
+
+            s_node = self.scene.get_node_by_id(s_obj_id)
+            for o in s_node.outputs:
+                if o.type_ == s_plug:
+                    source_plug = o
+                    break
+
+            t_node = self.scene.get_node_by_id(t_obj_id)
+            for o in t_node.inputs:
+                if o.type_ == t_plug:
+                    target_plug = o
+                    break
+
+            self.scene.create_edge(source_plug, target_plug)
+
+        print(data)
+
+    def save_file(self, file_name):
+        data = {'nodes': [], 'edges': [], 'groups': []}
+        for node in self.scene.get_all_nodes():
+            data['nodes'].append(node.to_dict())
+
+        for edge in self.scene.get_all_edges():
+            edge_info = (str(edge.source_plug.parentItem().node_obj.obj_id) + '.' + edge.source_plug.type_,
+                         str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
+            data['edges'].append(edge_info)
+
+        import json
+        with open(file_name, 'w') as fp:
+            json.dump(data, fp, indent=4)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_D:
@@ -319,73 +400,9 @@ class MainWindow(QWidget):
         elif event.key() == QtCore.Qt.Key_Space:
             self.scene.eval()
         elif event.key() == QtCore.Qt.Key_S:
-            data = {'nodes': [], 'edges': [], 'groups': []}
-            for node in self.scene.get_all_nodes():
-                data['nodes'].append(node.to_dict())
-
-            for edge in self.scene.get_all_edges():
-                edge_info = (str(edge.source_plug.parentItem().node_obj.obj_id) + '.' + edge.source_plug.type_,
-                             str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
-                data['edges'].append(edge_info)
-
-            import json
-            with open('./scene.json', 'w') as fp:
-                json.dump(data, fp, indent=4)
-
-
+            self.save_file('./scene.json')
         elif event.key() == QtCore.Qt.Key_O:
-            import json
-            with open('./scene.json', 'r') as fp:
-                data = json.load(fp)
-
-            for node in data['nodes']:
-                type_ = node['node_obj'].split('.')[-1]
-                n = self.scene.create_node_of_type(type_)
-                n.node_obj.obj_id = node['id']
-                n.setPos(*node['position'])
-
-                for pluggable, params in node.get('params', {}).items():
-                    pluggable = int(pluggable)
-                    for param, value in params.items():
-                        if type(value) == list:
-                            p = n.node_obj.get_first_param(param, pluggable=pluggable)
-                            from eventnodes.params import StringParam
-                            s = []
-                            for item in value:
-                                s.append(StringParam(value=item))
-
-                            # print(p.value)
-                            p.value.clear()
-                            p.value.extend(s)
-                            continue
-
-                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
-                        from enum import Enum
-                        if issubclass(p.value.__class__, Enum):
-                            p._value = p.enum(value)
-                        else:
-                            p._value = value
-
-            for edge in data['edges']:
-                source, target = edge
-                s_obj_id, s_plug = source.split('.')
-                t_obj_id, t_plug = target.split('.')
-
-                s_node = self.scene.get_node_by_id(s_obj_id)
-                for o in s_node.outputs:
-                    if o.type_ == s_plug:
-                        source_plug = o
-                        break
-
-                t_node = self.scene.get_node_by_id(t_obj_id)
-                for o in t_node.inputs:
-                    if o.type_ == t_plug:
-                        target_plug = o
-                        break
-
-                self.scene.create_edge(source_plug, target_plug)
-
-            print(data)
+            self.load_file('./scene.json')
 
     @Slot(str)
     def toolbox_item_selected(self, item):
@@ -408,6 +425,8 @@ def main():
     main_window = MainWindow()
     main_window.show()
     app.aboutToQuit.connect(stop_thread)
+    # main_window.load_file('./scene.json')
+
     return app, main_window
 
 

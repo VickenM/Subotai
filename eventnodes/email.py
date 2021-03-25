@@ -89,4 +89,6 @@ class Email(ComputeNode):
                 use_tls=use_tls()
             )
         finally:
+            signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
+            signal.emit_event()
             self.stop_spinner_signal.emit()

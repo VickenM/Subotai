@@ -4,7 +4,7 @@ from PySide2.QtCore import Slot
 from .base import ComputeNode
 from .params import StringParam, ListParam, IntParam, EnumParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
-\
+
 
 class Counter(ComputeNode):
     def __init__(self, *args, **kwargs):

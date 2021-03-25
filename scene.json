@@ -1,135 +1,40 @@
 {
     "nodes": [
         {
-            "node_obj": "eventnodes.math.Math",
-            "id": "55f0fad7-62a4-4922-87e7-ce331b5c784c",
+            "node_obj": "eventnodes.timer.Timer",
+            "id": "f25c9648-7ba9-45a0-bdf4-368c77168b1f",
             "position": [
-                884.4283840097348,
-                383.02706611801193
+                100.0,
+                178.0
             ],
             "params": {
                 "4": {
-                    "operation": 3
-                },
+                    "interval": 1000
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.counter.Counter",
+            "id": "964a89e5-bd3f-4438-9518-cfa0985b5145",
+            "position": [
+                275.0,
+                194.0
+            ],
+            "params": {
                 "5": {
-                    "value1": 0,
-                    "value2": 100
+                    "initial": 0
                 },
                 "2": {
-                    "result": 0
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.image.save.SaveImage",
-            "id": "ddb2a0cb-2930-48a8-9839-de2b447b2133",
-            "position": [
-                1567.6948140097368,
-                443.7052561180127
-            ],
-            "params": {
-                "5": {
-                    "filename": ""
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.math.Math",
-            "id": "aed8b3f2-9013-498b-8ff2-839657a2adb0",
-            "position": [
-                1082.4839631006455,
-                523.5849512419794
-            ],
-            "params": {
-                "4": {
-                    "operation": 1
-                },
-                "5": {
-                    "value1": 0,
-                    "value2": 100
-                },
-                "2": {
-                    "result": 0
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.math.Math",
-            "id": "bbf70697-56fe-4efb-b7eb-6709dc2a84d9",
-            "position": [
-                931.5508633485786,
-                499.16795264693826
-            ],
-            "params": {
-                "4": {
-                    "operation": 3
-                },
-                "5": {
-                    "value1": 0,
-                    "value2": 100
-                },
-                "2": {
-                    "result": 0
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.math.Math",
-            "id": "1c12cb61-a0ef-4897-bdc6-a526bfa48dfc",
-            "position": [
-                1099.2198729766785,
-                385.49520424198
-            ],
-            "params": {
-                "4": {
-                    "operation": 1
-                },
-                "5": {
-                    "value1": 0,
-                    "value2": 100
-                },
-                "2": {
-                    "result": 0
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.parameter.StringParameter",
-            "id": "757b4295-606d-45be-a519-1696c927e707",
-            "position": [
-                61.54499376180229,
-                461.29158355602965
-            ],
-            "params": {
-                "6": {
-                    "param": "D:\\m50\\2017_03_06\\IMG_0664.JPG"
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.joinstrings.JoinStrings",
-            "id": "8e9a6543-a073-4133-b1ad-9cb2b0119097",
-            "position": [
-                1057.8383340097355,
-                668.0447961180133
-            ],
-            "params": {
-                "5": {
-                    "first": "",
-                    "second": "",
-                    "separator": "_"
-                },
-                "2": {
-                    "string": ""
+                    "value": 19
                 }
             }
         },
         {
             "node_obj": "eventnodes.inttostr.IntToStr",
-            "id": "1255edcd-6253-4105-a3f0-38ff4454e48b",
+            "id": "1f5cc49c-fdb7-4dca-a4fa-b6fa32a2f98b",
             "position": [
-                915.8226340097356,
-                711.0301561180128
+                530.0,
+                290.0
             ],
             "params": {
                 "1": {
@@ -141,237 +46,38 @@
             }
         },
         {
-            "node_obj": "eventnodes.inttostr.IntToStr",
-            "id": "74bb0625-d9e5-4a5b-8686-1b961224956e",
+            "node_obj": "eventnodes.consolewriter.ConsoleWriter",
+            "id": "41ada172-5dea-4984-90f1-b6f64c17d9ab",
             "position": [
-                914.4434740097361,
-                635.3920961180128
+                757.0,
+                187.0
             ],
             "params": {
-                "1": {
-                    "integer": 0
+                "4": {
+                    "prefix": "%m/%d/%Y, %H:%M:%S"
                 },
-                "2": {
-                    "string": ""
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.joinstrings.JoinStrings",
-            "id": "73653674-b88b-4781-8c85-f47da6ff25f6",
-            "position": [
-                1327.4092340097357,
-                663.9396961180131
-            ],
-            "params": {
                 "5": {
-                    "first": "",
-                    "second": ".png",
-                    "separator": ""
-                },
-                "2": {
-                    "string": ""
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.joinstrings.JoinStrings",
-            "id": "8f05e2ba-4005-4f6c-9f51-71feccfa3969",
-            "position": [
-                1192.448844009735,
-                666.881206118013
-            ],
-            "params": {
-                "5": {
-                    "first": "D:\\projects\\python\\node2\\tmp\\src",
-                    "second": "",
-                    "separator": "\\"
-                },
-                "2": {
-                    "string": ""
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.image.crop.CropImage",
-            "id": "72211eb4-0137-46c0-9c6e-d0427af4dcdd",
-            "position": [
-                1292.3709673237856,
-                447.09485634115345
-            ],
-            "params": {
-                "5": {
-                    "left": 0,
-                    "upper": 0,
-                    "right": 0,
-                    "lower": 100
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.image.open.OpenImage",
-            "id": "8de2a726-27bf-4af1-921f-ade34b02ac27",
-            "position": [
-                176.57492657171986,
-                448.5808661180125
-            ],
-            "params": {
-                "5": {
-                    "file": ""
-                },
-                "2": {
-                    "width": 6000,
-                    "height": 3368
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.image.thumbnail.ThumbnailImage",
-            "id": "8bec3621-d912-4d54-a081-7c0a53aa899d",
-            "position": [
-                347.14775735227687,
-                500.13862006982765
-            ],
-            "params": {
-                "5": {
-                    "width": 1000,
-                    "height": 1000
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.for_.For",
-            "id": "56c020aa-59d7-42c5-918b-43a0be4c5339",
-            "position": [
-                702.9850000000001,
-                445.88499999999976
-            ],
-            "params": {
-                "5": {
-                    "start": 0,
-                    "end": 10,
-                    "step": 1
-                },
-                "2": {
-                    "current": 9
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.for_.For",
-            "id": "8933ebc1-f03a-4243-851c-fb319484095e",
-            "position": [
-                540.6030000000001,
-                444.554
-            ],
-            "params": {
-                "5": {
-                    "start": 0,
-                    "end": 10,
-                    "step": 1
-                },
-                "2": {
-                    "current": 9
+                    "message": ""
                 }
             }
         }
     ],
     "edges": [
         [
-            "8f05e2ba-4005-4f6c-9f51-71feccfa3969.string",
-            "73653674-b88b-4781-8c85-f47da6ff25f6.first"
+            "f25c9648-7ba9-45a0-bdf4-368c77168b1f.event",
+            "964a89e5-bd3f-4438-9518-cfa0985b5145.event"
         ],
         [
-            "55f0fad7-62a4-4922-87e7-ce331b5c784c.result",
-            "1c12cb61-a0ef-4897-bdc6-a526bfa48dfc.value1"
+            "1f5cc49c-fdb7-4dca-a4fa-b6fa32a2f98b.string",
+            "41ada172-5dea-4984-90f1-b6f64c17d9ab.message"
         ],
         [
-            "bbf70697-56fe-4efb-b7eb-6709dc2a84d9.result",
-            "72211eb4-0137-46c0-9c6e-d0427af4dcdd.left"
+            "964a89e5-bd3f-4438-9518-cfa0985b5145.value",
+            "1f5cc49c-fdb7-4dca-a4fa-b6fa32a2f98b.integer"
         ],
         [
-            "757b4295-606d-45be-a519-1696c927e707.param",
-            "8de2a726-27bf-4af1-921f-ade34b02ac27.file"
-        ],
-        [
-            "1255edcd-6253-4105-a3f0-38ff4454e48b.string",
-            "8e9a6543-a073-4133-b1ad-9cb2b0119097.second"
-        ],
-        [
-            "8e9a6543-a073-4133-b1ad-9cb2b0119097.string",
-            "8f05e2ba-4005-4f6c-9f51-71feccfa3969.second"
-        ],
-        [
-            "55f0fad7-62a4-4922-87e7-ce331b5c784c.result",
-            "72211eb4-0137-46c0-9c6e-d0427af4dcdd.upper"
-        ],
-        [
-            "8bec3621-d912-4d54-a081-7c0a53aa899d.image",
-            "72211eb4-0137-46c0-9c6e-d0427af4dcdd.image"
-        ],
-        [
-            "bbf70697-56fe-4efb-b7eb-6709dc2a84d9.result",
-            "aed8b3f2-9013-498b-8ff2-839657a2adb0.value1"
-        ],
-        [
-            "72211eb4-0137-46c0-9c6e-d0427af4dcdd.image",
-            "ddb2a0cb-2930-48a8-9839-de2b447b2133.image"
-        ],
-        [
-            "72211eb4-0137-46c0-9c6e-d0427af4dcdd.event",
-            "ddb2a0cb-2930-48a8-9839-de2b447b2133.event"
-        ],
-        [
-            "1c12cb61-a0ef-4897-bdc6-a526bfa48dfc.result",
-            "72211eb4-0137-46c0-9c6e-d0427af4dcdd.lower"
-        ],
-        [
-            "aed8b3f2-9013-498b-8ff2-839657a2adb0.result",
-            "72211eb4-0137-46c0-9c6e-d0427af4dcdd.right"
-        ],
-        [
-            "74bb0625-d9e5-4a5b-8686-1b961224956e.string",
-            "8e9a6543-a073-4133-b1ad-9cb2b0119097.first"
-        ],
-        [
-            "8de2a726-27bf-4af1-921f-ade34b02ac27.event",
-            "8bec3621-d912-4d54-a081-7c0a53aa899d.event"
-        ],
-        [
-            "73653674-b88b-4781-8c85-f47da6ff25f6.string",
-            "ddb2a0cb-2930-48a8-9839-de2b447b2133.filename"
-        ],
-        [
-            "8de2a726-27bf-4af1-921f-ade34b02ac27.image",
-            "8bec3621-d912-4d54-a081-7c0a53aa899d.image"
-        ],
-        [
-            "56c020aa-59d7-42c5-918b-43a0be4c5339.current",
-            "55f0fad7-62a4-4922-87e7-ce331b5c784c.value1"
-        ],
-        [
-            "56c020aa-59d7-42c5-918b-43a0be4c5339.current",
-            "74bb0625-d9e5-4a5b-8686-1b961224956e.integer"
-        ],
-        [
-            "56c020aa-59d7-42c5-918b-43a0be4c5339.event",
-            "72211eb4-0137-46c0-9c6e-d0427af4dcdd.event"
-        ],
-        [
-            "8933ebc1-f03a-4243-851c-fb319484095e.current",
-            "bbf70697-56fe-4efb-b7eb-6709dc2a84d9.value1"
-        ],
-        [
-            "8933ebc1-f03a-4243-851c-fb319484095e.event",
-            "56c020aa-59d7-42c5-918b-43a0be4c5339.event"
-        ],
-        [
-            "8bec3621-d912-4d54-a081-7c0a53aa899d.event",
-            "8933ebc1-f03a-4243-851c-fb319484095e.event"
-        ],
-        [
-            "8933ebc1-f03a-4243-851c-fb319484095e.current",
-            "1255edcd-6253-4105-a3f0-38ff4454e48b.integer"
+            "964a89e5-bd3f-4438-9518-cfa0985b5145.event",
+            "41ada172-5dea-4984-90f1-b6f64c17d9ab.event"
         ]
     ],
     "groups": []
