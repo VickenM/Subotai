@@ -107,7 +107,7 @@ class ComputeNode(BaseNode):
     def trigger(self, event):
         self.compute()
 
-    @abstractmethod
+    @Slot()
     def compute(self):
         pass
 

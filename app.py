@@ -1,5 +1,8 @@
 import os
 import sys
+import json
+import argparse
+
 import pywerlines.pywerview
 
 from PySide2.QtWidgets import (
@@ -51,6 +54,7 @@ import eventnodes.image.thumbnail
 import eventnodes.camera
 import eventnodes.facedetect
 import eventnodes.viewer
+import eventnodes.systemnotification
 import appnode
 
 
@@ -183,6 +187,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.facedetect.FaceDetect())
         elif type_ == 'Viewer':
             node = appnode.EventNode.from_event_node(eventnodes.viewer.Viewer())
+        elif type_ == 'SystemNotification':
+            node = appnode.EventNode.from_event_node(eventnodes.systemnotification.SystemNotification())
 
         else:
             return None
@@ -284,6 +290,7 @@ class MainWindow(QMainWindow):
         toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Camera", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="FaceDetect", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Viewer", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="SystemNotification", sections=['I/O']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
 
         scene.nodes_selected.connect(selected_nodes)
@@ -322,14 +329,27 @@ class MainWindow(QMainWindow):
         self.menuBar().addSeparator()
         run = self.menuBar().addAction('Run')
         run.setIcon(QIcon(p + '/icons/run.jpg'))
-        run.triggered.connect(lambda x: self.scene.eval())
+        # run.triggered.connect(lambda x: self.scene.eval())
+        run.triggered.connect(self.spawn)
         run.setToolTip('Run from the selected node')
 
-    def load_file(self, file_name):
-        import json
-        with open(file_name, 'r') as fp:
-            data = json.load(fp)
+    def spawn(self):
+        import subprocess
 
+        py_path = sys.executable
+        app_path = os.path.abspath(__file__)
+        json_string = self.dump_json()
+
+        args = [py_path, app_path, '--background', '--load-json', json_string]
+
+        p = subprocess.Popen(args,
+                             creationflags=subprocess.CREATE_NEW_CONSOLE,
+                             close_fds=True,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             shell=False)
+
+    def load_data(self, data):
         for node in data['nodes']:
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
@@ -358,6 +378,7 @@ class MainWindow(QMainWindow):
                         p._value = p.enum(value)
                     else:
                         p._value = value
+            n.node_obj.update()
 
         for edge in data['edges']:
             source, target = edge
@@ -380,7 +401,7 @@ class MainWindow(QMainWindow):
 
         print(data)
 
-    def save_file(self, file_name):
+    def save_data(self):
         data = {'nodes': [], 'edges': [], 'groups': []}
         for node in self.scene.get_all_nodes():
             data['nodes'].append(node.to_dict())
@@ -390,7 +411,25 @@ class MainWindow(QMainWindow):
                          str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
             data['edges'].append(edge_info)
 
-        import json
+        # for group in self.scene.get_all_groups():
+        #     pass
+
+        return data
+
+    def load_json(self, json_string):
+        data = json.loads(json_string)
+        self.load_data(data)
+
+    def dump_json(self):
+        return json.dumps(self.save_data())
+
+    def load_file(self, file_name):
+        with open(file_name, 'r') as fp:
+            data = json.load(fp)
+        self.load_data(data)
+
+    def save_file(self, file_name):
+        data = self.save_data()
         with open(file_name, 'w') as fp:
             json.dump(data, fp, indent=4)
 
@@ -453,7 +492,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def save_scene(self):
-        filename, filter_ = QFileDialog.getSaveFileName(self, 'Open Scene', os.getcwd(), 'Scene Files (*.json)')
+        filename, filter_ = QFileDialog.getSaveFileName(self, 'Save Scene', os.getcwd(), 'Scene Files (*.json)')
         if filename:
             self.save_file(filename)
 
@@ -463,18 +502,51 @@ class MainWindow(QMainWindow):
         qapp.exit()
 
 
-def main():
+def main(background=False, scene_file=None, json_string=None):
+    import signal as signal_
+
     app = QApplication(sys.argv)
     QtCore.QTimer(app).singleShot(0, start_thread)
     app.startingUp()
     main_window = MainWindow()
-    main_window.show()
-    app.aboutToQuit.connect(stop_thread)
-    # main_window.load_file('./scene.json')
 
+    if scene_file:
+        main_window.load_file(scene_file)
+    else:
+        if json_string:
+            main_window.load_json(json_string)
+
+    if background:
+        signal_.signal(signal_.SIGINT, signal_.SIG_DFL)  # accept ctrl-c signal when in background mode to quit
+    else:
+        main_window.show()
+
+    app.aboutToQuit.connect(stop_thread)
     return app, main_window
 
 
 if __name__ == "__main__":
-    app, main_window = main()
+    background = False
+    scene_file = None
+    json_string = None
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--background", action='store_true', help="run in a background process (no GUI)")
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument("--load-file", type=str, metavar='<FILENAME>',
+                       help="loads the given scene .json file in")
+    group.add_argument("--load-json", type=str, metavar='<JSON STRING>',
+                       help="loads the given json string in")
+    args = parser.parse_args()
+
+    if args.background:
+        background = True
+
+    if args.load_file:
+        scene_file = os.path.abspath(args.load_file)
+
+    if args.load_json:
+        json_string = args.load_json
+
+    app, main_window = main(background=background, scene_file=scene_file, json_string=json_string)
     sys.exit(app.exec_())
