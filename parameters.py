@@ -92,9 +92,11 @@ class Parameters(QtWidgets.QWidget):
         self.node_obj = None
 
         self.flayout = QtWidgets.QFormLayout()
+        self.description_layout = QtWidgets.QVBoxLayout()
 
         mlayout = QtWidgets.QVBoxLayout()
         mlayout.addLayout(self.flayout)
+        mlayout.addLayout(self.description_layout)
         mlayout.addStretch(1)
 
         self.central = QtWidgets.QWidget()
@@ -116,6 +118,11 @@ class Parameters(QtWidgets.QWidget):
         from enum import Enum
 
         self.node_obj = node_obj
+
+        item = self.description_layout.takeAt(0)
+        if item:
+            widget = item.layout() or item.widget()
+            widget.setParent(None)
 
         while self.flayout.rowCount():
             # I want to keep controls from the previous node around without destroying them
@@ -187,7 +194,8 @@ class Parameters(QtWidgets.QWidget):
                     # widget = QtWidgets.QLineEdit(str(param.value))
                 self.flayout.addRow(param.name, widget)
 
-            self.flayout.addWidget(DescriptionWidget(self.node_obj.description))
+            # self.flayout.addWidget(DescriptionWidget(self.node_obj.description))
+            self.description_layout.addWidget(DescriptionWidget(self.node_obj.description))
 
     def set_enum_param_value(self, node_obj, param, value):
         param.value = param.Operations.__members__[value]
