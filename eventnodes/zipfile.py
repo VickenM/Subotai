@@ -13,8 +13,8 @@ class ZipFile(ComputeNode):
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='source', value='D:\\projects\\python\\node2\\tmp\\src', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='zipfile', value='D:\\projects\\python\\node2\\tmp\\wicked.zip', pluggable=PARAM | INPUT_PLUG))
+        self.params.append(StringParam(name='source', value='', pluggable=PARAM | INPUT_PLUG))
+        self.params.append(StringParam(name='zipfile', value='', pluggable=PARAM | INPUT_PLUG))
         self.params.append(StringParam(name='zipfile', value='', pluggable=OUTPUT_PLUG))
 
     def compute(self):

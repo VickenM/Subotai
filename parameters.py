@@ -68,6 +68,9 @@ class ListWidget(QtWidgets.QWidget):
 
 
 class Parameters(QtWidgets.QWidget):
+    # todo: self.controls_info is a cache for the control parameters from the node.
+    # I need this cache so that I can connect/disconnect the signal and slots.
+
     def __init__(self, parent=None):
         super(Parameters, self).__init__(parent=parent)
         self.node_obj = None
@@ -90,6 +93,8 @@ class Parameters(QtWidgets.QWidget):
         self.layout.addWidget(self.scrollarea)
         self.setLayout(self.layout)
 
+        self.controls_info = {}
+
     def set_node_obj(self, node_obj):
         from eventnodes.params import INPUT_PLUG, OUTPUT_PLUG, PARAM, SUBTYPE_PASSWORD
         from enum import Enum
@@ -97,6 +102,20 @@ class Parameters(QtWidgets.QWidget):
         self.node_obj = node_obj
 
         while self.flayout.rowCount():
+            # I want to keep controls from the previous node around without destroying them
+            # Have to do extra work of removing items because removeRow(...) destroys the widget
+            # and PySide2 doesnt have takeAt(...) implemented for QForLayout
+            label_item = self.flayout.itemAt(0, self.flayout.LabelRole)
+            field_item = self.flayout.itemAt(0, self.flayout.FieldRole)
+            if not label_item:
+                field = field_item.layout() or field_item.widget()
+                self.flayout.removeItem(field_item)
+                field.setParent(None)
+
+                if self.controls_info.get(field):
+                    signal, call = self.controls_info.pop(field)
+                    signal.disconnect(call)
+
             self.flayout.removeRow(0)
 
         if node_obj:
@@ -104,6 +123,13 @@ class Parameters(QtWidgets.QWidget):
             header = QtWidgets.QLabel(self.node_obj.type)
             self.flayout.addRow('', header)
 
+            for control_ in self.node_obj.get_controls():
+                control, func, signal = control_
+                call_fn = lambda x: func()
+                signal.connect(call_fn)
+
+                self.flayout.addWidget(control)
+                self.controls_info[control] = (signal, call_fn)
 
             for param in self.node_obj.get_params():
                 if not param.get_pluggable() & PARAM:

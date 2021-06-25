@@ -9,12 +9,8 @@ from .image.imageparam import ImageParam
 
 import sys
 
-sys.path.append('D:\\projects\\python\\node2\\opencv')
-
 from PIL import Image
 from PySide2.QtGui import QPainter, QPixmap
-
-import cv2
 
 from PySide2 import QtWidgets
 from PIL import ImageQt
@@ -32,6 +28,8 @@ class View(QtWidgets.QWidget):
         layout.addWidget(self.label)
         layout.setSizeConstraint(layout.SetNoConstraint)
         self.setLayout(layout)
+
+        self.resize(1920/4, 1080/4)
 
     def setPixmap(self, image):
         width = self.label.width()
@@ -51,6 +49,13 @@ class Viewer(ComputeNode):
 
         self.widget = View()
         self.widget.show()
+
+        self.show_viewer_button = QtWidgets.QPushButton('Toggle Viewer')
+
+        self.controls.append((self.show_viewer_button, self.toggle_viewer, self.show_viewer_button.clicked))
+
+    def toggle_viewer(self):
+        self.widget.setVisible(not self.widget.isVisible())
 
     def compute(self):
         self.start_spinner_signal.emit()

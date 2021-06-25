@@ -1,4 +1,5 @@
 from PySide2 import QtCore
+from PySide2 import QtWidgets
 from PySide2.QtCore import Slot, Signal, QEventLoop
 
 from .params import INPUT_PLUG, OUTPUT_PLUG, PARAM
@@ -8,9 +9,36 @@ from abc import abstractmethod
 class BaseNode(QtCore.QObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.controls = []
         self.params = []
         self.ui_node = None
         self.obj_id = None
+
+        self.active = True
+
+        self.computable = False
+
+    def is_computable(self):
+        return self.computable
+
+    def activate(self):
+        self.active = True
+        if self.ui_node:
+            self.ui_node.update()  # need to call update() on ui node to cause repaint
+
+    def deactivate(self):
+        self.active = False
+        if self.ui_node:
+            self.ui_node.update()  # need to call update() on ui node to cause repaint
+
+    def set_active(self, state):
+        self.active = state
+
+    def is_active(self):
+        return self.active
+
+    def get_controls(self):
+        return self.controls
 
     def get_params(self):
         return self.params
@@ -47,26 +75,6 @@ class Worker(QtCore.QThread):
 thread = None
 
 
-# class ThreadedComputeNode(ComputeNode):
-#     calculate = QtCore.Signal()
-#     start_spinner_signal = QtCore.Signal()
-#     stop_spinner_signal = QtCore.Signal()
-#
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         print('moved to thread')
-#         self.calculate.connect(self.compute)
-#         self.moveToThread(thread)
-#
-#     def set_ui_node(self, ui_node):
-#         self.ui_node = ui_node
-#         self.start_spinner_signal.connect(self.ui_node.start_spinner)
-#         self.stop_spinner_signal.connect(self.ui_node.stop_spinner)
-#
-#     def compute(self):
-#         pass
-
-
 class ComputeNode(BaseNode):
     calculate = QtCore.Signal()
     start_spinner_signal = QtCore.Signal()
@@ -78,12 +86,20 @@ class ComputeNode(BaseNode):
         self.signals = []
 
         self.calculate.connect(self.compute)
+
+        self.computable = True
+
         self.moveToThread(thread)
 
     def set_ui_node(self, ui_node):
         self.ui_node = ui_node
         self.start_spinner_signal.connect(self.ui_node.start_spinner)
         self.stop_spinner_signal.connect(self.ui_node.stop_spinner)
+
+    def unset_ui_node(self):
+        self.start_spinner_signal.disconnect(self.ui_node.start_spinner)
+        self.stop_spinner_signal.disconnect(self.ui_node.stop_spinner)
+        self.ui_node = None
 
     @Slot(str)
     def trigger(self, event):
@@ -126,10 +142,33 @@ class EventNode(ComputeNode):
     def __init__(self):
         super().__init__()
         self.color = (150, 0, 0, 250)
-        self.active = False
+
+        self.activate_button = QtWidgets.QPushButton()
+        self.activate_button.setCheckable(True)
+        self.controls.append((self.activate_button, self.toggle_active, self.activate_button.clicked))
+
+        if self.is_active():
+            self.activate_button.setText('Deactivate')
+        else:
+            self.activate_button.setText('Activate')
+
+    def set_active(self, state):
+        self.active = state
+        if self.active:
+            self.activate_button.setText('Deactivate')
+        else:
+            self.activate_button.setText('Activate')
+
+        if self.ui_node:
+            self.ui_node.update()
 
     def activate(self):
-        self.active = True
+        super().activate()
+        self.activate_button.setText('Deactivate')
 
     def deactivate(self):
-        self.active = False
+        super().deactivate()
+        self.activate_button.setText('Activate')
+
+    def toggle_active(self):
+        self.set_active(not self.active)

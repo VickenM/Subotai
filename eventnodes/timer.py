@@ -1,3 +1,4 @@
+from PySide2 import QtWidgets
 from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
@@ -17,12 +18,20 @@ class TimerNode(EventNode):
         interval = self.get_first_param('interval').value
         self.timer = QtCore.QTimer()
         self.timer.setInterval(interval)
-        self.timer.start()
         self.timer.timeout.connect(self.timeout)
+
+        self.deactivate()
 
     def compute(self):
         for signal in self.signals:
             signal.emit_event()
+
+    def set_active(self, state):
+        super().set_active(state)
+        if self.active:
+            self.timer.start()
+        else:
+            self.timer.stop()
 
     def activate(self):
         self.timer.start()
@@ -30,7 +39,13 @@ class TimerNode(EventNode):
 
     def deactivate(self):
         self.timer.stop()
-        super().activate()
+        super().deactivate()
+
+    def toggle_active(self):
+        if self.timer.isActive():
+            self.deactivate()
+        else:
+            self.activate()
 
     @Slot()
     def timeout(self):

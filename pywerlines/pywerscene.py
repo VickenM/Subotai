@@ -148,6 +148,9 @@ class PywerScene(QGraphicsScene):
     def list_node_types(self):
         return []
 
+    def list_nodes(self):
+        return [item for item in self.items() if isinstance(item, pyweritems.PywerNode)]
+
     def toggle_labels(self):
         all_nodes = [item for item in self.items() if isinstance(item, pyweritems.PywerNode) or \
                      isinstance(item, pyweritems.PywerGroup)]

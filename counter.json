@@ -1,0 +1,84 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.timer.Timer",
+            "id": "f25c9648-7ba9-45a0-bdf4-368c77168b1f",
+            "position": [
+                100.0,
+                178.0
+            ],
+            "params": {
+                "4": {
+                    "interval": 1000
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.counter.Counter",
+            "id": "964a89e5-bd3f-4438-9518-cfa0985b5145",
+            "position": [
+                275.0,
+                194.0
+            ],
+            "params": {
+                "5": {
+                    "initial": 0
+                },
+                "2": {
+                    "value": 19
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.inttostr.IntToStr",
+            "id": "1f5cc49c-fdb7-4dca-a4fa-b6fa32a2f98b",
+            "position": [
+                530.0,
+                290.0
+            ],
+            "params": {
+                "1": {
+                    "integer": 0
+                },
+                "2": {
+                    "string": ""
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.consolewriter.ConsoleWriter",
+            "id": "41ada172-5dea-4984-90f1-b6f64c17d9ab",
+            "position": [
+                757.0,
+                187.0
+            ],
+            "params": {
+                "4": {
+                    "prefix": "%m/%d/%Y, %H:%M:%S"
+                },
+                "5": {
+                    "message": ""
+                }
+            }
+        }
+    ],
+    "edges": [
+        [
+            "f25c9648-7ba9-45a0-bdf4-368c77168b1f.event",
+            "964a89e5-bd3f-4438-9518-cfa0985b5145.event"
+        ],
+        [
+            "1f5cc49c-fdb7-4dca-a4fa-b6fa32a2f98b.string",
+            "41ada172-5dea-4984-90f1-b6f64c17d9ab.message"
+        ],
+        [
+            "964a89e5-bd3f-4438-9518-cfa0985b5145.value",
+            "1f5cc49c-fdb7-4dca-a4fa-b6fa32a2f98b.integer"
+        ],
+        [
+            "964a89e5-bd3f-4438-9518-cfa0985b5145.event",
+            "41ada172-5dea-4984-90f1-b6f64c17d9ab.event"
+        ]
+    ],
+    "groups": []
+}

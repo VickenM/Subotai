@@ -10,7 +10,7 @@ class DirChanged(EventNode):
         super().__init__(*args, **kwargs)
         self.type = 'DirChanged'
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='directory', value='d:\\temp', pluggable=OUTPUT_PLUG | PARAM))
+        self.params.append(StringParam(name='directory', value='', pluggable=OUTPUT_PLUG | PARAM))
 
         watch_directory = self.get_first_param('directory').value
         self.watcher = QtCore.QFileSystemWatcher([watch_directory])

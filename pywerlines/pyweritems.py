@@ -271,6 +271,8 @@ class PywerNode(PywerItem):
         self.plug_spacing = 8
         self.header_height = 20
 
+        self.active_text_color = QtCore.Qt.white
+        self.inactive_text_color = QtCore.Qt.gray
         self.base_color = (25, 25, 25, 200)
         self.selected_color = (255, 165, 0, 255)
 
@@ -278,6 +280,8 @@ class PywerNode(PywerItem):
 
         self.inputs = []
         self.outputs = []
+
+        self.active = True
 
         self.label = QtWidgets.QGraphicsTextItem(parent=self)
         font = self.label.font()
@@ -299,13 +303,11 @@ class PywerNode(PywerItem):
     @Slot()
     def start_spinner(self):
         self.spinner.show()
-        # if self.spinner.timeline == self.spinner.timeline.NotRunning:
         self.spinner.timeline.start()
 
     @Slot()
     def stop_spinner(self):
         self.spinner.hide()
-        # if self.spinner.timeline == self.spinner.timeline.Running:
         self.spinner.timeline.stop()
 
     @Slot(QtCore.QPointF)
@@ -327,6 +329,13 @@ class PywerNode(PywerItem):
         for i in blueprint.get('outputs', []):
             node.add_output(PywerPlug(**i))
         return node
+
+    def is_active(self):
+        return self.node_obj.is_active()
+
+    def set_active(self, state):
+        self.active = state
+        self.update()
 
     def add_input(self, plug):
         plug.setParentItem(self)
@@ -403,11 +412,16 @@ class PywerNode(PywerItem):
         font_height = font_metrics.height()
         painter.setFont(font)
 
-        pen = QtGui.QPen(QtCore.Qt.white)
+        text_color = self.active_text_color
+        if not self.is_active():
+            text_color = self.inactive_text_color
+        pen = QtGui.QPen(text_color)
         pen.setWidthF(0.1)
         painter.setPen(pen)
-
         painter.drawText(10, font_height, self.type_)
+
+        pen.setColor(QtCore.Qt.white)
+        painter.setPen(pen)
 
         for plug in self.inputs:
             rect = plug.boundingRect()

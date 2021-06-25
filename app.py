@@ -1,8 +1,18 @@
+import os
 import sys
 import pywerlines.pywerview
 
-from PySide2.QtWidgets import QApplication, QLabel, QMainWindow, QDockWidget, QWidget, QHBoxLayout, QGraphicsScene, \
-    QSplitter
+from PySide2.QtWidgets import (
+    QApplication,
+    QLabel,
+    QMainWindow,
+    QDockWidget,
+    QWidget,
+    QHBoxLayout,
+    QGraphicsScene,
+    QSplitter,
+    QFileDialog
+)
 from PySide2 import QtCore
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Slot
@@ -218,13 +228,20 @@ class EventFlow(pywerscene.PywerScene):
         return [item for item in self.items() if isinstance(item, pyweritems.PywerGroup)]
 
     def eval(self):
-        selected_node = self.get_selected_nodes()[0]
+        selected_nodes = self.get_selected_nodes()
+        if not selected_nodes:
+            print('No nodes selected')
+            return
+
+        selected_node = selected_nodes[0]
+
         mnode = selected_node.node_obj
         # mnode.compute()
-        mnode.calculate.emit()
+        if mnode.computable:
+            mnode.calculate.emit()
 
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -234,42 +251,54 @@ class MainWindow(QWidget):
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
 
+        p = os.path.dirname(os.path.abspath(__file__))
+
         toolbox = ToolBox()
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="DirChanged", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="FilesChanged", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Timer", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="CopyFile", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ListDir", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ZipFile", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Email", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="StringParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="IntegerParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="FloatParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="BooleanParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="IntToStr", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Math", sections=['Math']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="SliceList", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="SplitString", sections=['String']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="JoinStrings", sections=['String']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="For", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ForEach", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Counter", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Condition", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Collector", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ConsoleWriter", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="OpenImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="SaveImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="CropImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ResizeImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="ThumbnailImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Camera", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="FaceDetect", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon('./icons/flow.png'), label="Viewer", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="DirChanged", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="FilesChanged", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Timer", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="CopyFile", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ListDir", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ZipFile", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Email", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="StringParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="IntegerParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="FloatParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="BooleanParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="IntToStr", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Math", sections=['Math']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="SliceList", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="SplitString", sections=['String']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="JoinStrings", sections=['String']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="For", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ForEach", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Counter", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Condition", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Collector", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ConsoleWriter", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="OpenImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="SaveImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="CropImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ResizeImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ThumbnailImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Camera", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="FaceDetect", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Viewer", sections=['I/O']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
+
+        scene.nodes_selected.connect(selected_nodes)
+        scene.nodes_deleted.connect(deleted_nodes)
+        scene.nodes_added.connect(added_nodes)
+        scene.plugs_connected.connect(connected_plugs)
+        scene.plugs_disconnected.connect(disconnected_plugs)
+        scene.nodes_selected.connect(self.selected_nodes)
+
+        self.scene = scene
+        self.view = view
 
         self.parameters = Parameters()
 
-        splitter = QSplitter(parent=self)
+        splitter = QSplitter()
         splitter.addWidget(toolbox)
         splitter.addWidget(view)
         splitter.addWidget(self.parameters)
@@ -279,18 +308,22 @@ class MainWindow(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
 
-        self.setLayout(layout)
+        central_widget = QWidget(parent=self)
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
 
-        scene.nodes_selected.connect(selected_nodes)
-        scene.nodes_deleted.connect(deleted_nodes)
-        scene.nodes_added.connect(added_nodes)
-        scene.plugs_connected.connect(connected_plugs)
-        scene.plugs_disconnected.connect(disconnected_plugs)
+        file_menu = self.menuBar().addMenu('&File')
+        file_menu.addAction('&New Scene').triggered.connect(self.new_scene)
+        file_menu.addAction('&Open Scene').triggered.connect(self.open_scene)
+        file_menu.addAction('&Save Scene').triggered.connect(self.save_scene)
+        file_menu.addSeparator()
+        file_menu.addAction('&Exit').triggered.connect(self.exit_app)
 
-        scene.nodes_selected.connect(self.selected_nodes)
-
-        self.scene = scene
-        self.view = view
+        self.menuBar().addSeparator()
+        run = self.menuBar().addAction('Run')
+        run.setIcon(QIcon(p + '/icons/run.jpg'))
+        run.triggered.connect(lambda x: self.scene.eval())
+        run.setToolTip('Run from the selected node')
 
     def load_file(self, file_name):
         import json
@@ -301,6 +334,7 @@ class MainWindow(QWidget):
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
             n.node_obj.obj_id = node['id']
+            n.node_obj.set_active(node.get('active', True))
             n.setPos(*node['position'])
 
             for pluggable, params in node.get('params', {}).items():
@@ -361,31 +395,7 @@ class MainWindow(QWidget):
             json.dump(data, fp, indent=4)
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_D:
-            node = self.scene.create_node_of_type('DirChanged')
-            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-            node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_Z:
-            node = self.scene.create_node_of_type('Zip')
-            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-            node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_C:
-            node = self.scene.create_node_of_type('CopyFile')
-            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-            node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_E:
-            node = self.scene.create_node_of_type('Email')
-            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-            node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_I:
-            node = self.scene.create_node_of_type('ItemList')
-            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-            node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_P:
-            node = self.scene.create_node_of_type('Parameter')
-            position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-            node.setPos(position)
-        elif event.key() == QtCore.Qt.Key_G:
+        if event.key() == QtCore.Qt.Key_G:
             if (event.modifiers() and QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
                 self.scene.group_selected_nodes()
             else:
@@ -399,10 +409,17 @@ class MainWindow(QWidget):
             self.scene.remove_selected_groups()
         elif event.key() == QtCore.Qt.Key_Space:
             self.scene.eval()
-        elif event.key() == QtCore.Qt.Key_S:
-            self.save_file('./scene.json')
-        elif event.key() == QtCore.Qt.Key_O:
-            self.load_file('./scene.json')
+
+    def stop_timers(self):
+        scene_nodes = self.scene.list_nodes()
+        for node in scene_nodes:
+            node.stop_spinner()
+            if node.node_obj.is_computable():
+                node.node_obj.unset_ui_node()
+
+        timers = [item for item in scene_nodes if isinstance(item.node_obj, eventnodes.timer.TimerNode)]
+        for timer in timers:
+            timer.node_obj.deactivate()
 
     @Slot(str)
     def toolbox_item_selected(self, item):
@@ -416,6 +433,34 @@ class MainWindow(QWidget):
             self.parameters.set_node_obj(nodes[0].node_obj)
         else:
             self.parameters.set_node_obj(None)
+
+    @Slot()
+    def new_scene(self):
+        stop_thread()
+        self.stop_timers()
+        start_thread()
+        self.scene.clear()
+
+    @Slot()
+    def open_scene(self):
+        filename, filter_ = QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(), 'Scene Files (*.json)')
+        if filename:
+            stop_thread()
+            self.stop_timers()
+            self.scene.clear()
+            start_thread()
+            self.load_file(filename)
+
+    @Slot()
+    def save_scene(self):
+        filename, filter_ = QFileDialog.getSaveFileName(self, 'Open Scene', os.getcwd(), 'Scene Files (*.json)')
+        if filename:
+            self.save_file(filename)
+
+    @Slot()
+    def exit_app(self):
+        qapp = QApplication.instance()
+        qapp.exit()
 
 
 def main():

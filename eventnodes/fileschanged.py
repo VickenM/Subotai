@@ -12,7 +12,7 @@ class FilesChanged(EventNode):
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(ListParam(
             name='files',
-            value=[StringParam(name='', value='D:\\projects\\python\\node2\\tmp\\src\\file.txt'),
+            value=[StringParam(name='', value=''),
                    ],
             pluggable=PARAM))
 
@@ -33,7 +33,6 @@ class FilesChanged(EventNode):
         super().deactivate()
 
     def update(self):
-        print('updating')
         files_param = self.get_first_param('files')
         paths = [item.value for item in files_param.value]
         if self.watcher.files():

@@ -103,7 +103,8 @@ class EventNode(pywerlines.pyweritems.PywerNode):
             'node_obj': self.node_obj.__module__ + '.' + self.node_obj.type,
             'id': str(self.node_obj.obj_id),
             'position': (self.pos().x(), self.pos().y()),
-            'params': {}
+            'params': {},
+            'active': self.node_obj.active
         }
 
         for param in self.node_obj.params:

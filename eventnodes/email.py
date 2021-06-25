@@ -13,16 +13,16 @@ class Email(ComputeNode):
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='sender', value='vicken.mavlian@gmail.com', pluggable=PARAM | INPUT_PLUG))
+        self.params.append(StringParam(name='sender', value='my.name@gmail.com', pluggable=PARAM | INPUT_PLUG))
         self.params.append(ListParam(name='recipients',
-                                     value=[StringParam(name='', value='vicken.mavlian@gmail.com')],
+                                     value=[StringParam(name='', value='my.name@gmail.com')],
                                      pluggable=PARAM | INPUT_PLUG))
         self.params.append(StringParam(name='subject', value='test', pluggable=PARAM | INPUT_PLUG))
         self.params.append(StringParam(name='message', value='cool', pluggable=PARAM | INPUT_PLUG))
         self.params.append(ListParam(name='attachments', value=[], pluggable=PARAM | INPUT_PLUG))
         self.params.append(StringParam(name='server', value='smtp.gmail.com', pluggable=PARAM | INPUT_PLUG))
         self.params.append(IntParam(name='port', value=587, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='username', value='vicken.mavlian@gmail.com', pluggable=PARAM | INPUT_PLUG))
+        self.params.append(StringParam(name='username', value='my.name@gmail.com', pluggable=PARAM | INPUT_PLUG))
         self.params.append(
             StringParam(name='password', value='', subtype=SUBTYPE_PASSWORD,
                         pluggable=PARAM | INPUT_PLUG))
