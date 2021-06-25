@@ -551,6 +551,8 @@ class PywerGroup(PywerItem):
 
         self.contained_nodes = []
 
+        self.move_children = True
+
     @Slot(QtCore.QPointF)
     def resize(self, change):
         rect = QtCore.QRectF(0, 0, self.width, self.height).adjusted(0, 0, change.x(), change.y())
@@ -603,7 +605,7 @@ class PywerGroup(PywerItem):
         painter.drawText(10, font_height, self.type_)
 
     def itemChange(self, change, value):
-        if change == self.ItemPositionChange and self.scene():
+        if change == self.ItemPositionChange and self.scene() and self.move_children:
             pos = value
             for node in self.contained_nodes:
                 diff = pos - self.pos()
@@ -611,6 +613,12 @@ class PywerGroup(PywerItem):
             return value
 
         return super(PywerGroup, self).itemChange(change, value)
+
+    def mouseReleaseEvent(self, event):
+        for node in self.contained_nodes:
+            if isinstance(node, PywerGroup):
+                node.move_children = True
+        return super(PywerGroup, self).mouseReleaseEvent(event)
 
     def mousePressEvent(self, event):
         self.contained_nodes = []
@@ -622,4 +630,7 @@ class PywerGroup(PywerItem):
         for node in all_nodes:
             if bounding_rect.contains(node.sceneBoundingRect()):
                 self.contained_nodes.append(node)
+
+                if isinstance(node, PywerGroup):
+                    node.move_children = False
         return super(PywerGroup, self).mousePressEvent(event)
