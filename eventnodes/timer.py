@@ -22,6 +22,17 @@ class TimerNode(EventNode):
 
         self.deactivate()
 
+        self.description = \
+"""The **Timer node** emits an event at every interval time set, in miliseconds.
+
+it's pretty cool
+
+here's a list:
+ - first
+ - second
+ - third
+"""
+
     def compute(self):
         for signal in self.signals:
             signal.emit_event()

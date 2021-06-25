@@ -5,6 +5,22 @@ from PySide2.QtCore import Slot
 from functools import partial
 
 
+class DescriptionWidget(QtWidgets.QWidget):
+    def __init__(self, text):
+        super().__init__()
+        self.text = text
+
+        textarea = QtWidgets.QTextEdit()
+        textarea.setMarkdown(self.text)
+        textarea.setReadOnly(True)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(textarea)
+        self.setLayout(layout)
+
+
 class ListWidget(QtWidgets.QWidget):
     def __init__(self, node_obj, param):
         super().__init__()
@@ -109,12 +125,13 @@ class Parameters(QtWidgets.QWidget):
             field_item = self.flayout.itemAt(0, self.flayout.FieldRole)
             if not label_item:
                 field = field_item.layout() or field_item.widget()
-                self.flayout.removeItem(field_item)
-                field.setParent(None)
+                if not isinstance(field, DescriptionWidget):
+                    self.flayout.removeItem(field_item)
+                    field.setParent(None)
 
-                if self.controls_info.get(field):
-                    signal, call = self.controls_info.pop(field)
-                    signal.disconnect(call)
+                    if self.controls_info.get(field):
+                        signal, call = self.controls_info.pop(field)
+                        signal.disconnect(call)
 
             self.flayout.removeRow(0)
 
@@ -169,6 +186,8 @@ class Parameters(QtWidgets.QWidget):
                     continue
                     # widget = QtWidgets.QLineEdit(str(param.value))
                 self.flayout.addRow(param.name, widget)
+
+            self.flayout.addWidget(DescriptionWidget(self.node_obj.description))
 
     def set_enum_param_value(self, node_obj, param, value):
         param.value = param.Operations.__members__[value]

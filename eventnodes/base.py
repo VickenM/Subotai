@@ -18,6 +18,8 @@ class BaseNode(QtCore.QObject):
 
         self.computable = False
 
+        self.description = ''
+
     def is_computable(self):
         return self.computable
 
