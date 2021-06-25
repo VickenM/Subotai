@@ -375,6 +375,11 @@ class PywerNode(PywerItem):
 
         self.spinner.setPos(QtCore.QPointF(self.width - 20, 0))
 
+    def setSize(self, width, height):
+        self.width, self.height = width, height
+        self.adjust()
+        self.update()
+
     def boundingRect(self):
         bbox = QtCore.QRectF(0, 0, self.width, self.height).adjusted(-0.5, -0.5, 0.5, 0.5)
         return bbox
@@ -566,6 +571,11 @@ class PywerGroup(PywerItem):
         resizer_offset = QtCore.QPointF(resizer_width * 2, resizer_width * 2)
         rect = QtCore.QRectF(0, 0, self.width, self.height)
         self.resizer.setPos(rect.bottomRight() - resizer_offset)
+
+    def setSize(self, width, height):
+        self.width, self.height = width, height
+        self.adjust()
+        self.update()
 
     def boundingRect(self):
         bbox = QtCore.QRectF(0, 0, self.width, self.height)

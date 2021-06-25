@@ -356,6 +356,7 @@ class MainWindow(QMainWindow):
             n.node_obj.obj_id = node['id']
             n.node_obj.set_active(node.get('active', True))
             n.setPos(*node['position'])
+            n.setSize(*node.get('size', (100, 100)))
 
             for pluggable, params in node.get('params', {}).items():
                 pluggable = int(pluggable)
@@ -399,6 +400,11 @@ class MainWindow(QMainWindow):
 
             self.scene.create_edge(source_plug, target_plug)
 
+        for group in data['groups']:
+            g = self.scene.create_group()
+            g.setPos(*group['position'])
+            g.setSize(*group['size'])
+
         print(data)
 
     def save_data(self):
@@ -411,8 +417,12 @@ class MainWindow(QMainWindow):
                          str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
             data['edges'].append(edge_info)
 
-        # for group in self.scene.get_all_groups():
-        #     pass
+        for group in self.scene.get_all_groups():
+            data['groups'].append(
+                {'position': (group.pos().x(), group.pos().y()),
+                 'size': (group.width, group.height)
+                 }
+            )
 
         return data
 
