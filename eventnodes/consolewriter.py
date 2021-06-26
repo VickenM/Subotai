@@ -15,6 +15,20 @@ class ConsoleWriter(ComputeNode):
         self.params.append(StringParam(name='prefix', value='%m/%d/%Y, %H:%M:%S', pluggable=PARAM))
         self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
 
+        self.description = \
+            """The **ConsoleWriter node** outputs the text in *message* to the system console.
+The *prefix* parameter can be used to add prefix text to the message line and accepts date time directives by Python's strftime function.
+[See the link for a complete list of strftime directives](https://strftime.org/)
+
+
+Parameters:
+
+- *prefix*: Prefix text to message line
+- *message*: text line to output to the system console
+"""
+
+
+
     @Slot()
     def compute(self):
         self.start_spinner_signal.emit()

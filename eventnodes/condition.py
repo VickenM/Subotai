@@ -30,6 +30,19 @@ class Condition(ComputeNode):
         self.params.append(IntParam(name='value1', value=0, pluggable=INPUT_PLUG | PARAM))
         self.params.append(IntParam(name='value2', value=0, pluggable=INPUT_PLUG | PARAM))
 
+        self.description = \
+            """The **Condition node** compares the values of *value1* and *value2* inputs with the *operation* parameter
+and outputs either the *true* or *false* signal, based on the comparison.
+
+
+Parameters:
+
+- *operation*: The comparison operation to perform on the inputs
+- *value1*: The first value to compare
+- *value2*: The second value to compare
+"""
+
+
     @Slot()
     def compute(self):
         self.start_spinner_signal.emit()

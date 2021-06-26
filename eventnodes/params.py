@@ -6,6 +6,7 @@ OUTPUT_PLUG = 2
 PARAM = 4
 
 SUBTYPE_PASSWORD = 1
+SUBTYPE_FILEPATH = 2
 
 
 class Param(object):

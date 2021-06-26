@@ -17,8 +17,8 @@ class Email(ComputeNode):
         self.params.append(ListParam(name='recipients',
                                      value=[StringParam(name='', value='my.name@gmail.com')],
                                      pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='subject', value='test', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='message', value='cool', pluggable=PARAM | INPUT_PLUG))
+        self.params.append(StringParam(name='subject', value='', pluggable=PARAM | INPUT_PLUG))
+        self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
         self.params.append(ListParam(name='attachments', value=[], pluggable=PARAM | INPUT_PLUG))
         self.params.append(StringParam(name='server', value='smtp.gmail.com', pluggable=PARAM | INPUT_PLUG))
         self.params.append(IntParam(name='port', value=587, pluggable=PARAM | INPUT_PLUG))
@@ -27,6 +27,23 @@ class Email(ComputeNode):
             StringParam(name='password', value='', subtype=SUBTYPE_PASSWORD,
                         pluggable=PARAM | INPUT_PLUG))
         self.params.append(BoolParam(name='use_tls', value=True, pluggable=PARAM | INPUT_PLUG))
+
+        self.description = \
+            """The **Email node** sends an email over SMTP.
+
+Parameters:
+
+- *sender*: the sender email address
+- *recipients*: the list of recipient email addresses
+- *subject*: the email subject line
+- *message*: the email message
+- *attachments*: list of paths to files to add as attachments
+- *server*: the SMTP server to use
+- *port*: the port number for the SMTP server
+- *username*: username to login to SMTP server
+- *password*: password to login to SMTP server
+- *tls*: whether to use TLS
+"""
 
     def send_mail(self, send_from, send_to, subject, message, files=[], server="localhost", port=587, username='',
                   password='', use_tls=True):

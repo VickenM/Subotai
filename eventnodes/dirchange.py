@@ -27,6 +27,16 @@ class DirChanged(EventNode):
         self.current_contents = []
         self.update()
 
+        self.description = \
+            """The **DirChange node** watches the *directory* path and emits the *event* signal when a change to the directory occurs.
+
+Parameters:
+
+- *directory*: the directory path to watch
+- *new*: the list of files in *directory* that are new
+- *removed*: the list of files in *directory* that were removed
+"""
+
     def activate(self):
         directory = self.get_first_param('directory').value
         self.watcher.removePaths(self.watcher.directories())

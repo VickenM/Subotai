@@ -10,7 +10,10 @@ class DescriptionWidget(QtWidgets.QWidget):
         super().__init__()
         self.text = text
 
-        textarea = QtWidgets.QTextEdit()
+        # textarea = QtWidgets.QTextEdit()
+        textarea = QtWidgets.QTextBrowser()
+        textarea.setOpenExternalLinks(True)
+        textarea.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
         textarea.setMarkdown(self.text)
         textarea.setReadOnly(True)
 
@@ -114,7 +117,7 @@ class Parameters(QtWidgets.QWidget):
         self.controls_info = {}
 
     def set_node_obj(self, node_obj):
-        from eventnodes.params import INPUT_PLUG, OUTPUT_PLUG, PARAM, SUBTYPE_PASSWORD
+        from eventnodes.params import INPUT_PLUG, OUTPUT_PLUG, PARAM, SUBTYPE_PASSWORD, SUBTYPE_FILEPATH
         from enum import Enum
 
         self.node_obj = node_obj
@@ -159,12 +162,26 @@ class Parameters(QtWidgets.QWidget):
                 if not param.get_pluggable() & PARAM:
                     continue
 
-                # value = self.node_obj.get_first_param(param=param)
                 if param.type == str:
                     widget = QtWidgets.QLineEdit(param.value)
                     widget.textChanged.connect(partial(self.set_param_value, node_obj, param))
                     if param.subtype == SUBTYPE_PASSWORD:
                         widget.setEchoMode(widget.Password)
+                    elif param.subtype == SUBTYPE_FILEPATH:
+                        button = QtWidgets.QToolButton(self)
+                        button.setIcon(QtWidgets.QApplication.style().standardIcon(QtWidgets.QStyle.SP_FileIcon))
+                        button.clicked.connect(partial(
+                            lambda text: text.setText(QtWidgets.QFileDialog.getOpenFileName(self, "Open File")[0]), widget)
+                        )
+                        w = QtWidgets.QWidget()
+                        layout = QtWidgets.QHBoxLayout()
+                        layout.setContentsMargins(0, 0, 0, 0)
+                        layout.setSpacing(0)
+                        layout.addWidget(widget)
+                        layout.addWidget(button)
+                        w.setLayout(layout)
+                        widget = w
+
                 elif param.type == int:
                     widget = QtWidgets.QSpinBox()
                     widget.setMinimum(-10000)

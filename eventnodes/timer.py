@@ -23,14 +23,12 @@ class TimerNode(EventNode):
         self.deactivate()
 
         self.description = \
-            """The **Timer node** emits an event at every interval time set, in miliseconds.
+            """The **Timer node** emits an event at periodically, specified by the *interval* parameter (in miliseconds).
 
-            it's pretty cool
 
-            here's a list:
-             - first
-             - second
-             - third
+Parameters:
+
+- *interval*: The timeout interval (miliseconds)
             """
 
     @Slot()

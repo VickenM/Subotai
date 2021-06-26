@@ -258,6 +258,9 @@ class MainWindow(QMainWindow):
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
 
+        self.filename = None
+        self.unsaved = True
+
         p = os.path.dirname(os.path.abspath(__file__))
 
         toolbox = ToolBox()
@@ -320,10 +323,32 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        toolbar = self.addToolBar('Run')
+        action = toolbar.addAction('&Run')
+        action.setIcon(QIcon(p + '/icons/run.jpg'))
+        action.setShortcut(QtGui.QKeySequence('Space'))
+        action.triggered.connect(lambda x: self.scene.eval())
+
         file_menu = self.menuBar().addMenu('&File')
         action = file_menu.addAction('&New Scene')
         action.setShortcut(QtGui.QKeySequence('Ctrl+n'))
         action.triggered.connect(self.new_scene)
+
+        action = file_menu.addAction('&Open Scene')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+o'))
+        action.triggered.connect(self.open_scene)
+
+        file_menu.addSeparator()
+        action = file_menu.addAction('&Save Scene')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+s'))
+        action.triggered.connect(self.save_scene)
+
+        action = file_menu.addAction('&Save Scene As')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+Shift+s'))
+        action.triggered.connect(self.save_scene_as)
+
+        file_menu.addSeparator()
+        file_menu.addAction('&Exit').triggered.connect(self.exit_app)
 
         edit_menu = self.menuBar().addMenu('&Edit')
         action = edit_menu.addAction('&Group Selected')
@@ -338,32 +363,27 @@ class MainWindow(QMainWindow):
         action.setShortcut(QtGui.QKeySequence('Delete'))
         action.triggered.connect(self.delete_selected)
 
-        action = file_menu.addAction('&Open Scene')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+o'))
-        action.triggered.connect(self.open_scene)
-
-        action = file_menu.addAction('&Save Scene')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+s'))
-        action.triggered.connect(self.save_scene)
-
-        file_menu.addSeparator()
-        file_menu.addAction('&Exit').triggered.connect(self.exit_app)
-
         self.menuBar().addSeparator()
-        run_menu = self.menuBar().addMenu('Run')
-        action = run_menu.addAction('&Run in new process')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+r'))
-        action.setIcon(QIcon(p + '/icons/run.jpg'))
-        action.triggered.connect(self.spawn)
+        run_menu = self.menuBar().addMenu('Process')
 
-    def spawn(self):
+        action = run_menu.addAction('&Create new process')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+r'))
+        action.triggered.connect(lambda x: self.spawn(background=False))
+
+        action = run_menu.addAction('&Create new background process')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+Shift+r'))
+        action.triggered.connect(lambda x: self.spawn(background=True))
+
+    def spawn(self, background=True):
         import subprocess
 
         py_path = sys.executable
         app_path = os.path.abspath(__file__)
         json_string = self.dump_json()
 
-        args = [py_path, app_path, '--background', '--load-json', json_string]
+        args = [py_path, app_path, '--load-json', json_string]
+        if background:
+            args = [py_path, app_path, '--background', '--load-json', json_string]
 
         p = subprocess.Popen(args,
                              creationflags=subprocess.CREATE_NEW_CONSOLE,
@@ -469,19 +489,11 @@ class MainWindow(QMainWindow):
             json.dump(data, fp, indent=4)
 
     def keyPressEvent(self, event):
-        # if event.key() == QtCore.Qt.Key_G:
-        #     pass
-            # if (event.modifiers() and QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
-            #     self.scene.group_selected_nodes()
-            # else:
-            #     group = self.scene.create_group()
-            #     position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-            #     group.setPos(position)
         if event.key() == QtCore.Qt.Key_Period:
             self.scene.toggle_labels()
 
-        elif event.key() == QtCore.Qt.Key_Space:
-            self.scene.eval()
+            # elif event.key() == QtCore.Qt.Key_Space:
+            #     self.scene.eval()
 
     def stop_timers(self):
         scene_nodes = self.scene.list_nodes()
@@ -540,10 +552,17 @@ class MainWindow(QMainWindow):
             self.load_file(filename)
 
     @Slot()
-    def save_scene(self):
+    def save_scene_as(self):
         filename, filter_ = QFileDialog.getSaveFileName(self, 'Save Scene', os.getcwd(), 'Scene Files (*.json)')
         if filename:
             self.save_file(filename)
+
+    @Slot()
+    def save_scene(self):
+        if self.filename:
+            self.save_file(self.filename)
+        else:
+            self.save_scene_as()
 
     @Slot()
     def exit_app(self):

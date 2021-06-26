@@ -15,8 +15,23 @@ class Counter(ComputeNode):
         self.signals.append(Signal(node=self, name='reset', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
 
-        self.params.append(IntParam(name='initial', value=0, pluggable=INPUT_PLUG | PARAM))
+        self.params.append(IntParam(name='initial', value=0, pluggable=PARAM | INPUT_PLUG))
+        self.params.append(IntParam(name='increment', value=1, pluggable=PARAM | INPUT_PLUG))
         self.params.append(IntParam(name='value', value=0, pluggable=OUTPUT_PLUG))
+
+        self.description = \
+            """The **Counter node** emits the *event* signal each time it increments the *value* parameter by *increment*.
+
+Parameters:
+
+- *initial*: the starting value to count from
+- *increment*: the value to increment by
+- *value*: the current count
+
+Signals:
+
+- *reset*: When this signal is triggered, *value* gets reset to *inital* value
+"""
 
     def map_signal(self, signal):
         if signal == 'reset':
@@ -39,6 +54,7 @@ class Counter(ComputeNode):
         self.start_spinner_signal.emit()
         event = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         item = self.get_first_param('value')
+        increment = self.get_first_param('increment')
         self.stop_spinner_signal.emit()
         event.emit_event()
-        item.value += 1
+        item.value += increment.value
