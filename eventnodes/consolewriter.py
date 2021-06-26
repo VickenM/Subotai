@@ -2,6 +2,8 @@ from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
+from PySide2.QtCore import Slot
+
 
 class ConsoleWriter(ComputeNode):
     def __init__(self, *args, **kwargs):
@@ -13,6 +15,7 @@ class ConsoleWriter(ComputeNode):
         self.params.append(StringParam(name='prefix', value='%m/%d/%Y, %H:%M:%S', pluggable=PARAM))
         self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
 
+    @Slot()
     def compute(self):
         self.start_spinner_signal.emit()
         prefix = self.get_first_param('prefix')

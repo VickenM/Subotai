@@ -21,6 +21,7 @@ class ForEach(ComputeNode):
         self.params.append(IntParam(name='index', value=0, pluggable=OUTPUT_PLUG))
         self.params.append(IntParam(name='count', value=0, pluggable=OUTPUT_PLUG))
 
+    @Slot()
     def compute(self):
 
         items = self.get_first_param('items')

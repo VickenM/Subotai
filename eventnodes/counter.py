@@ -18,26 +18,27 @@ class Counter(ComputeNode):
         self.params.append(IntParam(name='initial', value=0, pluggable=INPUT_PLUG | PARAM))
         self.params.append(IntParam(name='value', value=0, pluggable=OUTPUT_PLUG))
 
-    @Slot(str)
-    def trigger(self, event):
-        super().trigger(event)
-
-    @Slot(str)
-    def reset(self, event):
-        item = self.get_first_param('value')
-        initial = self.get_first_param('initial')
-        item.value = initial.value
-
     def map_signal(self, signal):
         if signal == 'reset':
             return self.reset
         elif signal == 'event':
             return self.trigger
 
+    @Slot()
+    def trigger(self):
+        self.compute()
+
+    @Slot()
+    def reset(self):
+        item = self.get_first_param('value')
+        initial = self.get_first_param('initial')
+        item.value = initial.value
+
+    @Slot()
     def compute(self):
         self.start_spinner_signal.emit()
         event = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         item = self.get_first_param('value')
         self.stop_spinner_signal.emit()
         event.emit_event()
-        item.value = item.value + 1
+        item.value += 1

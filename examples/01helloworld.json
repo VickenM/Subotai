@@ -1,0 +1,50 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.timer.Timer",
+            "id": "41112c04-752a-4dd4-a42b-b05fa6b9c341",
+            "position": [
+                214.47300000000007,
+                177.75599999999991
+            ],
+            "params": {
+                "4": {
+                    "interval": 1000
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                50.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.consolewriter.ConsoleWriter",
+            "id": "d3b14a33-1993-4984-a599-238e4bafea03",
+            "position": [
+                495.193,
+                188.6459999999999
+            ],
+            "params": {
+                "4": {
+                    "prefix": "%m/%d/%Y, %H:%M:%S"
+                },
+                "5": {
+                    "message": "hello world!"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "41112c04-752a-4dd4-a42b-b05fa6b9c341.event",
+            "d3b14a33-1993-4984-a599-238e4bafea03.event"
+        ]
+    ],
+    "groups": []
+}

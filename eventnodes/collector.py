@@ -19,12 +19,12 @@ class Collector(ComputeNode):
         self.params.append(ListParam(name='items', value=[], pluggable=OUTPUT_PLUG))
         self._items = []
 
-    @Slot(str)
-    def trigger(self, event):
-        super().trigger(event)
+    @Slot()
+    def trigger(self):
+        super().trigger()
 
-    @Slot(str)
-    def collect(self, event):
+    @Slot()
+    def collect(self):
         item = self.get_first_param('item')
         self._items.append(item.value)
 

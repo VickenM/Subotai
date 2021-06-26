@@ -1,0 +1,196 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.condition.Condition",
+            "id": "1ecbe8e7-7b65-4c19-8b32-5b10bf17b4aa",
+            "position": [
+                1162.7198522999993,
+                297.0176865000003
+            ],
+            "params": {
+                "5": {
+                    "value1": 0,
+                    "value2": 0
+                }
+            },
+            "active": true,
+            "size": [
+                127.5,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.math.Math",
+            "id": "bbf03fd0-dfdd-413b-a19b-e991831be490",
+            "position": [
+                968.5698523000003,
+                345.8576865000001
+            ],
+            "params": {
+                "4": {
+                    "operation": 5
+                },
+                "5": {
+                    "value1": 1,
+                    "value2": 10
+                },
+                "2": {
+                    "result": 0
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.consolewriter.ConsoleWriter",
+            "id": "ed69dda3-c132-49dc-87bd-13589ce70dd6",
+            "position": [
+                1842.0798523000005,
+                231.34768649999995
+            ],
+            "params": {
+                "4": {
+                    "prefix": "%m/%d/%Y, %H:%M:%S"
+                },
+                "5": {
+                    "message": ""
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.parameter.IntegerParameter",
+            "id": "cf3d9125-abaa-421e-a332-62fd63daa665",
+            "position": [
+                731.6618502000003,
+                457.65493690000005
+            ],
+            "params": {
+                "6": {
+                    "param": 10
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.counter.Counter",
+            "id": "77c8d85f-6681-4ed6-b6e9-4ce16970b318",
+            "position": [
+                749.5598522999996,
+                220.67768650000014
+            ],
+            "params": {
+                "5": {
+                    "initial": 0
+                },
+                "2": {
+                    "value": 489
+                }
+            },
+            "active": true,
+            "size": [
+                182.2800000000001,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.timer.Timer",
+            "id": "f71e672a-55f6-4bc7-a679-21920a86781d",
+            "position": [
+                598.7983061999996,
+                219.9733114
+            ],
+            "params": {
+                "4": {
+                    "interval": 1000
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                50.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.counter.Counter",
+            "id": "61e4867d-7522-40c1-bd0c-5bc222f0be3a",
+            "position": [
+                1374.5798522999994,
+                235.9676865
+            ],
+            "params": {
+                "5": {
+                    "initial": 0
+                },
+                "2": {
+                    "value": 9
+                }
+            },
+            "active": true,
+            "size": [
+                205.26999999999998,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.inttostr.IntToStr",
+            "id": "942807ec-c3b3-4566-8d84-e6d6f00f4a26",
+            "position": [
+                1613.3898523,
+                297.89768650000013
+            ],
+            "params": {
+                "1": {
+                    "integer": 0
+                },
+                "2": {
+                    "string": ""
+                }
+            }
+        }
+    ],
+    "edges": [
+        [
+            "f71e672a-55f6-4bc7-a679-21920a86781d.event",
+            "77c8d85f-6681-4ed6-b6e9-4ce16970b318.event"
+        ],
+        [
+            "1ecbe8e7-7b65-4c19-8b32-5b10bf17b4aa.true",
+            "61e4867d-7522-40c1-bd0c-5bc222f0be3a.reset"
+        ],
+        [
+            "bbf03fd0-dfdd-413b-a19b-e991831be490.result",
+            "1ecbe8e7-7b65-4c19-8b32-5b10bf17b4aa.value1"
+        ],
+        [
+            "77c8d85f-6681-4ed6-b6e9-4ce16970b318.event",
+            "1ecbe8e7-7b65-4c19-8b32-5b10bf17b4aa.event"
+        ],
+        [
+            "cf3d9125-abaa-421e-a332-62fd63daa665.param",
+            "bbf03fd0-dfdd-413b-a19b-e991831be490.value2"
+        ],
+        [
+            "77c8d85f-6681-4ed6-b6e9-4ce16970b318.value",
+            "bbf03fd0-dfdd-413b-a19b-e991831be490.value1"
+        ],
+        [
+            "942807ec-c3b3-4566-8d84-e6d6f00f4a26.string",
+            "ed69dda3-c132-49dc-87bd-13589ce70dd6.message"
+        ],
+        [
+            "61e4867d-7522-40c1-bd0c-5bc222f0be3a.value",
+            "942807ec-c3b3-4566-8d84-e6d6f00f4a26.integer"
+        ],
+        [
+            "61e4867d-7522-40c1-bd0c-5bc222f0be3a.event",
+            "ed69dda3-c132-49dc-87bd-13589ce70dd6.event"
+        ],
+        [
+            "77c8d85f-6681-4ed6-b6e9-4ce16970b318.event",
+            "61e4867d-7522-40c1-bd0c-5bc222f0be3a.event"
+        ]
+    ],
+    "groups": []
+}

@@ -103,13 +103,27 @@ class ComputeNode(BaseNode):
         self.stop_spinner_signal.disconnect(self.ui_node.stop_spinner)
         self.ui_node = None
 
-    @Slot(str)
-    def trigger(self, event):
+    @Slot()
+    def trigger(self):
         self.compute()
 
     @Slot()
     def compute(self):
         pass
+
+    ##################################
+    # TODO: I dont know why. I have to define the specific slots for subclasses! otherwise they wont get triggered when loading from cmdline for background mode
+    # this is VERY inconvenient!!
+
+    @Slot()
+    def reset(self):
+        pass
+
+    @Slot()
+    def collect(self):
+        pass
+
+    ##################################
 
     def get_signals(self):
         return self.signals
@@ -131,6 +145,7 @@ class ComputeNode(BaseNode):
         if not trigger:
             signal.connect(self.trigger)
         else:
+            print(self.map_signal(trigger))
             signal.connect(self.map_signal(trigger))
 
     def disconnect_from(self, signal, trigger=None):

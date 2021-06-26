@@ -1,0 +1,97 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.listdir.ListDir",
+            "id": "fa11e205-4b7c-4722-8fec-48275f8e9f43",
+            "position": [
+                134.82065528925634,
+                253.99143347107446
+            ],
+            "params": {
+                "5": {
+                    "directory": "c:\\temp"
+                },
+                "4": {
+                    "pattern": "*.*",
+                    "recursive": false,
+                    "fullpaths": false
+                },
+                "2": {
+                    "files": [
+                        "0d44e330-7b5b-48b7-9137-77a33b3c1613.jpg",
+                        "New Text Document (3).txt",
+                        "test.json"
+                    ]
+                }
+            },
+            "active": true,
+            "size": [
+                146.2809917355372,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.foreach.ForEach",
+            "id": "45931543-6087-4017-bd56-fedbedf9c5d1",
+            "position": [
+                347.21734950413224,
+                265.3516767768595
+            ],
+            "params": {
+                "5": {
+                    "items": []
+                },
+                "2": {
+                    "item": "test.json",
+                    "index": 2,
+                    "count": 3
+                }
+            },
+            "active": true,
+            "size": [
+                152.06611570247924,
+                118.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.consolewriter.ConsoleWriter",
+            "id": "a9917f2f-cc52-40c6-bfe5-5d8d9cb030ad",
+            "position": [
+                536.4735478512397,
+                263.6987842148761
+            ],
+            "params": {
+                "4": {
+                    "prefix": "%m/%d/%Y, %H:%M:%S"
+                },
+                "5": {
+                    "message": ""
+                }
+            },
+            "active": true,
+            "size": [
+                147.93388429752065,
+                64.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "fa11e205-4b7c-4722-8fec-48275f8e9f43.files",
+            "45931543-6087-4017-bd56-fedbedf9c5d1.items"
+        ],
+        [
+            "fa11e205-4b7c-4722-8fec-48275f8e9f43.event",
+            "45931543-6087-4017-bd56-fedbedf9c5d1.event"
+        ],
+        [
+            "45931543-6087-4017-bd56-fedbedf9c5d1.event",
+            "a9917f2f-cc52-40c6-bfe5-5d8d9cb030ad.event"
+        ],
+        [
+            "45931543-6087-4017-bd56-fedbedf9c5d1.item",
+            "a9917f2f-cc52-40c6-bfe5-5d8d9cb030ad.message"
+        ]
+    ],
+    "groups": []
+}

@@ -16,6 +16,7 @@ from PySide2.QtWidgets import (
     QSplitter,
     QFileDialog
 )
+from PySide2 import QtGui
 from PySide2 import QtCore
 from PySide2.QtGui import QIcon
 from PySide2.QtCore import Slot
@@ -320,18 +321,40 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         file_menu = self.menuBar().addMenu('&File')
-        file_menu.addAction('&New Scene').triggered.connect(self.new_scene)
-        file_menu.addAction('&Open Scene').triggered.connect(self.open_scene)
-        file_menu.addAction('&Save Scene').triggered.connect(self.save_scene)
+        action = file_menu.addAction('&New Scene')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+n'))
+        action.triggered.connect(self.new_scene)
+
+        edit_menu = self.menuBar().addMenu('&Edit')
+        action = edit_menu.addAction('&Group Selected')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
+        action.triggered.connect(self.group_selected)
+        action = edit_menu.addAction('&New Group')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
+        action.triggered.connect(self.new_group)
+
+        edit_menu.addSeparator()
+        action = edit_menu.addAction('&Delete Selected')
+        action.setShortcut(QtGui.QKeySequence('Delete'))
+        action.triggered.connect(self.delete_selected)
+
+        action = file_menu.addAction('&Open Scene')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+o'))
+        action.triggered.connect(self.open_scene)
+
+        action = file_menu.addAction('&Save Scene')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+s'))
+        action.triggered.connect(self.save_scene)
+
         file_menu.addSeparator()
         file_menu.addAction('&Exit').triggered.connect(self.exit_app)
 
         self.menuBar().addSeparator()
-        run = self.menuBar().addAction('Run')
-        run.setIcon(QIcon(p + '/icons/run.jpg'))
-        # run.triggered.connect(lambda x: self.scene.eval())
-        run.triggered.connect(self.spawn)
-        run.setToolTip('Run from the selected node')
+        run_menu = self.menuBar().addMenu('Run')
+        action = run_menu.addAction('&Run in new process')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+r'))
+        action.setIcon(QIcon(p + '/icons/run.jpg'))
+        action.triggered.connect(self.spawn)
 
     def spawn(self):
         import subprocess
@@ -412,6 +435,8 @@ class MainWindow(QMainWindow):
         for node in self.scene.get_all_nodes():
             data['nodes'].append(node.to_dict())
 
+        # TODO: should do edges and groups like nodes with to_dict()
+
         for edge in self.scene.get_all_edges():
             edge_info = (str(edge.source_plug.parentItem().node_obj.obj_id) + '.' + edge.source_plug.type_,
                          str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
@@ -444,18 +469,17 @@ class MainWindow(QMainWindow):
             json.dump(data, fp, indent=4)
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_G:
-            if (event.modifiers() and QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
-                self.scene.group_selected_nodes()
-            else:
-                group = self.scene.create_group()
-                position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-                group.setPos(position)
-        elif event.key() == QtCore.Qt.Key_Period:
+        # if event.key() == QtCore.Qt.Key_G:
+        #     pass
+            # if (event.modifiers() and QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier:
+            #     self.scene.group_selected_nodes()
+            # else:
+            #     group = self.scene.create_group()
+            #     position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+            #     group.setPos(position)
+        if event.key() == QtCore.Qt.Key_Period:
             self.scene.toggle_labels()
-        elif event.key() == QtCore.Qt.Key_Delete:
-            self.scene.remove_selected_nodes()
-            self.scene.remove_selected_groups()
+
         elif event.key() == QtCore.Qt.Key_Space:
             self.scene.eval()
 
@@ -469,6 +493,21 @@ class MainWindow(QMainWindow):
         timers = [item for item in scene_nodes if isinstance(item.node_obj, eventnodes.timer.TimerNode)]
         for timer in timers:
             timer.node_obj.deactivate()
+
+    @Slot()
+    def new_group(self):
+        group = self.scene.create_group()
+        position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+        group.setPos(position)
+
+    @Slot()
+    def group_selected(self):
+        self.scene.group_selected_nodes()
+
+    @Slot()
+    def delete_selected(self):
+        self.scene.remove_selected_nodes()
+        self.scene.remove_selected_groups()
 
     @Slot(str)
     def toolbox_item_selected(self, item):

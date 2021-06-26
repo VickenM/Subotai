@@ -1,0 +1,73 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.image.open.OpenImage",
+            "id": "72c2c92e-5173-4028-80a3-91e81ca6a9f0",
+            "position": [
+                100.0,
+                100.0
+            ],
+            "params": {
+                "5": {
+                    "file": ".\\examples\\images\\faces.jpg"
+                },
+                "2": {
+                    "width": 959,
+                    "height": 629
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.facedetect.FaceDetect",
+            "id": "1bbde17d-761f-48e5-a234-00a678e44779",
+            "position": [
+                270.0,
+                110.0
+            ],
+            "params": {},
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.viewer.Viewer",
+            "id": "2d2e208c-9571-4da8-9c68-3190badce8ac",
+            "position": [
+                450.0,
+                119.0
+            ],
+            "params": {},
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "72c2c92e-5173-4028-80a3-91e81ca6a9f0.event",
+            "1bbde17d-761f-48e5-a234-00a678e44779.event"
+        ],
+        [
+            "72c2c92e-5173-4028-80a3-91e81ca6a9f0.image",
+            "1bbde17d-761f-48e5-a234-00a678e44779.image"
+        ],
+        [
+            "1bbde17d-761f-48e5-a234-00a678e44779.event",
+            "2d2e208c-9571-4da8-9c68-3190badce8ac.event"
+        ],
+        [
+            "1bbde17d-761f-48e5-a234-00a678e44779.image",
+            "2d2e208c-9571-4da8-9c68-3190badce8ac.image"
+        ]
+    ],
+    "groups": []
+}

@@ -18,21 +18,22 @@ class TimerNode(EventNode):
         interval = self.get_first_param('interval').value
         self.timer = QtCore.QTimer()
         self.timer.setInterval(interval)
-        self.timer.timeout.connect(self.timeout)
+        self.timer.timeout.connect(self.compute)
 
         self.deactivate()
 
         self.description = \
-"""The **Timer node** emits an event at every interval time set, in miliseconds.
+            """The **Timer node** emits an event at every interval time set, in miliseconds.
 
-it's pretty cool
+            it's pretty cool
 
-here's a list:
- - first
- - second
- - third
-"""
+            here's a list:
+             - first
+             - second
+             - third
+            """
 
+    @Slot()
     def compute(self):
         for signal in self.signals:
             signal.emit_event()
@@ -57,10 +58,6 @@ here's a list:
             self.deactivate()
         else:
             self.activate()
-
-    @Slot()
-    def timeout(self):
-        self.compute()
 
     def set_param_value(self, param, value):
         super().set_param_value(param, value)
