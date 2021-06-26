@@ -1,7 +1,7 @@
 from PySide2 import QtCore
 
 from .base import EventNode
-from .params import StringParam, ListParam, OUTPUT_PLUG, PARAM
+from .params import StringParam, ListParam, OUTPUT_PLUG, PARAM, SUBTYPE_DIRPATH
 from .signal import Signal, OUTPUT_PLUG
 
 import os
@@ -12,7 +12,7 @@ class DirChanged(EventNode):
         super().__init__(*args, **kwargs)
         self.type = 'DirChanged'
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='directory', value='', pluggable=OUTPUT_PLUG | PARAM))
+        self.params.append(StringParam(name='directory', value='', pluggable=OUTPUT_PLUG | PARAM, subtype=SUBTYPE_DIRPATH))
         self.params.append(ListParam(name='new', value=[], pluggable=OUTPUT_PLUG))
         self.params.append(ListParam(name='removed', value=[], pluggable=OUTPUT_PLUG))
 

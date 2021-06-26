@@ -577,6 +577,8 @@ def main(background=False, scene_file=None, json_string=None):
     QtCore.QTimer(app).singleShot(0, start_thread)
     app.startingUp()
     main_window = MainWindow()
+    # with open('./ManjaroMix.qss', 'r') as fp:
+    #     main_window.setStyleSheet(fp.read())
 
     if scene_file:
         main_window.load_file(scene_file)

@@ -145,7 +145,6 @@ class ComputeNode(BaseNode):
         if not trigger:
             signal.connect(self.trigger)
         else:
-            print(self.map_signal(trigger))
             signal.connect(self.map_signal(trigger))
 
     def disconnect_from(self, signal, trigger=None):

@@ -19,6 +19,21 @@ class For(ComputeNode):
 
         self.params.append(IntParam(name='current', value=0, pluggable=OUTPUT_PLUG))
 
+        self.description = \
+            """The **For node** loops from *start* to *end* and emit an event for each value. *step* controls each step increment.
+
+Parameters:
+
+- *start*: the start value
+- *end*: the end value to stop emitting events
+- *step*: the step increment
+- *current*: the value currently being outputted by the node
+
+Events:
+
+- *finished*: emitted event when reached the end
+"""
+
     def compute(self):
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         finished = self.get_first_signal('finished', pluggable=OUTPUT_PLUG)

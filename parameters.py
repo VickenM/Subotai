@@ -117,7 +117,8 @@ class Parameters(QtWidgets.QWidget):
         self.controls_info = {}
 
     def set_node_obj(self, node_obj):
-        from eventnodes.params import INPUT_PLUG, OUTPUT_PLUG, PARAM, SUBTYPE_PASSWORD, SUBTYPE_FILEPATH
+        from eventnodes.params import INPUT_PLUG, OUTPUT_PLUG, PARAM, SUBTYPE_PASSWORD, SUBTYPE_FILEPATH, \
+            SUBTYPE_DIRPATH
         from enum import Enum
 
         self.node_obj = node_obj
@@ -167,12 +168,22 @@ class Parameters(QtWidgets.QWidget):
                     widget.textChanged.connect(partial(self.set_param_value, node_obj, param))
                     if param.subtype == SUBTYPE_PASSWORD:
                         widget.setEchoMode(widget.Password)
-                    elif param.subtype == SUBTYPE_FILEPATH:
-                        button = QtWidgets.QToolButton(self)
-                        button.setIcon(QtWidgets.QApplication.style().standardIcon(QtWidgets.QStyle.SP_FileIcon))
-                        button.clicked.connect(partial(
-                            lambda text: text.setText(QtWidgets.QFileDialog.getOpenFileName(self, "Open File")[0]), widget)
-                        )
+                    elif (param.subtype == SUBTYPE_FILEPATH) or (param.subtype == SUBTYPE_DIRPATH):
+                        if param.subtype == SUBTYPE_FILEPATH:
+                            button = QtWidgets.QToolButton(self)
+                            button.setIcon(QtWidgets.QApplication.style().standardIcon(QtWidgets.QStyle.SP_FileIcon))
+                            button.clicked.connect(partial(
+                                lambda text: text.setText(QtWidgets.QFileDialog.getOpenFileName(self, "Open File")[0]),
+                                widget)
+                            )
+                        else:
+                            button = QtWidgets.QToolButton(self)
+                            button.setIcon(QtWidgets.QApplication.style().standardIcon(QtWidgets.QStyle.SP_DirIcon))
+                            button.clicked.connect(partial(
+                                lambda text: text.setText(
+                                    QtWidgets.QFileDialog.getExistingDirectory(self, "Open Directory") or text.text()),
+                                widget)
+                            )
                         w = QtWidgets.QWidget()
                         layout = QtWidgets.QHBoxLayout()
                         layout.setContentsMargins(0, 0, 0, 0)

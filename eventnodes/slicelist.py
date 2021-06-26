@@ -39,19 +39,13 @@ class SliceList(BaseNode):
         self.params.append(list_param)
         self.params.append(
             SliceParam(name='list', start=start_param, end=end_param, list_param=list_param, pluggable=OUTPUT_PLUG))
+        self.description = \
+            """The **SliceList node** takes a list of items and returns the subset list of them, between *start* and *end* indices.
 
-        # def compute(self):
-        #     start = self.get_first_param('start')
-        #     end = self.get_first_param('end')
-        #     in_list = self.get_first_param('list', pluggable=INPUT_PLUG)
-        #     out_list = self.get_first_param('list', pluggable=OUTPUT_PLUG)
-        #
-        #     _parts = source().split(pattern())
-        #
-        #     parts.value.clear()
-        #     for p in _parts:
-        #         parts.value.append(StringParam(name='', value=p))
-        #
-        #     signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-        #     signal.emit_event()
-        #     super().compute()
+Parameters:
+
+- *list* (input): the input list of items
+- *start*: the start index of the sub list
+- *end*: the end index of the sub list
+- *list* (output): the output list of items
+"""

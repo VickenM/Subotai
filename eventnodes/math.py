@@ -68,33 +68,13 @@ class Math(BaseNode):
         self.params.append(
             MathParam(first_param=first, second_param=second, op_param=op, name='result', pluggable=OUTPUT_PLUG))
 
-# class Math(ComputeNode):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self.type = 'Math'
-#
-#         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-#         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-#
-#         self.params.append(MathOpParam(name='operation', value=MathOpParam.Operations.add, pluggable=PARAM))
-#         self.params.append(IntParam(name='value1', value=0, pluggable=INPUT_PLUG | PARAM))
-#         self.params.append(IntParam(name='value2', value=0, pluggable=INPUT_PLUG | PARAM))
-#         self.params.append(IntParam(name='result', value=0, pluggable=OUTPUT_PLUG))
-#
-#     def compute(self):
-#         first = self.get_first_param('value1')
-#         second = self.get_first_param('value2')
-#         op = self.get_first_param('operation')
-#
-#         result = self.get_first_param('result')
-#         if op.value == op.Operations.add:
-#             result.value = first.value + second.value
-#         elif op.value == op.Operations.subtract:
-#             result.value = first.value - second.value
-#         elif op.value == op.Operations.multiply:
-#             result.value = first.value * second.value
-#         elif op.value == op.Operations.divide:
-#             result.value = first.value / second.value
-#
-#         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-#         signal.emit_event()
+        self.description = \
+            """The **Math node** performs the arithmetic *operation* on *value1* and *value2*.
+
+Parameters:
+
+- *value1*: first input
+- *value2*: second input
+- *operation*: the operation to perform on hte inputs
+- *result*: the result of applying the operation on the input values
+"""

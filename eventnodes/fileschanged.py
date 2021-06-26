@@ -22,6 +22,14 @@ class FilesChanged(EventNode):
 
         self.update()
 
+        self.description = \
+            """The **FilesChange node** watches the *files* path and emits the *event* signal when a change to one of the files occurs.
+
+Parameters:
+
+- *files*: the list of files to watch
+"""
+
     def activate(self):
         directory = self.get_first_param('directory').value
         self.watcher.removePaths(self.watcher.directories())

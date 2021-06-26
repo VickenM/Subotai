@@ -31,3 +31,12 @@ class SplitString(ComputeNode):
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
         super().compute()
+        self.description = \
+            """The **SplitString node** uses *pattern* to split the *source* string into a list of *parts*
+
+Parameters:
+
+- *source*: the input string
+- *pattern*: pattern to split the source string by
+- *parts*: the resulting list of string parts
+"""

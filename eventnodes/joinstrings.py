@@ -31,9 +31,6 @@ class JoinStrings(BaseNode):
         self.type = 'JoinStrings'
         self.color = (150, 150, 150, 255)
 
-        # self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        # self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-
         first = StringParam(name='first', value='', pluggable=PARAM | INPUT_PLUG)
         second = StringParam(name='second', value='', pluggable=PARAM | INPUT_PLUG)
         separator = StringParam(name='separator', value='', pluggable=PARAM | INPUT_PLUG)
@@ -42,17 +39,13 @@ class JoinStrings(BaseNode):
         self.params.append(separator)
         self.params.append(JoinParam(first_param=first, second_param=second, sep_param=separator, name='string',
                                      pluggable=OUTPUT_PLUG))
+        self.description = \
+            """The **JoinString node** joins *first* with *second* with *separator* in between.
 
-        # def compute(self):
-        #     first = self.get_first_param('first')
-        #     second = self.get_first_param('second')
-        #     sep = self.get_first_param('separator')
-        #
-        #     string = self.get_first_param('string')
-        #
-        #     sep_ = sep()
-        #     string.value = sep_.join([first(), second()])
-        #
-        #     signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-        #     signal.emit_event()
-        #     super().compute()
+Parameters:
+
+- *first*: the first string
+- *second*: the seconds string
+- *separator*: the separator between strings
+- *string*: the resulting string from joining the input strings
+"""

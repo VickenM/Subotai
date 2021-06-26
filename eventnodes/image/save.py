@@ -2,7 +2,7 @@ from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
 from .baseimage import BaseImageNode
-from eventnodes.params import StringParam, IntParam, PARAM
+from eventnodes.params import StringParam, IntParam, PARAM, SUBTYPE_FILEPATH
 from eventnodes.signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 from .imageparam import ImageParam
 
@@ -17,7 +17,8 @@ class Save(BaseImageNode):
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(ImageParam(name='image', value=None, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='filename', value='', pluggable=PARAM | INPUT_PLUG))
+        self.params.append(
+            StringParam(name='filename', value='', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_FILEPATH))
 
     def compute(self):
         self.start_spinner_signal.emit()

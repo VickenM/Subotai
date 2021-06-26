@@ -1,0 +1,77 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.facedetect.FaceDetect",
+            "id": "ae280d8e-92ab-47fe-91a2-f2a6fb76923d",
+            "position": [
+                367.0,
+                188.0
+            ],
+            "params": {
+                "4": {
+                    "classifier": "D:/projects/python/node2/app/eventnodes/haarcascade_frontalface_default.xml"
+                }
+            },
+            "active": true,
+            "size": [
+                215.0,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.image.open.OpenImage",
+            "id": "d77eb323-ec67-4460-a182-f111ca693493",
+            "position": [
+                64.0,
+                181.0
+            ],
+            "params": {
+                "5": {
+                    "file": "D:/projects/python/node2/app/examples/images/faces.jpg"
+                },
+                "2": {
+                    "width": 959,
+                    "height": 629
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.viewer.Viewer",
+            "id": "95ddd903-1146-4c04-a45e-844804f08d15",
+            "position": [
+                698.0,
+                217.0
+            ],
+            "params": {},
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "d77eb323-ec67-4460-a182-f111ca693493.event",
+            "ae280d8e-92ab-47fe-91a2-f2a6fb76923d.event"
+        ],
+        [
+            "d77eb323-ec67-4460-a182-f111ca693493.image",
+            "ae280d8e-92ab-47fe-91a2-f2a6fb76923d.image"
+        ],
+        [
+            "ae280d8e-92ab-47fe-91a2-f2a6fb76923d.event",
+            "95ddd903-1146-4c04-a45e-844804f08d15.event"
+        ],
+        [
+            "ae280d8e-92ab-47fe-91a2-f2a6fb76923d.image",
+            "95ddd903-1146-4c04-a45e-844804f08d15.image"
+        ]
+    ],
+    "groups": []
+}

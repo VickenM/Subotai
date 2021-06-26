@@ -19,6 +19,9 @@ from PIL import ImageQt
 class View(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
+        self.setAttribute(QtCore.Qt.WA_QuitOnClose, False)  # close this widget when main app window is closed
+        self.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
+
         self.pixmap = None
         self.label = QtWidgets.QLabel(self)
 
@@ -29,7 +32,7 @@ class View(QtWidgets.QWidget):
         layout.setSizeConstraint(layout.SetNoConstraint)
         self.setLayout(layout)
 
-        self.resize(1920/4, 1080/4)
+        self.resize(1920 / 4, 1080 / 4)
 
     def setPixmap(self, image):
         width = self.label.width()
@@ -53,6 +56,15 @@ class Viewer(ComputeNode):
         self.show_viewer_button = QtWidgets.QPushButton('Toggle Viewer')
 
         self.controls.append((self.show_viewer_button, self.toggle_viewer, self.show_viewer_button.clicked))
+        self.description = \
+            """The **Viewer node** provides a Viewer UI window, for viewing an *image*
+
+
+Parameters:
+
+- *image*: a source image to view
+            """
+
 
     def toggle_viewer(self):
         self.widget.setVisible(not self.widget.isVisible())

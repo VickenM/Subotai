@@ -32,6 +32,7 @@ class Camera(ComputeNode):
     def compute(self):
         self.start_spinner_signal.emit()
         ret, frame = self.cap.read()
+
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img_pil = Image.fromarray(img)
 
