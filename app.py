@@ -14,7 +14,10 @@ from PySide2.QtWidgets import (
     QHBoxLayout,
     QGraphicsScene,
     QSplitter,
-    QFileDialog
+    QFileDialog,
+    QSystemTrayIcon,
+    QMenu,
+    QSplashScreen
 )
 from PySide2 import QtGui
 from PySide2 import QtCore
@@ -57,6 +60,8 @@ import eventnodes.facedetect
 import eventnodes.viewer
 import eventnodes.systemnotification
 import appnode
+
+p = os.path.dirname(os.path.abspath(__file__))
 
 
 @Slot(list)
@@ -261,8 +266,6 @@ class MainWindow(QMainWindow):
         self.filename = None
         self.unsaved = True
 
-        p = os.path.dirname(os.path.abspath(__file__))
-
         toolbox = ToolBox()
         toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="DirChanged", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="FilesChanged", sections=['Events']))
@@ -348,7 +351,10 @@ class MainWindow(QMainWindow):
         action.triggered.connect(self.save_scene_as)
 
         file_menu.addSeparator()
-        file_menu.addAction('&Exit').triggered.connect(self.exit_app)
+
+        action = file_menu.addAction('&Exit')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+q'))
+        action.triggered.connect(self.exit_app)
 
         edit_menu = self.menuBar().addMenu('&Edit')
         action = edit_menu.addAction('&Group Selected')
@@ -374,6 +380,18 @@ class MainWindow(QMainWindow):
         action.setShortcut(QtGui.QKeySequence('Ctrl+Shift+r'))
         action.triggered.connect(lambda x: self.spawn(background=True))
 
+        self.trayIcon = QSystemTrayIcon(self)
+        self.trayIcon.setIcon(QIcon(p + '/icons/icon.png'))
+        self.trayIcon.setVisible(True)
+        self.trayIcon.activated.connect(self.showNormal)
+
+        self.trayIconMenu = QMenu(self)
+        self.trayIconMenu.addAction('Show/Hide Window').triggered.connect(self.toggle_visible)
+        self.trayIconMenu.addSeparator()
+        self.trayIconMenu.addAction('Exit').triggered.connect(self.exit_app)
+
+        self.trayIcon.setContextMenu(self.trayIconMenu)
+
     def spawn(self, background=True):
         import subprocess
 
@@ -381,7 +399,7 @@ class MainWindow(QMainWindow):
         app_path = os.path.abspath(__file__)
         json_string = self.dump_json()
 
-        args = [py_path, app_path, '--load-json', json_string]
+        args = [py_path, app_path, '--no-splash', '--load-json', json_string]
         if background:
             args = [py_path, app_path, '--background', '--load-json', json_string]
 
@@ -492,9 +510,6 @@ class MainWindow(QMainWindow):
         if event.key() == QtCore.Qt.Key_Period:
             self.scene.toggle_labels()
 
-            # elif event.key() == QtCore.Qt.Key_Space:
-            #     self.scene.eval()
-
     def stop_timers(self):
         scene_nodes = self.scene.list_nodes()
         for node in scene_nodes:
@@ -564,21 +579,50 @@ class MainWindow(QMainWindow):
         else:
             self.save_scene_as()
 
+    def toggle_visible(self):
+        self.setVisible(not self.isVisible())
+
     @Slot()
     def exit_app(self):
         qapp = QApplication.instance()
         qapp.exit()
 
+    def closeEvent(self, event):
+        if not event.spontaneous() or not self.isVisible():
+            return
 
-def main(background=False, scene_file=None, json_string=None):
+        self.hide()
+        event.ignore()
+
+
+def show_splashscreen():
+    splash_pix = QtGui.QPixmap(p + '/icons/splashscreen.png')
+
+    splash = QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+    opaqueness = 0.0
+    step = 0.05
+    splash.setWindowOpacity(opaqueness)
+
+    splash.show()
+    splash.showMessage(splash.tr("PywerLines 1.0.0 Beta (c) Vicken Mavlian 2021"),
+                       QtCore.Qt.AlignBottom or QtCore.Qt.AlignHCenter,
+                       color=QtGui.QColor(255, 255, 255))
+    import time
+    while opaqueness < 1:
+        splash.setWindowOpacity(opaqueness)
+        time.sleep(step)
+        opaqueness += (1 * step)
+    time.sleep(1.2)
+    splash.close()
+
+
+def main(background=False, scene_file=None, json_string=None, splashscreen=True):
     import signal as signal_
 
     app = QApplication(sys.argv)
     QtCore.QTimer(app).singleShot(0, start_thread)
     app.startingUp()
     main_window = MainWindow()
-    # with open('./ManjaroMix.qss', 'r') as fp:
-    #     main_window.setStyleSheet(fp.read())
 
     if scene_file:
         main_window.load_file(scene_file)
@@ -589,6 +633,8 @@ def main(background=False, scene_file=None, json_string=None):
     if background:
         signal_.signal(signal_.SIGINT, signal_.SIG_DFL)  # accept ctrl-c signal when in background mode to quit
     else:
+        if splashscreen:
+            show_splashscreen()
         main_window.show()
 
     app.aboutToQuit.connect(stop_thread)
@@ -602,6 +648,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--background", action='store_true', help="run in a background process (no GUI)")
+    parser.add_argument("--no-splash", action='store_true', default=False,
+                        help="disable startup splashscreen (only in GUI mode)")
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument("--load-file", type=str, metavar='<FILENAME>',
                        help="loads the given scene .json file in")
@@ -618,5 +666,8 @@ if __name__ == "__main__":
     if args.load_json:
         json_string = args.load_json
 
-    app, main_window = main(background=background, scene_file=scene_file, json_string=json_string)
+    splashscreen = not args.no_splash
+
+    app, main_window = main(background=background, scene_file=scene_file, json_string=json_string,
+                            splashscreen=splashscreen)
     sys.exit(app.exec_())
