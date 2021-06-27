@@ -381,7 +381,7 @@ class MainWindow(QMainWindow):
         action.triggered.connect(lambda x: self.spawn(background=True))
 
         self.trayIcon = QSystemTrayIcon(self)
-        self.trayIcon.setIcon(QIcon(p + '/icons/icon.png'))
+        self.trayIcon.setIcon(QIcon(p + '/icons/waves.003.png'))
         self.trayIcon.setVisible(True)
         self.trayIcon.activated.connect(self.showNormal)
 
@@ -582,6 +582,14 @@ class MainWindow(QMainWindow):
     def toggle_visible(self):
         self.setVisible(not self.isVisible())
 
+        icon = QIcon(p +'/icons/run.png')
+        self.trayIcon.showMessage(
+            'TITLE',
+            'THIS IS THE MESSAGE BODY',
+            icon,
+            5 * 1000,
+        )
+
     @Slot()
     def exit_app(self):
         qapp = QApplication.instance()
@@ -596,7 +604,7 @@ class MainWindow(QMainWindow):
 
 
 def show_splashscreen():
-    splash_pix = QtGui.QPixmap(p + '/icons/splashscreen.png')
+    splash_pix = QtGui.QPixmap(p + '/icons/splashscreen.002.png')
 
     splash = QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     opaqueness = 0.0
@@ -620,9 +628,14 @@ def main(background=False, scene_file=None, json_string=None, splashscreen=True)
     import signal as signal_
 
     app = QApplication(sys.argv)
+
     QtCore.QTimer(app).singleShot(0, start_thread)
     app.startingUp()
+    app.setWindowIcon(QIcon(p + "/icons/waves.003.png"))
+
     main_window = MainWindow()
+    main_window.setWindowTitle('PywerLines')
+    main_window.setWindowIcon(QIcon( p + "/icons/waves.003.png"))
 
     if scene_file:
         main_window.load_file(scene_file)
