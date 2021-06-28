@@ -17,7 +17,8 @@ from PySide2.QtWidgets import (
     QFileDialog,
     QSystemTrayIcon,
     QMenu,
-    QSplashScreen
+    QSplashScreen,
+    QMessageBox
 )
 from PySide2 import QtGui
 from PySide2 import QtCore
@@ -61,7 +62,7 @@ import eventnodes.viewer
 import eventnodes.systemnotification
 import appnode
 
-p = os.path.dirname(os.path.abspath(__file__))
+path = os.path.dirname(os.path.abspath(__file__))
 
 
 @Slot(list)
@@ -126,6 +127,14 @@ def disconnected_plugs(plug1, plug2):
         output = plug2.plug_obj
 
         output.disconnect()
+
+
+class SplashScreen(QSplashScreen):
+    def __init__(self, pixmap, flags):
+        super().__init__(pixmap, flags)
+
+        # TODO I dont get it, implementing the mousePressEvent(...) function doesn't work. this lambda assignment is hack
+        self.mousePressEvent = lambda x: self.close()
 
 
 class EventFlow(pywerscene.PywerScene):
@@ -267,37 +276,37 @@ class MainWindow(QMainWindow):
         self.unsaved = True
 
         toolbox = ToolBox()
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="DirChanged", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="FilesChanged", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Timer", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="CopyFile", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ListDir", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ZipFile", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Email", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="StringParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="IntegerParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="FloatParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="BooleanParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="IntToStr", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Math", sections=['Math']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="SliceList", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="SplitString", sections=['String']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="JoinStrings", sections=['String']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="For", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ForEach", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Counter", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Condition", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Collector", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ConsoleWriter", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="OpenImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="SaveImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="CropImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ResizeImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="ThumbnailImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Camera", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="FaceDetect", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="Viewer", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(p + '/icons/flow.png'), label="SystemNotification", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="DirChanged", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FilesChanged", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Timer", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="CopyFile", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ListDir", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ZipFile", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Email", sections=['FileSystem']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="StringParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="IntegerParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FloatParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="BooleanParameter", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="IntToStr", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Math", sections=['Math']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SliceList", sections=['Data']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SplitString", sections=['String']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="JoinStrings", sections=['String']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="For", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ForEach", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Counter", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Condition", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Collector", sections=['Flow Control']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ConsoleWriter", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="OpenImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SaveImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="CropImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ResizeImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ThumbnailImage", sections=['Image']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Camera", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FaceDetect", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Viewer", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SystemNotification", sections=['I/O']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
 
         scene.nodes_selected.connect(selected_nodes)
@@ -328,7 +337,7 @@ class MainWindow(QMainWindow):
 
         toolbar = self.addToolBar('Run')
         action = toolbar.addAction('&Run')
-        action.setIcon(QIcon(p + '/icons/run.jpg'))
+        action.setIcon(QIcon(path + '/icons/run.jpg'))
         action.setShortcut(QtGui.QKeySequence('Space'))
         action.triggered.connect(lambda x: self.scene.eval())
 
@@ -380,8 +389,13 @@ class MainWindow(QMainWindow):
         action.setShortcut(QtGui.QKeySequence('Ctrl+Shift+r'))
         action.triggered.connect(lambda x: self.spawn(background=True))
 
+        help_menu = self.menuBar().addMenu('Help')
+        action = help_menu.addAction('About')
+        # action.triggered.connect(lambda x: show_about(parent=self))
+        action.triggered.connect(lambda x: show_splashscreen(animate=False))
+
         self.trayIcon = QSystemTrayIcon(self)
-        self.trayIcon.setIcon(QIcon(p + '/icons/waves.003.png'))
+        self.trayIcon.setIcon(QIcon(path + '/icons/waves.003.png'))
         self.trayIcon.setVisible(True)
         self.trayIcon.activated.connect(self.showNormal)
 
@@ -403,12 +417,12 @@ class MainWindow(QMainWindow):
         if background:
             args = [py_path, app_path, '--background', '--load-json', json_string]
 
-        p = subprocess.Popen(args,
-                             creationflags=subprocess.CREATE_NEW_CONSOLE,
-                             close_fds=True,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=False)
+        proc_ = subprocess.Popen(args,
+                                 creationflags=subprocess.CREATE_NEW_CONSOLE,
+                                 close_fds=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 shell=False)
 
     def load_data(self, data):
         for node in data['nodes']:
@@ -582,7 +596,7 @@ class MainWindow(QMainWindow):
     def toggle_visible(self):
         self.setVisible(not self.isVisible())
 
-        icon = QIcon(p +'/icons/run.png')
+        icon = QIcon(path + '/icons/run.png')
         self.trayIcon.showMessage(
             'TITLE',
             'THIS IS THE MESSAGE BODY',
@@ -603,25 +617,35 @@ class MainWindow(QMainWindow):
         event.ignore()
 
 
-def show_splashscreen():
-    splash_pix = QtGui.QPixmap(p + '/icons/splashscreen.002.png')
+def show_about(parent):
+    # QMessageBox.about(parent, 'PywerLines', 'text')
+    show_splashscreen(animate=False)
 
-    splash = QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
-    opaqueness = 0.0
-    step = 0.05
-    splash.setWindowOpacity(opaqueness)
 
-    splash.show()
+def show_splashscreen(animate=False):
+    splash_pix = QtGui.QPixmap(path + '/icons/splashscreen.002.png')
+    splash = SplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     splash.showMessage(splash.tr("PywerLines 1.0.0 Beta (c) Vicken Mavlian 2021"),
                        QtCore.Qt.AlignBottom or QtCore.Qt.AlignHCenter,
                        color=QtGui.QColor(255, 255, 255))
-    import time
-    while opaqueness < 1:
+
+    splash.show()
+    if animate:
+        import time
+        opaqueness = 0.0
+        step = 0.05
         splash.setWindowOpacity(opaqueness)
-        time.sleep(step)
-        opaqueness += (1 * step)
-    time.sleep(1.2)
-    splash.close()
+        splash.show()
+
+        while opaqueness < 1.1:
+            splash.setWindowOpacity(opaqueness)
+            time.sleep(step)
+            opaqueness += (1 * step)
+        time.sleep(2)
+        splash.close()
+        return
+
+    splash.show()
 
 
 def main(background=False, scene_file=None, json_string=None, splashscreen=True):
@@ -631,11 +655,11 @@ def main(background=False, scene_file=None, json_string=None, splashscreen=True)
 
     QtCore.QTimer(app).singleShot(0, start_thread)
     app.startingUp()
-    app.setWindowIcon(QIcon(p + "/icons/waves.003.png"))
+    app.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
 
     main_window = MainWindow()
     main_window.setWindowTitle('PywerLines')
-    main_window.setWindowIcon(QIcon( p + "/icons/waves.003.png"))
+    main_window.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
 
     if scene_file:
         main_window.load_file(scene_file)
@@ -647,7 +671,7 @@ def main(background=False, scene_file=None, json_string=None, splashscreen=True)
         signal_.signal(signal_.SIGINT, signal_.SIG_DFL)  # accept ctrl-c signal when in background mode to quit
     else:
         if splashscreen:
-            show_splashscreen()
+            show_splashscreen(animate=True)
         main_window.show()
 
     app.aboutToQuit.connect(stop_thread)
