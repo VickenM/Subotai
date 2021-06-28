@@ -64,6 +64,9 @@ class BaseNode(QtCore.QObject):
     def update(self):
         self.ui_node.update()
 
+    def terminate(self):
+        pass
+
 
 class Worker(QtCore.QThread):
     def __init__(self):

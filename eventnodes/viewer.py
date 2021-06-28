@@ -65,7 +65,6 @@ Parameters:
 - *image*: a source image to view
             """
 
-
     def toggle_viewer(self):
         self.widget.setVisible(not self.widget.isVisible())
 
@@ -78,3 +77,9 @@ Parameters:
         self.widget.setPixmap(qim)
         self.stop_spinner_signal.emit()
         super().compute()
+
+    def terminate(self):
+        if self.widget:
+            self.widget.setParent(None)
+            del self.widget
+            self.widget = None

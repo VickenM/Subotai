@@ -248,6 +248,12 @@ class EventFlow(pywerscene.PywerScene):
     def get_all_groups(self):
         return [item for item in self.items() if isinstance(item, pyweritems.PywerGroup)]
 
+    def remove_selected_nodes(self):
+        nodes = self.get_selected_nodes()
+        for node in nodes:
+            node.node_obj.terminate()
+        return super().remove_selected_nodes()
+
     def eval(self):
         selected_nodes = self.get_selected_nodes()
         if not selected_nodes:
