@@ -36,6 +36,16 @@ class Camera(ComputeNode):
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
 
+        self.description = \
+            """The **Camera node** can read images from your camera and output the *image*.
+
+Parameters:
+
+- *camera index*: the index of the camera device available on the system to read from
+- *image*: image read from the camera
+
+"""
+
     def update(self):
         index = self.get_first_param('camera index').value
         width = self.get_first_param('width').value

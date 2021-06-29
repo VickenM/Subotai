@@ -227,6 +227,7 @@ class Parameters(QtWidgets.QWidget):
 
     def set_enum_param_value(self, node_obj, param, value):
         param.value = param.Operations.__members__[value]
+        node_obj.update()
 
     def set_param_value(self, node_obj, param, value):
         param.value = value

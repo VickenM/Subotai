@@ -1,0 +1,130 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.camera.Camera",
+            "id": "7e5d604a-f2cc-4991-98fb-77fe24e5064d",
+            "position": [
+                4.0,
+                233.0
+            ],
+            "params": {
+                "4": {
+                    "camera index": 1,
+                    "width": 960,
+                    "height": 540
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.facedetect.FaceDetect",
+            "id": "09df86a5-5468-48d4-acb4-1031e3d623e9",
+            "position": [
+                182.0,
+                118.0
+            ],
+            "params": {
+                "4": {
+                    "classifier": "",
+                    "scale factor": 1.1,
+                    "min neighbors": 5,
+                    "width": 30,
+                    "height": 30
+                },
+                "2": {
+                    "x1": 0,
+                    "y1": 0,
+                    "x2": 0,
+                    "y2": 0
+                }
+            },
+            "active": true,
+            "size": [
+                164.0,
+                154.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.viewer.Viewer",
+            "id": "9370af79-c7ad-4eba-9a41-90898465f1a1",
+            "position": [
+                742.0,
+                140.0
+            ],
+            "params": {},
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.image.crop.CropImage",
+            "id": "a09eb43e-b63b-4b84-8139-cb15c86e60d7",
+            "position": [
+                513.0,
+                167.0
+            ],
+            "params": {
+                "5": {
+                    "left": 0,
+                    "upper": 0,
+                    "right": 0,
+                    "lower": 0
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                136.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "7e5d604a-f2cc-4991-98fb-77fe24e5064d.event",
+            "09df86a5-5468-48d4-acb4-1031e3d623e9.event"
+        ],
+        [
+            "7e5d604a-f2cc-4991-98fb-77fe24e5064d.image",
+            "09df86a5-5468-48d4-acb4-1031e3d623e9.image"
+        ],
+        [
+            "09df86a5-5468-48d4-acb4-1031e3d623e9.event",
+            "a09eb43e-b63b-4b84-8139-cb15c86e60d7.event"
+        ],
+        [
+            "7e5d604a-f2cc-4991-98fb-77fe24e5064d.image",
+            "a09eb43e-b63b-4b84-8139-cb15c86e60d7.image"
+        ],
+        [
+            "09df86a5-5468-48d4-acb4-1031e3d623e9.x1",
+            "a09eb43e-b63b-4b84-8139-cb15c86e60d7.left"
+        ],
+        [
+            "09df86a5-5468-48d4-acb4-1031e3d623e9.y1",
+            "a09eb43e-b63b-4b84-8139-cb15c86e60d7.upper"
+        ],
+        [
+            "09df86a5-5468-48d4-acb4-1031e3d623e9.x2",
+            "a09eb43e-b63b-4b84-8139-cb15c86e60d7.right"
+        ],
+        [
+            "09df86a5-5468-48d4-acb4-1031e3d623e9.y2",
+            "a09eb43e-b63b-4b84-8139-cb15c86e60d7.lower"
+        ],
+        [
+            "a09eb43e-b63b-4b84-8139-cb15c86e60d7.event",
+            "9370af79-c7ad-4eba-9a41-90898465f1a1.event"
+        ],
+        [
+            "a09eb43e-b63b-4b84-8139-cb15c86e60d7.image",
+            "9370af79-c7ad-4eba-9a41-90898465f1a1.image"
+        ]
+    ],
+    "groups": []
+}

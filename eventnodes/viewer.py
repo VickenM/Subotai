@@ -72,9 +72,10 @@ Parameters:
         self.start_spinner_signal.emit()
         image = self.get_first_param('image')
 
-        qim = ImageQt.ImageQt(image.value)
+        if image.value:
+            qim = ImageQt.ImageQt(image.value)
 
-        self.widget.setPixmap(qim)
+            self.widget.setPixmap(qim)
         self.stop_spinner_signal.emit()
         super().compute()
 

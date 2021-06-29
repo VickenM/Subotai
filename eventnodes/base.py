@@ -5,6 +5,8 @@ from PySide2.QtCore import Slot, Signal, QEventLoop
 from .params import INPUT_PLUG, OUTPUT_PLUG, PARAM
 from abc import abstractmethod
 
+thread = None
+
 
 class BaseNode(QtCore.QObject):
     def __init__(self, *args, **kwargs):
@@ -77,9 +79,6 @@ class Worker(QtCore.QThread):
         self.exec_()
 
 
-thread = None
-
-
 class ComputeNode(BaseNode):
     calculate = QtCore.Signal()
     start_spinner_signal = QtCore.Signal()
@@ -87,14 +86,14 @@ class ComputeNode(BaseNode):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.color = (35, 105, 140, 200)
-        self.signals = []
-
-        self.calculate.connect(self.compute)
-
-        self.computable = True
+        global thread
 
         self.moveToThread(thread)
+
+        self.color = (35, 105, 140, 200)
+        self.signals = []
+        self.calculate.connect(self.compute)
+        self.computable = True
 
     def set_ui_node(self, ui_node):
         self.ui_node = ui_node

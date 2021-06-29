@@ -11,18 +11,31 @@ class FilterEdit(QtWidgets.QLineEdit):
 class SectionView(QtWidgets.QListView):
     def __init__(self, parent=None):
         super(SectionView, self).__init__(parent=parent)
-        self.setViewMode(self.IconMode)
-        self.setWrapping(True)
+        self.setViewMode(self.ListMode)
+        self.setAlternatingRowColors(True)
+        self.setWrapping(False)
         self.setResizeMode(self.Adjust)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                             QtWidgets.QSizePolicy.Minimum))
+                                                 QtWidgets.QSizePolicy.Minimum))
         self.setUniformItemSizes(True)
         self.setMovement(self.Snap)
         self.setSelectionMode(self.NoSelection)
         self.setEditTriggers(self.NoEditTriggers)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-    
+
+    def set_icon_mode(self):
+        self.setViewMode(self.IconMode)
+        self.setWrapping(True)
+        self.setAlternatingRowColors(False)
+        self.updateGeometry()
+
+    def set_list_mode(self):
+        self.setViewMode(self.ListMode)
+        self.setWrapping(False)
+        self.setAlternatingRowColors(True)
+        self.updateGeometry()
+
     def sizeHint(self):
         import math
 
@@ -35,18 +48,17 @@ class SectionView(QtWidgets.QListView):
         item_count = self.model().rowCount()
 
         area_width = self.childrenRect().width()
-        items_per_row = (area_width-1)//item_width
+        items_per_row = (area_width - 1) // item_width
 
         rows = item_count
         if self.viewMode() == self.IconMode:
-            rows = math.ceil(item_count/items_per_row)
-        height = (rows * item_height)+(self.size().height()-self.childrenRect().height())
+            rows = math.ceil(item_count / items_per_row)
+            height = (rows * item_height) + (self.size().height() - self.childrenRect().height())
+        else:
+            height = (item_height * item_count) + 5 # TODO: hack to get rid of scrollbar
 
-#        from collections import namedtuple
-#        info = namedtuple("INFO", "width count items_per_row, rows")
-#        print(info(width=area_width, count=item_count, items_per_row=items_per_row, rows=rows))
 
-        size = QtCore.QSize() 
+        size = QtCore.QSize()
         size.setHeight(height)
 
         return size
@@ -71,7 +83,7 @@ class Section(QtWidgets.QWidget):
         self.button.setArrowType(QtCore.Qt.DownArrow)
         self.button.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.button.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                                    QtWidgets.QSizePolicy.Minimum))
+                                                        QtWidgets.QSizePolicy.Minimum))
 
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -100,7 +112,7 @@ class SectionFilterProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, section):
         super(SectionFilterProxyModel, self).__init__()
         self._section = section
-        
+
     def filterAcceptsRow(self, sourceRow, sourceParent):
         source_model = self.sourceModel()
         column = 0
@@ -113,7 +125,7 @@ class SectionFilterProxyModel(QtCore.QSortFilterProxyModel):
 
 
 class SectionModel(QtGui.QStandardItemModel):
-    SectionRole = QtCore.Qt.UserRole+1
+    SectionRole = QtCore.Qt.UserRole + 1
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
         if role == self.SectionRole:
@@ -121,7 +133,7 @@ class SectionModel(QtGui.QStandardItemModel):
             try:
                 return item.sections()
             except AttributeError:
-                return [] 
+                return []
 
         return super(SectionModel, self).data(index, role)
 
@@ -160,10 +172,22 @@ class ToolBox(QtWidgets.QWidget):
         self.scroll_area.setWidget(self.main_widget)
 
         self.filter_edit = FilterEdit()
+
+        view_mode = QtWidgets.QToolButton()
+        view_mode.clicked.connect(self.toggle_view_mode)
+        controls = QtWidgets.QWidget()
+        controls_layout = QtWidgets.QHBoxLayout()
+        controls_layout.setContentsMargins(0, 0, 0, 0)
+        controls_layout.setSpacing(0)
+        controls_layout.addWidget(self.filter_edit)
+        controls_layout.addSpacing(10)
+        controls_layout.addWidget(view_mode)
+        controls.setLayout(controls_layout)
+
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
-        self.layout.addWidget(self.filter_edit)
+        self.layout.addWidget(controls)
         self.layout.addWidget(self.scroll_area)
         self.setLayout(self.layout)
 
@@ -171,6 +195,13 @@ class ToolBox(QtWidgets.QWidget):
 
         if sections:
             self.addSections(sections)
+
+    def toggle_view_mode(self):
+        for section in self.sections():
+            if section.view.viewMode() == section.view.ListMode:
+                section.view.set_icon_mode()
+            else:
+                section.view.set_list_mode()
 
     def sections(self):
         sections = []
@@ -202,7 +233,7 @@ class ToolBox(QtWidgets.QWidget):
         self.filter_edit.textChanged.connect(section.filterItems)
 
         count = self.main_widget.layout().count()
-        self.main_widget.layout().insertWidget(count-1, section)
+        self.main_widget.layout().insertWidget(count - 1, section)
 
     def addSections(self, section_names):
         for section_name in section_names:
@@ -218,9 +249,11 @@ class ToolBox(QtWidgets.QWidget):
         item_label = self.model.itemFromIndex(source_index).label
         self.itemClicked.emit(item_label)
 
+
 @QtCore.Slot()
 def itemSelected(event):
     print("Selected item:", event)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -230,6 +263,7 @@ if __name__ == "__main__":
 
     tool_library = ToolBox()
     import random
+
     for tool_name in tools:
         tool_sections = random.sample(sections, random.randint(0, len(sections)))
         tool_icon = QtGui.QIcon('./images/%s.png' % tool_name)
@@ -237,7 +271,7 @@ if __name__ == "__main__":
 
         tool_library.addItem(item)
 
-    #tool_library.setStyleSheet("QScrollBar::handle:horizontal{};")
+    # tool_library.setStyleSheet("QScrollBar::handle:horizontal{};")
     sshFile = "./css/darkorange.stylesheet"
     with open(sshFile, "r") as fh:
         tool_library.setStyleSheet(fh.read())

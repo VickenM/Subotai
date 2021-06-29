@@ -60,6 +60,8 @@ import eventnodes.camera
 import eventnodes.facedetect
 import eventnodes.viewer
 import eventnodes.systemnotification
+import eventnodes.process
+
 import appnode
 
 path = os.path.dirname(os.path.abspath(__file__))
@@ -204,6 +206,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.viewer.Viewer())
         elif type_ == 'SystemNotification':
             node = appnode.EventNode.from_event_node(eventnodes.systemnotification.SystemNotification())
+        elif type_ == 'Process':
+            node = appnode.EventNode.from_event_node(eventnodes.process.Process())
 
         else:
             return None
@@ -313,6 +317,7 @@ class MainWindow(QMainWindow):
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FaceDetect", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Viewer", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SystemNotification", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Process", sections=['I/O']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
 
         scene.nodes_selected.connect(selected_nodes)
@@ -375,6 +380,7 @@ class MainWindow(QMainWindow):
         action = edit_menu.addAction('&Group Selected')
         action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
         action.triggered.connect(self.group_selected)
+
         action = edit_menu.addAction('&New Group')
         action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
         action.triggered.connect(self.new_group)
@@ -384,7 +390,13 @@ class MainWindow(QMainWindow):
         action.setShortcut(QtGui.QKeySequence('Delete'))
         action.triggered.connect(self.delete_selected)
 
+        view_menu = self.menuBar().addMenu('&View')
+        action = view_menu.addAction('&Sow/Hide names')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+.'))
+        action.triggered.connect(lambda x: self.scene.toggle_labels())
+
         self.menuBar().addSeparator()
+
         run_menu = self.menuBar().addMenu('Process')
 
         action = run_menu.addAction('&Create new process')
@@ -411,6 +423,9 @@ class MainWindow(QMainWindow):
         self.trayIconMenu.addAction('Exit').triggered.connect(self.exit_app)
 
         self.trayIcon.setContextMenu(self.trayIconMenu)
+
+        app = QApplication.instance()
+        app.trayIcon = self.trayIcon
 
     def spawn(self, background=True):
         import subprocess
@@ -527,8 +542,9 @@ class MainWindow(QMainWindow):
             json.dump(data, fp, indent=4)
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Period:
-            self.scene.toggle_labels()
+        pass
+        # if event.key() == QtCore.Qt.Key_Period:
+        #     self.scene.toggle_labels()
 
     def stop_timers(self):
         scene_nodes = self.scene.list_nodes()
@@ -573,7 +589,7 @@ class MainWindow(QMainWindow):
     def new_scene(self):
         stop_thread()
         self.stop_timers()
-        start_thread()
+        start_thread()  # TODO: do i need this? test removing it.
         self.scene.clear()
 
     @Slot()
@@ -583,7 +599,7 @@ class MainWindow(QMainWindow):
             stop_thread()
             self.stop_timers()
             self.scene.clear()
-            start_thread()
+            start_thread()  # TODO: do i need this? test removing it.
             self.load_file(filename)
 
     @Slot()
@@ -659,6 +675,7 @@ def main(background=False, scene_file=None, json_string=None, splashscreen=True)
 
     app = QApplication(sys.argv)
 
+    start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
     QtCore.QTimer(app).singleShot(0, start_thread)
     app.startingUp()
     app.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
