@@ -125,6 +125,14 @@ class ComputeNode(BaseNode):
     def collect(self):
         pass
 
+    # @Slot()
+    # def deactivate(self):
+    #     print('gay')
+    #
+    # @Slot()
+    # def activate(self):
+    #     pass
+
     ##################################
 
     def get_signals(self):
@@ -170,23 +178,32 @@ class EventNode(ComputeNode):
         else:
             self.activate_button.setText('Activate')
 
-    def set_active(self, state):
-        self.active = state
-        if self.active:
-            self.activate_button.setText('Deactivate')
-        else:
-            self.activate_button.setText('Activate')
-
-        if self.ui_node:
-            self.ui_node.update()
+    # def set_active(self, state):
+    #     self.active = state
+    #     if self.active:
+    #         self.activate_button.setText('Deactivate')
+    #     else:
+    #         self.activate_button.setText('Activate')
+    #
+    #     if self.ui_node:
+    #         self.ui_node.update()
 
     def activate(self):
         super().activate()
         self.activate_button.setText('Deactivate')
+        if self.ui_node:
+            self.ui_node.update()
 
     def deactivate(self):
         super().deactivate()
         self.activate_button.setText('Activate')
+        if self.ui_node:
+            self.ui_node.update()
 
+    @Slot()
     def toggle_active(self):
-        self.set_active(not self.active)
+        if self.active:
+            self.deactivate()
+        else:
+            self.activate()
+        # self.set_active(not self.active)

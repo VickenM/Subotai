@@ -14,8 +14,6 @@ from pynput import keyboard
 
 from PySide2.QtCore import QThread
 
-import time
-
 
 class InputListener(QThread):
     def __init__(self, parent=None, node=None):
@@ -23,10 +21,6 @@ class InputListener(QThread):
         self.hotkey = None
         self.listener = None
         self.node = node
-
-        self.hotkey = None
-
-        self.stopRunning = True
 
     def key_press(self):
         if self.node:
@@ -50,22 +44,39 @@ class InputListener(QThread):
         return func
 
     def start(self):
-        self.stopRunning = False
         return super().start()
 
     def stop(self):
-        self.stopRunning = True
+        if self.listener and self.listener.running:
+            self.listener.stop()
 
     def run(self):
         def for_canonical(f):
             return lambda k: f(self.listener.canonical(k))
 
-        while not self.stopRunning:
-            if self.hotkey:
-                with keyboard.Listener(on_press=for_canonical(self.hotkey.press),
-                                       on_release=for_canonical(self.hotkey.release)) as self.listener:
-                    self.listener.join()
-            time.sleep(1)
+        with keyboard.Listener(on_press=for_canonical(self.hotkey.press),
+                               on_release=for_canonical(self.hotkey.release)) as self.listener:
+            self.listener.join()
+
+
+class ValidExpressionIndicator(QtWidgets.QWidget):
+    def __init__(self):
+        self.super().__init__()
+
+        self.label = QtWidgets.QLabel()
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setMargin(0)
+        layout.addWidget(self.label)
+
+        self.setLayout(layout)
+
+    def set_valid(self):
+        self.label.setText('Valid Expression')
+
+    def set_invalid(self):
+        self.label.setText('Invalid Expression')
 
 
 class HotkeyNode(EventNode):
@@ -76,8 +87,14 @@ class HotkeyNode(EventNode):
 
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='hotkey', value='', pluggable=PARAM))
+        self.controls()
+
+        self.expression_indicator = ValidExpressionIndicator()
+        self.controls.append((self.expression_indicator, self.toggle_viewer, self.show_viewer_button.clicked))
+
         self.t = InputListener(node=self)
-        self.t.start()
+
+        self.deactivate()
 
         self.description = \
             """
@@ -85,12 +102,34 @@ class HotkeyNode(EventNode):
 """
 
     def update(self):
-        self.t.set_hotkey(self.get_first_param('hotkey').value)
+        hk = self.get_first_param('hotkey').value
+        self.terminate()
 
-    def terminate(self):
-        self.t.stop()
+        # If there's no exception, it means we can parse the hotkey string, so Pass it on to the Listener thread.
+        # Otherwise, early exit
+        # TODO: maybe there's a more elegant way of testing for this
+        try:
+            keyboard.HotKey(keyboard.HotKey.parse(hk), lambda x: x)
+        except:
+            return
+
+        self.t = InputListener(node=self)
+        self.t.set_hotkey(hk)
+        if self.is_active():
+            self.t.start()
 
     @Slot()
     def compute(self):
         signal = self.get_first_signal('event')
         signal.emit_event()
+
+    def terminate(self):
+        self.t.stop()
+
+    def activate(self):
+        super().activate()
+        self.update()
+
+    def deactivate(self):
+        super().deactivate()
+        self.terminate()
