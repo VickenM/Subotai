@@ -1,4 +1,4 @@
-from .base import ComputeNode  # , ThreadedComputeNode
+from .base import ComputeNode
 from .params import StringParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 

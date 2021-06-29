@@ -36,6 +36,7 @@ import eventnodes.parameter
 import eventnodes.inttostr
 import eventnodes.math
 import eventnodes.timer
+import eventnodes.hotkey
 import eventnodes.zipfile
 import eventnodes.copyfile
 import eventnodes.listdir
@@ -158,6 +159,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.ParamNode.from_event_node(eventnodes.math.Math())
         elif type_ == 'Timer':
             node = appnode.EventNode.from_event_node(eventnodes.timer.TimerNode())
+        elif type_ == 'Hotkey':
+            node = appnode.EventNode.from_event_node(eventnodes.hotkey.HotkeyNode())
         elif type_ == 'DirChanged':
             node = appnode.EventNode.from_event_node(eventnodes.dirchange.DirChanged())
         elif type_ == 'FilesChanged':
@@ -289,6 +292,7 @@ class MainWindow(QMainWindow):
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="DirChanged", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FilesChanged", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Timer", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Hotkey", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="CopyFile", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ListDir", sections=['FileSystem']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ZipFile", sections=['FileSystem']))
