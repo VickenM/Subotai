@@ -153,7 +153,7 @@ class Parameters(QtWidgets.QWidget):
 
             for control_ in self.node_obj.get_controls():
                 control, func, signal = control_
-                call_fn = lambda x: func()
+                call_fn = lambda: func()
                 signal.connect(call_fn)
 
                 self.flayout.addWidget(control)

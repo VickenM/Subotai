@@ -86,6 +86,7 @@ def deleted_nodes(data):
 @Slot()
 def start_thread():
     eventnodes.base.thread = eventnodes.base.Worker()
+    eventnodes.base.thread.start()
 
 
 @Slot()
@@ -413,7 +414,6 @@ class MainWindow(QMainWindow):
 
         help_menu = self.menuBar().addMenu('Help')
         action = help_menu.addAction('About')
-        # action.triggered.connect(lambda x: show_about(parent=self))
         action.triggered.connect(lambda x: show_splashscreen(animate=False))
 
         self.trayIcon = QSystemTrayIcon(self)
@@ -479,6 +479,7 @@ class MainWindow(QMainWindow):
                         p._value = p.enum(value)
                     else:
                         p._value = value
+
             n.node_obj.update()
 
         for edge in data['edges']:
@@ -505,7 +506,7 @@ class MainWindow(QMainWindow):
             g.setPos(*group['position'])
             g.setSize(*group['size'])
 
-        print(data)
+            # print(data)
 
     def save_data(self):
         data = {'nodes': [], 'edges': [], 'groups': []}
@@ -547,8 +548,6 @@ class MainWindow(QMainWindow):
 
     def keyPressEvent(self, event):
         pass
-        # if event.key() == QtCore.Qt.Key_Period:
-        #     self.scene.toggle_labels()
 
     def stop_timers(self):
         scene_nodes = self.scene.list_nodes()
@@ -632,6 +631,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def exit_app(self):
+        stop_thread()
         qapp = QApplication.instance()
         qapp.exit()
 
@@ -644,7 +644,6 @@ class MainWindow(QMainWindow):
 
 
 def show_about(parent):
-    # QMessageBox.about(parent, 'PywerLines', 'text')
     show_splashscreen(animate=False)
 
 
@@ -674,17 +673,47 @@ def show_splashscreen(animate=False):
     splash.show()
 
 
-def main(background=False, scene_file=None, json_string=None, splashscreen=True):
+def print_params(scene):
+    promoted_params = {}
+    for node in scene.get_all_nodes():
+        if isinstance(node.node_obj, eventnodes.parameter.ParamNode):
+            promote_state = node.node_obj.get_first_param('promote state')
+            promote_name = node.node_obj.get_first_param('promote name')
+            param = node.node_obj.get_first_param('param')
+
+            if promote_state.value:
+                promoted_params[promote_name.value] = str(node.node_obj.type)
+
+    print('{name} {type}'.format(name='PARAMETER NAME'.ljust(25), type=('PARAMETER TYPE').ljust(25)))
+    print('{name} {type}'.format(name='--------------'.ljust(25), type=('--------------').ljust(25)))
+    for n, t in promoted_params.items():
+        print('{name} {type}'.format(name=n.ljust(25), type=t.ljust(25)))
+
+
+def set_params(scene, params={}):
+    for node in scene.get_all_nodes():
+        if isinstance(node.node_obj, eventnodes.parameter.ParamNode):
+            promote_state = node.node_obj.get_first_param('promote state')
+            promote_name = node.node_obj.get_first_param('promote name')
+            param = node.node_obj.get_first_param('param')
+
+            if promote_state.value:
+                if promote_name.value in params:
+                    value = param.cast(params[promote_name.value])  # cast it to the type of the param
+                    param.value = value
+
+
+def main(splashscreen=True, background=False, scene_file=None, json_string=None, list_params=False, params={}):
     import signal as signal_
 
     app = QApplication(sys.argv)
 
-    start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
-    QtCore.QTimer(app).singleShot(0, start_thread)
     app.startingUp()
     app.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
 
     main_window = MainWindow()
+    start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
+    # QtCore.QTimer(app).singleShot(0, start_thread)
     main_window.setWindowTitle('PywerLines')
     main_window.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
 
@@ -694,44 +723,57 @@ def main(background=False, scene_file=None, json_string=None, splashscreen=True)
         if json_string:
             main_window.load_json(json_string)
 
+    if list_params:
+        print_params(scene=main_window.scene)
+        sys.exit()
+
+    set_params(scene=main_window.scene, params=params)
+
     if background:
         signal_.signal(signal_.SIGINT, signal_.SIG_DFL)  # accept ctrl-c signal when in background mode to quit
     else:
         if splashscreen:
             show_splashscreen(animate=True)
-        main_window.show()
 
-    app.aboutToQuit.connect(stop_thread)
+        main_window.show()
+    # app.aboutToQuit.connect(stop_thread)
     return app, main_window
 
 
 if __name__ == "__main__":
-    background = False
-    scene_file = None
-    json_string = None
-
     parser = argparse.ArgumentParser()
-    parser.add_argument("--background", action='store_true', help="run in a background process (no GUI)")
     parser.add_argument("--no-splash", action='store_true', default=False,
                         help="disable startup splashscreen (only in GUI mode)")
+    parser.add_argument("--background", action='store_true', help="run in a background process (no GUI)")
+    parser.add_argument('--list-params', action='store_true',
+                        help='list the params available in the given scene file')
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument("--load-file", type=str, metavar='<FILENAME>',
                        help="loads the given scene .json file in")
     group.add_argument("--load-json", type=str, metavar='<JSON STRING>',
                        help="loads the given json string in")
+
+    parser.add_argument('--param', action=type('', (argparse.Action,), dict(
+        __call__=lambda a, p, n, v, o: getattr(n, a.dest).update(dict([v.split('=')])))),
+                        default={}, dest='params')  # anonymously subclassing argparse.Action
+
     args = parser.parse_args()
 
-    if args.background:
-        background = True
+    background = args.background
+    list_params = args.list_params
 
+    scene_file = None
     if args.load_file:
         scene_file = os.path.abspath(args.load_file)
 
+    json_string = None
     if args.load_json:
         json_string = args.load_json
 
     splashscreen = not args.no_splash
 
+    params = args.params
+
     app, main_window = main(background=background, scene_file=scene_file, json_string=json_string,
-                            splashscreen=splashscreen)
+                            splashscreen=splashscreen, list_params=list_params, params=params)
     sys.exit(app.exec_())

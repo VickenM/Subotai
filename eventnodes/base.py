@@ -73,10 +73,10 @@ class BaseNode(QtCore.QObject):
 class Worker(QtCore.QThread):
     def __init__(self):
         super().__init__()
-        self.start()
-
-    def run(self):
-        self.exec_()
+    #     self.start()
+    #
+    # def run(self):
+    #     self.exec_()
 
 
 class ComputeNode(BaseNode):
@@ -206,4 +206,4 @@ class EventNode(ComputeNode):
             self.deactivate()
         else:
             self.activate()
-        # self.set_active(not self.active)
+            # self.set_active(not self.active)

@@ -1,0 +1,57 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "42247b8e-9522-4200-8dd2-9d1529e97014",
+            "position": [
+                100.0,
+                100.0
+            ],
+            "params": {
+                "0": {
+                    "promote state": true,
+                    "promote name": "wicked"
+                },
+                "6": {
+                    "param": ""
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.parameter.IntegerParameter",
+            "id": "1e2aff16-c63d-4e0c-873e-14c1bc3e3368",
+            "position": [
+                115.0,
+                325.0
+            ],
+            "params": {
+                "0": {
+                    "promote state": true,
+                    "promote name": "myint"
+                },
+                "6": {
+                    "param": 0
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.parameter.BooleanParameter",
+            "id": "5c350de1-8bd8-442b-9267-9558615b735f",
+            "position": [
+                398.0,
+                266.0
+            ],
+            "params": {
+                "0": {
+                    "promote state": true,
+                    "promote name": "booleon param"
+                },
+                "6": {
+                    "param": false
+                }
+            }
+        }
+    ],
+    "edges": [],
+    "groups": []
+}

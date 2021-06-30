@@ -42,6 +42,11 @@ class Param(object):
         if self.valid_value(new_value):
             self._value = new_value
 
+    # Casts the given argument to this Param's type. Default implementation is to use the 'type'
+    # ie, if type is int, cast(...) will return int(arg)
+    def cast(self, arg):
+        return self.type(arg)
+
     def get_pluggable(self):
         return self.pluggable
 
@@ -116,6 +121,12 @@ class BoolParam(Param):
         self.name = name
         self._type = bool
         self._value = value
+
+    def cast(self, arg):
+        if type(arg) == int:
+            return bool(arg)
+        import distutils.util
+        return bool(distutils.util.strtobool(arg))
 
 
 class ListParam(Param):

@@ -61,7 +61,7 @@ class InputListener(QThread):
 
 class ValidExpressionIndicator(QtWidgets.QWidget):
     def __init__(self):
-        self.super().__init__()
+        super().__init__()
 
         self.label = QtWidgets.QLabel()
 
@@ -87,10 +87,8 @@ class HotkeyNode(EventNode):
 
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='hotkey', value='', pluggable=PARAM))
-        self.controls()
-
-        self.expression_indicator = ValidExpressionIndicator()
-        self.controls.append((self.expression_indicator, self.toggle_viewer, self.show_viewer_button.clicked))
+        # self.expression_indicator = ValidExpressionIndicator()
+        # self.controls.append((self.expression_indicator, self.toggle_viewer, self.show_viewer_button.clicked))
 
         self.t = InputListener(node=self)
 
