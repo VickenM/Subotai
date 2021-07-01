@@ -178,6 +178,12 @@ class EventNode(ComputeNode):
         else:
             self.activate_button.setText('Activate')
 
+    def set_active(self, state):
+        if state:
+            self.activate()
+        else:
+            self.deactivate()
+
     # def set_active(self, state):
     #     self.active = state
     #     if self.active:
