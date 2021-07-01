@@ -1,3 +1,4 @@
+import os
 from PySide2 import QtCore
 
 from .base import EventNode
@@ -16,7 +17,6 @@ class FilesChanged(EventNode):
                    ],
             pluggable=PARAM))
 
-        # watch_directory = self.get_first_param('files').value
         self.watcher = QtCore.QFileSystemWatcher()
         self.watcher.fileChanged.connect(self.compute)
 
@@ -31,22 +31,23 @@ Parameters:
 """
 
     def activate(self):
-        directory = self.get_first_param('directory').value
-        self.watcher.removePaths(self.watcher.directories())
-        self.watcher.addPath(directory)
         super().activate()
+        self.update()
 
     def deactivate(self):
-        self.watcher.removePaths(self.watcher.directories())
         super().deactivate()
+        if self.watcher:
+            self.watcher.fileChanged.disconnect(self.compute)
 
     def update(self):
         files_param = self.get_first_param('files')
-        paths = [item.value for item in files_param.value]
-        if self.watcher.files():
-            self.watcher.removePaths(self.watcher.files())
+        paths = [item.value for item in files_param.value if os.path.isfile(item.value)]
+
         if paths:
+            self.watcher = QtCore.QFileSystemWatcher()
             self.watcher.addPaths(paths)
+            if self.is_active():
+                self.watcher.fileChanged.connect(self.compute)
 
     def compute(self):
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)

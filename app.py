@@ -753,6 +753,7 @@ if __name__ == "__main__":
     group.add_argument("--load-json", type=str, metavar='<JSON STRING>',
                        help="loads the given json string in")
 
+    # TODO: just grabbed this one-liner off the web. Worth revisiting to make clearer
     parser.add_argument('--param', action=type('', (argparse.Action,), dict(
         __call__=lambda a, p, n, v, o: getattr(n, a.dest).update(dict([v.split('=')])))),
                         default={}, dest='params')  # anonymously subclassing argparse.Action

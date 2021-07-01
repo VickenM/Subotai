@@ -6,6 +6,28 @@ from .params import StringParam, IntParam, PARAM, ListParam
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
+#TODO: implement this the same as splitstring.SplitStringNode, ie without signals
+
+# class SplitParam(ListParam):
+#     def __init__(self, first_param, second_param, pattern_param, name=None, pluggable=None):
+#         super().__init__(name=name, pluggable=pluggable)
+#         self.first_param = first_param
+#         self.second_param = second_param
+#         self.pattern_param = pattern_param
+#
+#     @property
+#     def value(self):
+#         return self.calculate()
+#
+#     def __call__(self, *args, **kwargs):
+#         return self.calculate()
+#
+#     def calculate(self):
+#         pattern = self.pattern_param()
+#         parts = self.first_param{}.split(pattern)
+
+
+
 class SplitString(ComputeNode):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

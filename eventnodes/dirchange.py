@@ -12,18 +12,13 @@ class DirChanged(EventNode):
         super().__init__(*args, **kwargs)
         self.type = 'DirChanged'
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='directory', value='', pluggable=OUTPUT_PLUG | PARAM, subtype=SUBTYPE_DIRPATH))
+        self.params.append(
+            StringParam(name='directory', value='', pluggable=OUTPUT_PLUG | PARAM, subtype=SUBTYPE_DIRPATH))
         self.params.append(ListParam(name='new', value=[], pluggable=OUTPUT_PLUG))
         self.params.append(ListParam(name='removed', value=[], pluggable=OUTPUT_PLUG))
 
         directory = self.get_first_param('directory').value
-        self.watcher = None
-        if directory:
-            self.watcher = QtCore.QFileSystemWatcher([directory])
-            self.watcher = QtCore.QFileSystemWatcher([directory])
-            self.watcher.directoryChanged.connect(self.compute)
-            self.watcher.fileChanged.connect(self.compute)
-
+        self.watcher = None  # QtCore.QFileSystemWatcher([directory])
         self.current_contents = []
         self.update()
 
@@ -38,34 +33,25 @@ Parameters:
 """
 
     def activate(self):
-        directory = self.get_first_param('directory').value
-        self.watcher.removePaths(self.watcher.directories())
-        self.watcher.addPath(directory)
         super().activate()
+        self.update()
 
     def deactivate(self):
-        self.watcher.removePaths(self.watcher.directories())
         super().deactivate()
+        if self.watcher:
+            self.watcher.directoryChanged.disconnect(self.compute)
 
     def update(self):
         directory = self.get_first_param('directory').value
-
-        # TODO: I want to remove the old paths from the watcher. but if you add in a root folder like d:\ it removePaths(...) fails to remove it
-
-        # if self.watcher.directories():
-        #     self.watcher.removePath(self.watcher.directories())
-        # if directory:
-        #     self.watcher.addPath(directory)
 
         self.current_contents = []
 
         if os.path.isdir(directory):  # if-statement just to prevent Qt List Empty warnings
             self.watcher = QtCore.QFileSystemWatcher([directory])
-            self.watcher.directoryChanged.connect(self.compute)
-            self.watcher.fileChanged.connect(self.compute)
             self.current_contents = os.listdir(directory)
-        else:
-            self.watcher = None
+
+            if self.is_active():
+                self.watcher.directoryChanged.connect(self.compute)
 
     @QtCore.Slot()
     def compute(self):
