@@ -153,7 +153,7 @@ class ComputeNode(BaseNode):
 
     def connect_from(self, signal, trigger=None):
         if not trigger:
-            signal.connect(self.trigger)
+            signal.connect(self.trigger) #, type=QtCore.Qt.QueuedConnection)
         else:
             signal.connect(self.map_signal(trigger))
 

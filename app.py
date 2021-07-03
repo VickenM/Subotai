@@ -621,13 +621,13 @@ class MainWindow(QMainWindow):
     def toggle_visible(self):
         self.setVisible(not self.isVisible())
 
-        icon = QIcon(path + '/icons/run.png')
-        self.trayIcon.showMessage(
-            'TITLE',
-            'THIS IS THE MESSAGE BODY',
-            icon,
-            5 * 1000,
-        )
+        # icon = QIcon(path + '/icons/run.png')
+        # self.trayIcon.showMessage(
+        #     'TITLE',
+        #     'THIS IS THE MESSAGE BODY',
+        #     icon,
+        #     5 * 1000,
+        # )
 
     @Slot()
     def exit_app(self):
