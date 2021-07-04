@@ -83,18 +83,6 @@ def deleted_nodes(data):
     pass
 
 
-@Slot()
-def start_thread():
-    eventnodes.base.thread = eventnodes.base.Worker()
-    eventnodes.base.thread.start()
-
-
-@Slot()
-def stop_thread():
-    eventnodes.base.thread.exit()
-    eventnodes.base.thread.wait(QtCore.QDeadlineTimer(10000))  # wait 10sec if the thread is still running
-
-
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def connected_plugs(plug1, plug2):
     source = plug1.parentItem().node_obj
@@ -212,7 +200,6 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.systemnotification.SystemNotification())
         elif type_ == 'Process':
             node = appnode.EventNode.from_event_node(eventnodes.process.Process())
-
         else:
             return None
         return node
@@ -261,6 +248,11 @@ class EventFlow(pywerscene.PywerScene):
         for node in nodes:
             node.node_obj.terminate()
         return super().remove_selected_nodes()
+
+    def clear(self):
+        for node in self.get_all_nodes():
+            node.node_obj.terminate()
+        return super().clear()
 
     def eval(self):
         selected_nodes = self.get_selected_nodes()
@@ -431,6 +423,17 @@ class MainWindow(QMainWindow):
         app = QApplication.instance()
         app.trayIcon = self.trayIcon
 
+    # @Slot()
+    def start_thread(self):
+        self.thread_ = eventnodes.base.Worker(parent=self)
+        self.thread_.start()
+
+    # @Slot()
+    def stop_thread(self):
+        self.scene.clear()
+        self.thread_.exit()
+        self.thread_.wait(QtCore.QDeadlineTimer(10000))  # wait 10sec if the thread is still running
+
     def spawn(self, background=True):
         import subprocess
 
@@ -453,6 +456,7 @@ class MainWindow(QMainWindow):
         for node in data['nodes']:
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
+            n.node_obj.moveToThread(self.thread_)
             n.node_obj.obj_id = node['id']
             n.node_obj.set_active(node.get('active', True))
             n.setPos(*node['position'])
@@ -578,6 +582,7 @@ class MainWindow(QMainWindow):
     @Slot(str)
     def toolbox_item_selected(self, item):
         node = self.scene.create_node_of_type(item)
+        node.node_obj.moveToThread(self.thread_)
         position = QtCore.QPointF(self.view.mapToScene(100, 100))
         node.setPos(position)
 
@@ -590,19 +595,19 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def new_scene(self):
-        stop_thread()
+        self.stop_thread()
         self.stop_timers()
-        start_thread()  # TODO: do i need this? test removing it.
+        self.start_thread()  # TODO: do i need this? test removing it.
         self.scene.clear()
 
     @Slot()
     def open_scene(self):
         filename, filter_ = QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(), 'Scene Files (*.json)')
         if filename:
-            stop_thread()
+            self.stop_thread()
             self.stop_timers()
             self.scene.clear()
-            start_thread()  # TODO: do i need this? test removing it.
+            self.start_thread()  # TODO: do i need this? test removing it.
             self.load_file(filename)
 
     @Slot()
@@ -631,7 +636,8 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def exit_app(self):
-        stop_thread()
+        self.stop_thread()
+        self.thread_.deleteLater()
         qapp = QApplication.instance()
         qapp.exit()
 
@@ -673,7 +679,20 @@ def show_splashscreen(animate=False):
     splash.show()
 
 
-def print_params(scene):
+def set_params(scene, params={}):
+    for node in scene.get_all_nodes():
+        if isinstance(node.node_obj, eventnodes.parameter.ParamNode):
+            promote_state = node.node_obj.get_first_param('promote state')
+            promote_name = node.node_obj.get_first_param('promote name')
+            param = node.node_obj.get_first_param('param')
+
+            if promote_state.value:
+                if promote_name.value in params:
+                    value = param.cast(params[promote_name.value])  # cast it to the type of the param
+                    param.value = value
+
+
+def print_params_from_scene(scene):
     promoted_params = {}
     for node in scene.get_all_nodes():
         if isinstance(node.node_obj, eventnodes.parameter.ParamNode):
@@ -690,30 +709,37 @@ def print_params(scene):
         print('{name} {type}'.format(name=n.ljust(25), type=t.ljust(25)))
 
 
-def set_params(scene, params={}):
-    for node in scene.get_all_nodes():
-        if isinstance(node.node_obj, eventnodes.parameter.ParamNode):
-            promote_state = node.node_obj.get_first_param('promote state')
-            promote_name = node.node_obj.get_first_param('promote name')
-            param = node.node_obj.get_first_param('param')
+def print_params_from_data(data):
+    promoted_params = {}
+    for node in data['nodes']:
+        state = node.get('params', {}).get('0', {}).get('promote state', False)
+        name = node.get('params', {}).get('0', {}).get('promote name', '')
 
-            if promote_state.value:
-                if promote_name.value in params:
-                    value = param.cast(params[promote_name.value])  # cast it to the type of the param
-                    param.value = value
+        if state:
+            promoted_params[name] = node['node_obj'].split('.')[-1]
+
+    print('{name} {type}'.format(name='PARAMETER NAME'.ljust(25), type=('PARAMETER TYPE').ljust(25)))
+    print('{name} {type}'.format(name='--------------'.ljust(25), type=('--------------').ljust(25)))
+    for n, t in promoted_params.items():
+        print('{name} {type}'.format(name=n.ljust(25), type=t.ljust(25)))
 
 
 def main(splashscreen=True, background=False, scene_file=None, json_string=None, list_params=False, params={}):
     import signal as signal_
 
-    app = QApplication(sys.argv)
+    if list_params:
+        with open(scene_file, 'r') as fp:
+            data = json.load(fp)
+        print_params_from_data(data=data)
+        sys.exit()
 
+    app = QApplication(sys.argv)
     app.startingUp()
     app.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
 
     main_window = MainWindow()
-    start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
-    # QtCore.QTimer(app).singleShot(0, start_thread)
+    main_window.start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
+    # QtCore.QTimer(app).singleShot(0, self.start_thread)
     main_window.setWindowTitle('PywerLines')
     main_window.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
 
@@ -723,9 +749,10 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
         if json_string:
             main_window.load_json(json_string)
 
-    if list_params:
-        print_params(scene=main_window.scene)
-        sys.exit()
+    # if list_params:
+    #     print_params_from_scene(scene=main_window.scene)
+    #     main_window.exit_app()
+    #     sys.exit()
 
     set_params(scene=main_window.scene, params=params)
 
@@ -736,7 +763,7 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
             show_splashscreen(animate=True)
 
         main_window.show()
-    # app.aboutToQuit.connect(stop_thread)
+    # app.aboutToQuit.connect(main_window.stop_thread)
     return app, main_window
 
 

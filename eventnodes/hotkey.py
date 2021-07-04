@@ -17,7 +17,7 @@ from PySide2.QtCore import QThread
 
 class InputListener(QThread):
     def __init__(self, parent=None, node=None):
-        super().__init__(parent)
+        super().__init__()
         self.hotkey = None
         self.listener = None
         self.node = node
