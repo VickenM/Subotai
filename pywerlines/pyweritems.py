@@ -451,6 +451,7 @@ class PywerNode(PywerItem):
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
             self.updateEdges()
+            self.scene().itemMoved()
 
         return super(PywerNode, self).itemChange(change, value)
 
@@ -515,6 +516,7 @@ class Resizer(QtWidgets.QGraphicsObject):
                 if value.y() < self._min_size.y() - height:
                     value.setY(self._min_size.y() - height)
                 self.resize_signal.emit(value - self.pos())
+                self.scene().itemMoved()
         return value
 
     def hoverEnterEvent(self, event):
@@ -622,6 +624,7 @@ class PywerGroup(PywerItem):
             for node in self.contained_nodes:
                 diff = pos - self.pos()
                 node.moveBy(diff.x(), diff.y())
+            self.scene().itemMoved()
             return value
 
         return super(PywerGroup, self).itemChange(change, value)

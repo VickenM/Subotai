@@ -1,6 +1,99 @@
 {
     "nodes": [
         {
+            "node_obj": "eventnodes.process.Process",
+            "id": "8c35234e-bc4f-4aed-87ee-8223347d7b49",
+            "position": [
+                400.0,
+                209.0
+            ],
+            "params": {
+                "5": {
+                    "process": "\"C:\\Program Files\\Blender Foundation\\Blender 2.82\\blender.exe\"",
+                    "arguments": "-b D:\\projects\\python\\node2\\app\\examples\\blender\\pywerlines.blend -o D:\\projects\\python\\node2\\app\\examples\\blender\\frame"
+                }
+            },
+            "active": true,
+            "size": [
+                120.0,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.joinstrings.JoinStrings",
+            "id": "b5e64551-3ba7-4de2-979b-3bd6a5e82810",
+            "position": [
+                261.0,
+                301.0
+            ],
+            "params": {
+                "5": {
+                    "first": "",
+                    "second": " -f 1",
+                    "separator": ""
+                },
+                "2": {
+                    "string": ""
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.systemnotification.SystemNotification",
+            "id": "343d713b-d441-4820-80c3-cf0c8c5e6335",
+            "position": [
+                1007.0,
+                258.0
+            ],
+            "params": {
+                "4": {
+                    "title": "Finished"
+                },
+                "5": {
+                    "message": "Render finished. Check your inbox"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.joinstrings.JoinStrings",
+            "id": "35cebea1-f32b-48c3-8959-b823489b2144",
+            "position": [
+                273.0,
+                407.0
+            ],
+            "params": {
+                "5": {
+                    "first": "",
+                    "second": "0001.png",
+                    "separator": ""
+                },
+                "2": {
+                    "string": ""
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "1b94970e-606d-4f1e-ab75-9a4215bba5d4",
+            "position": [
+                16.0,
+                342.0
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": null
+                },
+                "6": {
+                    "param": "D:\\projects\\python\\node2\\app\\examples\\blender\\frame"
+                }
+            }
+        },
+        {
             "node_obj": "eventnodes.email.Email",
             "id": "f9ec86c5-4fec-4d1f-90d7-312a099d3c44",
             "position": [
@@ -70,109 +163,32 @@
                 137.0,
                 82.0
             ]
-        },
-        {
-            "node_obj": "eventnodes.parameter.StringParameter",
-            "id": "1b94970e-606d-4f1e-ab75-9a4215bba5d4",
-            "position": [
-                7.0,
-                404.0
-            ],
-            "params": {
-                "6": {
-                    "param": "D:\\projects\\python\\node2\\app\\examples\\blender\\frame"
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.joinstrings.JoinStrings",
-            "id": "35cebea1-f32b-48c3-8959-b823489b2144",
-            "position": [
-                273.0,
-                407.0
-            ],
-            "params": {
-                "5": {
-                    "first": "",
-                    "second": "0001.png",
-                    "separator": ""
-                },
-                "2": {
-                    "string": ""
-                }
-            }
-        },
-        {
-            "node_obj": "eventnodes.systemnotification.SystemNotification",
-            "id": "343d713b-d441-4820-80c3-cf0c8c5e6335",
-            "position": [
-                1007.0,
-                258.0
-            ],
-            "params": {
-                "4": {
-                    "title": "Finished"
-                },
-                "5": {
-                    "message": "Render finished. Check your inbox"
-                }
-            },
-            "active": true,
-            "size": [
-                100,
-                64.0
-            ]
-        },
-        {
-            "node_obj": "eventnodes.process.Process",
-            "id": "8c35234e-bc4f-4aed-87ee-8223347d7b49",
-            "position": [
-                400.0,
-                209.0
-            ],
-            "params": {
-                "5": {
-                    "process": "\"C:\\Program Files\\Blender Foundation\\Blender 2.82\\blender.exe\"",
-                    "arguments": "-b D:\\projects\\python\\node2\\app\\examples\\blender\\pywerlines.blend -o D:\\projects\\python\\node2\\app\\examples\\blender\\frame"
-                }
-            },
-            "active": true,
-            "size": [
-                120.0,
-                82.0
-            ]
-        },
-        {
-            "node_obj": "eventnodes.joinstrings.JoinStrings",
-            "id": "b5e64551-3ba7-4de2-979b-3bd6a5e82810",
-            "position": [
-                261.0,
-                301.0
-            ],
-            "params": {
-                "5": {
-                    "first": "",
-                    "second": " -f 1",
-                    "separator": ""
-                },
-                "2": {
-                    "string": ""
-                }
-            }
         }
     ],
     "edges": [
         [
-            "1b94970e-606d-4f1e-ab75-9a4215bba5d4.param",
-            "52f18cae-c5f6-46ff-b820-a5a0caad95c4.second"
+            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.event",
+            "343d713b-d441-4820-80c3-cf0c8c5e6335.event"
         ],
         [
             "68f7878d-2d7a-4423-ad64-6b1dd93867f1.event",
             "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.event"
         ],
         [
-            "68f7878d-2d7a-4423-ad64-6b1dd93867f1.items",
-            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.attachments"
+            "1b94970e-606d-4f1e-ab75-9a4215bba5d4.param",
+            "35cebea1-f32b-48c3-8959-b823489b2144.first"
+        ],
+        [
+            "1b94970e-606d-4f1e-ab75-9a4215bba5d4.param",
+            "52f18cae-c5f6-46ff-b820-a5a0caad95c4.second"
+        ],
+        [
+            "b5e64551-3ba7-4de2-979b-3bd6a5e82810.string",
+            "8c35234e-bc4f-4aed-87ee-8223347d7b49.arguments"
+        ],
+        [
+            "35cebea1-f32b-48c3-8959-b823489b2144.string",
+            "68f7878d-2d7a-4423-ad64-6b1dd93867f1.item"
         ],
         [
             "8c35234e-bc4f-4aed-87ee-8223347d7b49.event",
@@ -183,24 +199,12 @@
             "68f7878d-2d7a-4423-ad64-6b1dd93867f1.emit"
         ],
         [
-            "1b94970e-606d-4f1e-ab75-9a4215bba5d4.param",
-            "35cebea1-f32b-48c3-8959-b823489b2144.first"
-        ],
-        [
-            "35cebea1-f32b-48c3-8959-b823489b2144.string",
-            "68f7878d-2d7a-4423-ad64-6b1dd93867f1.item"
-        ],
-        [
             "52f18cae-c5f6-46ff-b820-a5a0caad95c4.string",
             "b5e64551-3ba7-4de2-979b-3bd6a5e82810.first"
         ],
         [
-            "b5e64551-3ba7-4de2-979b-3bd6a5e82810.string",
-            "8c35234e-bc4f-4aed-87ee-8223347d7b49.arguments"
-        ],
-        [
-            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.event",
-            "343d713b-d441-4820-80c3-cf0c8c5e6335.event"
+            "68f7878d-2d7a-4423-ad64-6b1dd93867f1.items",
+            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.attachments"
         ]
     ],
     "groups": []

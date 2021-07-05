@@ -282,7 +282,7 @@ class MainWindow(QMainWindow):
         view.setScene(scene)
 
         self.filename = None
-        self.unsaved = True
+        self.unsaved = False
 
         toolbox = ToolBox()
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="DirChanged", sections=['Events']))
@@ -327,6 +327,7 @@ class MainWindow(QMainWindow):
         scene.plugs_connected.connect(connected_plugs)
         scene.plugs_disconnected.connect(disconnected_plugs)
         scene.nodes_selected.connect(self.selected_nodes)
+        scene.items_moved.connect(self.items_moved)
 
         self.scene = scene
         self.view = view
@@ -549,10 +550,16 @@ class MainWindow(QMainWindow):
             data = json.load(fp)
         self.load_data(data)
 
+        self.unsaved = False
+        self.filename = file_name
+
     def save_file(self, file_name):
         data = self.save_data()
         with open(file_name, 'w') as fp:
             json.dump(data, fp, indent=4)
+
+        self.unsaved = False
+        self.filename = file_name
 
     def keyPressEvent(self, event):
         pass
@@ -574,14 +581,20 @@ class MainWindow(QMainWindow):
         position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
         group.setPos(position)
 
+        self.unsaved = True
+
     @Slot()
     def group_selected(self):
         self.scene.group_selected_nodes()
+
+        self.unsaved = True
 
     @Slot()
     def delete_selected(self):
         self.scene.remove_selected_nodes()
         self.scene.remove_selected_groups()
+
+        self.unsaved = True
 
     @Slot(str)
     def toolbox_item_selected(self, item):
@@ -589,6 +602,8 @@ class MainWindow(QMainWindow):
         node.node_obj.moveToThread(self.thread_)
         position = QtCore.QPointF(self.view.mapToScene(100, 100))
         node.setPos(position)
+
+        self.unsaved = True
 
     @Slot(list)
     def selected_nodes(self, nodes):
@@ -598,21 +613,54 @@ class MainWindow(QMainWindow):
             self.parameters.set_node_obj(None)
 
     @Slot()
+    def items_moved(self):
+        self.unsaved = True
+
+    def save_changes_dialog(self):
+        """
+
+        :return: True if okay to continue, otherwise False
+        """
+        if self.unsaved:
+            filename = os.path.basename(self.filename) if self.filename else 'Untitled'
+            save_dialog = QMessageBox()
+            save_dialog.setWindowTitle("Save changes to '{filename}' before closing?".format(filename=filename))
+            save_dialog.setText("Changes will be lost if you don't save them")
+            save_dialog.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
+            save_dialog.setDefaultButton(QMessageBox.Save)
+
+            ret = save_dialog.exec_()
+            if ret == QMessageBox.Save:
+                self.save_scene()
+                return True
+            elif ret == QMessageBox.Discard:
+                return True
+            elif ret == QMessageBox.Cancel:
+                return False
+
+        return True
+
+    @Slot()
     def new_scene(self):
-        self.stop_thread()
-        self.stop_timers()
-        self.start_thread()  # TODO: do i need this? test removing it.
-        self.scene.clear()
+        if self.save_changes_dialog():
+            self.stop_thread()
+            self.stop_timers()
+            self.start_thread()  # TODO: do i need this? test removing it.
+            self.scene.clear()
+
+            self.filename = None
+            self.unsaved = False
 
     @Slot()
     def open_scene(self):
-        filename, filter_ = QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(), 'Scene Files (*.json)')
-        if filename:
-            self.stop_thread()
-            self.stop_timers()
-            self.scene.clear()
-            self.start_thread()  # TODO: do i need this? test removing it.
-            self.load_file(filename)
+        if self.save_changes_dialog():
+            filename, filter_ = QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(), 'Scene Files (*.json)')
+            if filename:
+                self.stop_thread()
+                self.stop_timers()
+                self.scene.clear()
+                self.start_thread()  # TODO: do i need this? test removing it.
+                self.load_file(filename)
 
     @Slot()
     def save_scene_as(self):
@@ -629,14 +677,6 @@ class MainWindow(QMainWindow):
 
     def toggle_visible(self):
         self.setVisible(not self.isVisible())
-
-        # icon = QIcon(path + '/icons/run.png')
-        # self.trayIcon.showMessage(
-        #     'TITLE',
-        #     'THIS IS THE MESSAGE BODY',
-        #     icon,
-        #     5 * 1000,
-        # )
 
     @Slot()
     def exit_app(self):
