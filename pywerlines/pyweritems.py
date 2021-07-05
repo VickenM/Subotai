@@ -303,12 +303,14 @@ class PywerNode(PywerItem):
     @Slot()
     def start_spinner(self):
         self.spinner.show()
-        self.spinner.timeline.start()
+        if not self.spinner.timeline.state():
+            self.spinner.timeline.start()
 
     @Slot()
     def stop_spinner(self):
         self.spinner.hide()
-        self.spinner.timeline.stop()
+        if self.spinner.timeline.state():
+            self.spinner.timeline.stop()
 
     @Slot(QtCore.QPointF)
     def resize(self, change):

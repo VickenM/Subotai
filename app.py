@@ -62,6 +62,7 @@ import eventnodes.facedetect
 import eventnodes.viewer
 import eventnodes.systemnotification
 import eventnodes.process
+import eventnodes.multiprocess
 
 import appnode
 
@@ -200,6 +201,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.systemnotification.SystemNotification())
         elif type_ == 'Process':
             node = appnode.EventNode.from_event_node(eventnodes.process.Process())
+        elif type_ == 'MultiProcess':
+            node = appnode.EventNode.from_event_node(eventnodes.multiprocess.MultiProcess())
         else:
             return None
         return node
@@ -315,6 +318,7 @@ class MainWindow(QMainWindow):
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Viewer", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SystemNotification", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Process", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="MultiProcess", sections=['I/O']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
 
         scene.nodes_selected.connect(selected_nodes)
