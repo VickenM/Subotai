@@ -18,7 +18,8 @@ from PySide2.QtWidgets import (
     QSystemTrayIcon,
     QMenu,
     QSplashScreen,
-    QMessageBox
+    QMessageBox,
+    QDesktopWidget
 )
 from PySide2 import QtGui
 from PySide2 import QtCore
@@ -806,6 +807,7 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
         if splashscreen:
             show_splashscreen(animate=True)
 
+        main_window.move(200, 200)  # TODO: Calculate center of desktop to position the MainWindow
         main_window.show()
     # app.aboutToQuit.connect(main_window.stop_thread)
     return app, main_window
