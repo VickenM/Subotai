@@ -18,6 +18,7 @@ class PywerItem(QtWidgets.QGraphicsItem):
 
     def setSelected(self, state):
         self.selected = state
+        super().setSelected(self.selected)
         self.update()
 
     def adjust(self):

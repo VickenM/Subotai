@@ -284,6 +284,7 @@ class MainWindow(QMainWindow):
 
         self.filename = None
         self.unsaved = False
+        self.saved_data = None
 
         toolbox = ToolBox()
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="DirChanged", sections=['Events']))
@@ -389,6 +390,15 @@ class MainWindow(QMainWindow):
         action.triggered.connect(self.new_group)
 
         edit_menu.addSeparator()
+        action = edit_menu.addAction('&Copy Selected')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
+        action.triggered.connect(self.copy_selected)
+
+        edit_menu.addSeparator()
+        action = edit_menu.addAction('&Paste Selected')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
+        action.triggered.connect(self.paste_selected)
+
         action = edit_menu.addAction('&Delete Selected')
         action.setShortcut(QtGui.QKeySequence('Delete'))
         action.triggered.connect(self.delete_selected)
@@ -553,6 +563,7 @@ class MainWindow(QMainWindow):
 
         self.unsaved = False
         self.filename = file_name
+        self.saved_data = {}
 
     def save_file(self, file_name):
         data = self.save_data()
@@ -596,6 +607,114 @@ class MainWindow(QMainWindow):
         self.scene.remove_selected_groups()
 
         self.unsaved = True
+
+    # TODO this function is almost identical to save_data
+    @Slot()
+    def copy_selected(self):
+        data = {'nodes': [], 'edges': [], 'groups': []}
+        for node in self.scene.get_selected_nodes():
+            data['nodes'].append(node.to_dict())
+
+        all_ids = [n['id'] for n in data['nodes']]
+
+        # TODO: should do edges and groups like nodes with to_dict()
+
+        for edge in self.scene.get_all_edges():
+            source_id = str(edge.source_plug.parentItem().node_obj.obj_id)
+            target_id = str(edge.target_plug.parentItem().node_obj.obj_id)
+            if (source_id in all_ids) and (target_id in all_ids):
+                edge_info = (str(edge.source_plug.parentItem().node_obj.obj_id) + '.' + edge.source_plug.type_,
+                             str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
+                data['edges'].append(edge_info)
+
+        for group in self.scene.get_selected_groups():
+            data['groups'].append(
+                {'position': (group.pos().x(), group.pos().y()),
+                 'size': (group.width, group.height)
+                 }
+            )
+
+        self.saved_data = data
+
+    # TODO this function is almost identical to load_data
+    @Slot()
+    def paste_selected(self):
+        if not self.saved_data:
+            return
+
+        data = self.saved_data
+        node_map = {}  # map from copied node id to newly created node id
+        new_nodes = []  # hold onto newly created nodes so that we can change the selection to them after paste
+        for node in data['nodes']:
+            type_ = node['node_obj'].split('.')[-1]
+            n = self.scene.create_node_of_type(type_)
+            n.node_obj.moveToThread(self.thread_)
+            # n.node_obj.obj_id = node['id']
+            n.node_obj.set_active(node.get('active', True))
+            n.setPos(node['position'][0] + 20, node['position'][1] + 20)
+            n.setSize(*node.get('size', (100, 100)))
+            new_nodes.append(n)
+
+            # map the id of the copied node to the id of the newly created one.
+            # we'll need this to know how to reconnect the copied edges
+            node_map[node['id']] = n.node_obj.obj_id
+
+            for pluggable, params in node.get('params', {}).items():
+                pluggable = int(pluggable)
+                for param, value in params.items():
+                    if type(value) == list:
+                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                        from eventnodes.params import StringParam
+                        s = []
+                        for item in value:
+                            s.append(StringParam(value=item))
+
+                        # print(p.value)
+                        p.value.clear()
+                        p.value.extend(s)
+                        continue
+
+                    p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                    from enum import Enum
+                    if issubclass(p.value.__class__, Enum):
+                        p._value = p.enum(value)
+                    else:
+                        p._value = value
+
+            n.node_obj.update()
+
+        for edge in data['edges']:
+            source, target = edge
+            s_obj_id, s_plug = source.split('.')
+            t_obj_id, t_plug = target.split('.')
+
+            # remap the source and target nodes to the newly created nodes
+            s_obj_id = node_map[s_obj_id]
+            t_obj_id = node_map[t_obj_id]
+
+            s_node = self.scene.get_node_by_id(s_obj_id)
+            for o in s_node.outputs:
+                if o.type_ == s_plug:
+                    source_plug = o
+                    break
+
+            t_node = self.scene.get_node_by_id(t_obj_id)
+            for o in t_node.inputs:
+                if o.type_ == t_plug:
+                    target_plug = o
+                    break
+
+            self.scene.create_edge(source_plug, target_plug)
+
+        for group in data['groups']:
+            g = self.scene.create_group()
+            g.setPos(group['position'][0] + 20, group['position'][1] + 20)
+            g.setSize(*group['size'])
+            new_nodes.append(g)
+
+        self.scene.clearSelection()
+        for n in new_nodes:
+            n.setSelected(True)
 
     @Slot(str)
     def toolbox_item_selected(self, item):
@@ -651,6 +770,7 @@ class MainWindow(QMainWindow):
 
             self.filename = None
             self.unsaved = False
+            self.saved_data = {}
 
     @Slot()
     def open_scene(self):
