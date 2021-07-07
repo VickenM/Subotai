@@ -394,7 +394,6 @@ class MainWindow(QMainWindow):
         action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
         action.triggered.connect(self.copy_selected)
 
-        edit_menu.addSeparator()
         action = edit_menu.addAction('&Paste Selected')
         action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
         action.triggered.connect(self.paste_selected)
@@ -402,6 +401,11 @@ class MainWindow(QMainWindow):
         action = edit_menu.addAction('&Delete Selected')
         action.setShortcut(QtGui.QKeySequence('Delete'))
         action.triggered.connect(self.delete_selected)
+
+        edit_menu.addSeparator()
+        action = edit_menu.addAction('&Select All')
+        action.setShortcut(QtGui.QKeySequence('Ctrl+a'))
+        action.triggered.connect(self.select_all)
 
         view_menu = self.menuBar().addMenu('&View')
         action = view_menu.addAction('&Sow/Hide names')
@@ -607,6 +611,10 @@ class MainWindow(QMainWindow):
         self.scene.remove_selected_groups()
 
         self.unsaved = True
+
+    @Slot()
+    def select_all(self):
+        self.scene.select_all()
 
     # TODO this function is almost identical to save_data
     @Slot()
