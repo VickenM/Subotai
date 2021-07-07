@@ -278,13 +278,14 @@ class MainWindow(QMainWindow):
 
         view = pywerlines.pywerview.PywerView()
         scene = EventFlow()
-        scene.setSceneRect(0, 0, 5000, 5000)
+        scene.setSceneRect(0, 0, 100000, 100000)
         scene.setItemIndexMethod(scene.NoIndex)
         view.setScene(scene)
 
         self.filename = None
         self.unsaved = False
         self.saved_data = None
+        self.paste_offset = 20
 
         toolbox = ToolBox()
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="DirChanged", sections=['Events']))
@@ -381,24 +382,24 @@ class MainWindow(QMainWindow):
         action.triggered.connect(self.exit_app)
 
         edit_menu = self.menuBar().addMenu('&Edit')
-        action = edit_menu.addAction('&Group Selected')
+        action = edit_menu.addAction('&Group Selection')
         action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
         action.triggered.connect(self.group_selected)
 
-        action = edit_menu.addAction('&New Group')
+        action = edit_menu.addAction('&Empty Group')
         action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
         action.triggered.connect(self.new_group)
 
         edit_menu.addSeparator()
-        action = edit_menu.addAction('&Copy Selected')
+        action = edit_menu.addAction('&Copy')
         action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
         action.triggered.connect(self.copy_selected)
 
-        action = edit_menu.addAction('&Paste Selected')
+        action = edit_menu.addAction('&Paste')
         action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
         action.triggered.connect(self.paste_selected)
 
-        action = edit_menu.addAction('&Delete Selected')
+        action = edit_menu.addAction('&Delete')
         action.setShortcut(QtGui.QKeySequence('Delete'))
         action.triggered.connect(self.delete_selected)
 
@@ -643,6 +644,7 @@ class MainWindow(QMainWindow):
             )
 
         self.saved_data = data
+        self.paste_iter = 20
 
     # TODO this function is almost identical to load_data
     @Slot()
@@ -659,7 +661,7 @@ class MainWindow(QMainWindow):
             n.node_obj.moveToThread(self.thread_)
             # n.node_obj.obj_id = node['id']
             n.node_obj.set_active(node.get('active', True))
-            n.setPos(node['position'][0] + 20, node['position'][1] + 20)
+            n.setPos(node['position'][0] + self.paste_offset, node['position'][1] + self.paste_offset)
             n.setSize(*node.get('size', (100, 100)))
             new_nodes.append(n)
 
@@ -723,6 +725,8 @@ class MainWindow(QMainWindow):
         self.scene.clearSelection()
         for n in new_nodes:
             n.setSelected(True)
+
+        self.paste_offset += 20
 
     @Slot(str)
     def toolbox_item_selected(self, item):
