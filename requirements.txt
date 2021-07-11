@@ -6,6 +6,8 @@ future==0.18.2
 ipython==7.19.0
 ipython-genutils==0.2.0
 jedi==0.17.2
+numpy==1.21.0
+opencv-python==4.5.3.56
 parso==0.7.1
 pefile==2019.4.18
 pickleshare==0.7.5
@@ -14,8 +16,10 @@ prompt-toolkit==3.0.8
 Pygments==2.7.3
 pyinstaller==4.1
 pyinstaller-hooks-contrib==2020.11
+pynput==1.6.8
 PySide2==5.15.2
 pywin32-ctypes==0.2.0
 shiboken2==5.15.2
+six==1.16.0
 traitlets==5.0.5
 wcwidth==0.2.5
