@@ -9,7 +9,7 @@ from .image.imageparam import ImageParam
 
 import sys
 
-sys.path.append('D:\\projects\\python\\node2\\opencv')
+#sys.path.append('D:\\projects\\python\\node2\\opencv')
 
 from PIL import Image
 

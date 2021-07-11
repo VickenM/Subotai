@@ -8,7 +8,7 @@ from .signal import Signal, OUTPUT_PLUG
 
 import sys
 
-sys.path.append('D:\\projects\\python\\node2\\pynput')
+#sys.path.append('D:\\projects\\python\\node2\\pynput')
 
 from pynput import keyboard
 
