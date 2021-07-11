@@ -644,7 +644,7 @@ class MainWindow(QMainWindow):
             )
 
         self.saved_data = data
-        self.paste_iter = 20
+        # self.paste_offset = 20
 
     # TODO this function is almost identical to load_data
     @Slot()
@@ -661,7 +661,7 @@ class MainWindow(QMainWindow):
             n.node_obj.moveToThread(self.thread_)
             # n.node_obj.obj_id = node['id']
             n.node_obj.set_active(node.get('active', True))
-            n.setPos(node['position'][0] + self.paste_offset, node['position'][1] + self.paste_offset)
+            n.setPos(node['position'][0] + 20, node['position'][1] + 20)
             n.setSize(*node.get('size', (100, 100)))
             new_nodes.append(n)
 
@@ -726,7 +726,8 @@ class MainWindow(QMainWindow):
         for n in new_nodes:
             n.setSelected(True)
 
-        self.paste_offset += 20
+        self.copy_selected()
+        # self.paste_offset += 20
 
     @Slot(str)
     def toolbox_item_selected(self, item):

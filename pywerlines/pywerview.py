@@ -63,17 +63,6 @@ class PywerView(QtWidgets.QGraphicsView):
     def scaleView(self, scaleFactor):
         self.scale(scaleFactor, scaleFactor)
 
-    def mouseMoveEvent(self, event):
-        self.mouse_position = event.pos()
-        mouse_position = event.pos()
-        if self.drag_edge:
-            self.drag_edge.target_position = self.mapToScene(mouse_position)
-            self.drag_edge.adjust()
-        super(PywerView, self).mouseMoveEvent(event)
-
-    def mouseDoubleClickEvent(self, event):
-        self.mousePressEvent(event)
-
     def wheelEvent(self, event):
         if event.modifiers() & QtCore.Qt.ControlModifier:
             zoomInFactor = 1.10
@@ -144,10 +133,28 @@ class PywerView(QtWidgets.QGraphicsView):
             self.disconnected_plug = None
             self.drag_edge = None
 
+    def mouseDoubleClickEvent(self, event):
+        self.mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        self.mouse_position = event.pos()
+        mouse_position = event.pos()
+        if self.drag_edge:
+            self.drag_edge.target_position = self.mapToScene(mouse_position)
+            self.drag_edge.adjust()
+        super(PywerView, self).mouseMoveEvent(event)
+
     def mousePressEvent(self, event):
         button = event.button()
-        if button == QtCore.Qt.LeftButton:
+        if (button == QtCore.Qt.LeftButton) and (self.dragMode() == self.RubberBandDrag):
             self._drag_edge(position=event.pos())
+        # elif button == QtCore.Qt.RightButton:
+        #     self.setDragMode(self.ScrollHandDrag)
+        #     press_event = QtGui.QMouseEvent(QtCore.QEvent.GraphicsSceneMousePress,
+        #                                     event.pos(), QtCore.Qt.MouseButton.LeftButton,
+        #                                     QtCore.Qt.MouseButton.LeftButton, QtCore.Qt.KeyboardModifier.NoModifier
+        #                                     )
+        #     self.mousePressEvent(press_event)
         super(PywerView, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -155,5 +162,7 @@ class PywerView(QtWidgets.QGraphicsView):
         if button == QtCore.Qt.LeftButton:
             self._drop_edge(position=event.pos())
             self.scene().emit_selected_nodes()
+        elif button == QtCore.Qt.RightButton:
+            self.setDragMode(self.RubberBandDrag)
 
         super(PywerView, self).mouseReleaseEvent(event)

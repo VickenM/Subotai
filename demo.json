@@ -1,0 +1,146 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.consolewriter.ConsoleWriter",
+            "id": "eb0fc9ea-0bec-43c6-b851-7a8e02c85755",
+            "position": [
+                710.0,
+                215.0
+            ],
+            "params": {
+                "4": {
+                    "prefix": "%m/%d/%Y, %H:%M:%S"
+                },
+                "5": {
+                    "message": "hey rob!"
+                }
+            },
+            "active": true,
+            "size": [
+                215.0,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.listdir.ListDir",
+            "id": "c3234da8-1aaf-4dbd-99b6-d7874f7ad57b",
+            "position": [
+                252.0,
+                290.0
+            ],
+            "params": {
+                "5": {
+                    "directory": "D:/projects/python/node2/tmp"
+                },
+                "4": {
+                    "pattern": "*.*",
+                    "recursive": false,
+                    "fullpaths": false
+                },
+                "2": {
+                    "files": [
+                        "email.json",
+                        "eric.zip",
+                        "eric2.zip",
+                        "haarcascade_frontalface_default.xml",
+                        "wicked.txt",
+                        "wicked.zip"
+                    ]
+                }
+            },
+            "active": true,
+            "size": [
+                124.0,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.foreach.ForEach",
+            "id": "e659517b-bfb0-4d3e-a7da-378c4eec7dc8",
+            "position": [
+                480.0,
+                313.0
+            ],
+            "params": {
+                "5": {
+                    "items": []
+                },
+                "2": {
+                    "item": "wicked.zip",
+                    "index": 5,
+                    "count": 6
+                }
+            },
+            "active": true,
+            "size": [
+                140.0,
+                118.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.dirchange.DirChanged",
+            "id": "94d75aaf-168b-4eb7-b024-f08b3d805bef",
+            "position": [
+                5.0,
+                174.0
+            ],
+            "params": {
+                "6": {
+                    "directory": "D:/projects/python/node2/tmp"
+                },
+                "2": {
+                    "new": [],
+                    "removed": [
+                        "wicked - Copy.txt"
+                    ]
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.hotkey.Hotkey",
+            "id": "49e1551d-b1e3-43da-8d4c-3e87fcf34eab",
+            "position": [
+                41.0,
+                369.0
+            ],
+            "params": {
+                "4": {
+                    "hotkey": "<ctrl>+<alt>+r"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                50.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "e659517b-bfb0-4d3e-a7da-378c4eec7dc8.item",
+            "eb0fc9ea-0bec-43c6-b851-7a8e02c85755.message"
+        ],
+        [
+            "e659517b-bfb0-4d3e-a7da-378c4eec7dc8.event",
+            "eb0fc9ea-0bec-43c6-b851-7a8e02c85755.event"
+        ],
+        [
+            "c3234da8-1aaf-4dbd-99b6-d7874f7ad57b.event",
+            "e659517b-bfb0-4d3e-a7da-378c4eec7dc8.event"
+        ],
+        [
+            "c3234da8-1aaf-4dbd-99b6-d7874f7ad57b.files",
+            "e659517b-bfb0-4d3e-a7da-378c4eec7dc8.items"
+        ],
+        [
+            "49e1551d-b1e3-43da-8d4c-3e87fcf34eab.event",
+            "c3234da8-1aaf-4dbd-99b6-d7874f7ad57b.event"
+        ]
+    ],
+    "groups": []
+}
