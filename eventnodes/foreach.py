@@ -50,6 +50,7 @@ Events:
 
         count = len(items.value)
         for index, item in enumerate(items.value):
+            QtCore.QCoreApplication.processEvents()
             self.start_spinner_signal.emit()
             item_output.value = item.value
             count_output.value = count
