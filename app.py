@@ -273,7 +273,6 @@ class EventFlow(pywerscene.PywerScene):
         selected_node = selected_nodes[0]
 
         mnode = selected_node.node_obj
-        # mnode.compute()
         if mnode.computable:
             mnode.calculate.emit()
 
@@ -516,7 +515,7 @@ class MainWindow(QMainWindow):
             #         else:
             #             p._value = value
 
-            n.node_obj.update()
+            # n.node_obj.update()
 
         # TODO: when saving files out, edges come in arbitrary order. so nodes with dynamic inputs need to be connected in the right order. sorting here is kind of hack to get the order right
         for edge in sorted(data['edges'], key=lambda edge_pair: edge_pair[1]):
@@ -692,7 +691,7 @@ class MainWindow(QMainWindow):
 
         data = self.saved_data
         node_map = {}  # map from copied node id to newly created node id
-        new_nodes = []  # hold onto newly created nodes so that we can change the selection to them after paste
+        new_nodes = {}  # hold onto newly created nodes so that we can change the selection to them after paste
         for node in data['nodes']:
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
@@ -701,36 +700,36 @@ class MainWindow(QMainWindow):
             n.node_obj.set_active(node.get('active', True))
             n.setPos(node['position'][0] + 20, node['position'][1] + 20)
             n.setSize(*node.get('size', (100, 100)))
-            new_nodes.append(n)
+            new_nodes[n] = node
 
             # map the id of the copied node to the id of the newly created one.
             # we'll need this to know how to reconnect the copied edges
             node_map[node['id']] = n.node_obj.obj_id
 
-            for pluggable, params in node.get('params', {}).items():
-                pluggable = int(pluggable)
-                for param, value in params.items():
-                    if type(value) == list:
-                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
-                        from eventnodes.params import StringParam
-                        s = []
-                        for item in value:
-                            s.append(StringParam(value=item))
+            # for pluggable, params in node.get('params', {}).items():
+            #     pluggable = int(pluggable)
+            #     for param, value in params.items():
+            #         if type(value) == list:
+            #             p = n.node_obj.get_first_param(param, pluggable=pluggable)
+            #             from eventnodes.params import StringParam
+            #             s = []
+            #             for item in value:
+            #                 s.append(StringParam(value=item))
+            #
+            #             # print(p.value)
+            #             p.value.clear()
+            #             p.value.extend(s)
+            #             continue
+            #         p = n.node_obj.get_first_param(param, pluggable=pluggable)
+            #         from enum import Enum
+            #         if issubclass(p.value.__class__, Enum):
+            #             p._value = p.enum(value)
+            #         else:
+            #             p._value = value
 
-                        # print(p.value)
-                        p.value.clear()
-                        p.value.extend(s)
-                        continue
+            # n.node_obj.update()
 
-                    p = n.node_obj.get_first_param(param, pluggable=pluggable)
-                    from enum import Enum
-                    if issubclass(p.value.__class__, Enum):
-                        p._value = p.enum(value)
-                    else:
-                        p._value = value
-
-            n.node_obj.update()
-
+        # TODO: when saving files out, edges come in arbitrary order. so nodes with dynamic inputs need to be connected in the right order. sorting here is kind of hack to get the order right
         for edge in sorted(data['edges'], key=lambda edge_pair: edge_pair[1]):
             source, target = edge
             s_obj_id, s_plug = source.split('.')
@@ -752,16 +751,41 @@ class MainWindow(QMainWindow):
                     target_plug = o
                     break
 
-            self.scene.create_edge(source_plug, target_plug)
+            if source_plug and target_plug:
+                self.scene.create_edge(source_plug, target_plug)
+
+        for n, node in new_nodes.items():
+            for pluggable, params in node.get('params', {}).items():
+                pluggable = int(pluggable)
+                for param, value in params.items():
+                    if type(value) == list:
+                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                        from eventnodes.params import StringParam
+                        s = []
+                        for item in value:
+                            s.append(StringParam(value=item))
+
+                        p.value.clear()
+                        p.value.extend(s)
+                        continue
+                    p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                    from enum import Enum
+                    if not p:
+                        continue
+                    if issubclass(p.value.__class__, Enum):
+                        p._value = p.enum(value)
+                    else:
+                        p._value = value
+            n.node_obj.update()
 
         for group in data['groups']:
             g = self.scene.create_group()
             g.setPos(group['position'][0] + 20, group['position'][1] + 20)
             g.setSize(*group['size'])
-            new_nodes.append(g)
+            new_nodes[g] = group
 
         self.scene.clearSelection()
-        for n in new_nodes:
+        for n in new_nodes.keys():
             n.setSelected(True)
 
         self.copy_selected()

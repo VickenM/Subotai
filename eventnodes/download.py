@@ -13,36 +13,23 @@ import threading
 class Progress(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-
-        self.downloads = {}
-
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
 
-    def add_download(self, filename):
-        progress = QtWidgets.QProgressBar(parent=self)
-        self.downloads[filename] = progress
+    def add_download(self):
+        progress = QtWidgets.QProgressBar()
         self.layout.addWidget(progress)
+        return progress
 
-    def remove_download(self, filename):
-        progress = self.downloads[filename]
+    def remove_download(self, progress):
         index = self.layout.indexOf(progress)
         item = self.layout.takeAt(index)
         item.widget().deleteLater()
-        del self.downloads[filename]
-
-    def update_download(self, filename, retrieved, total):
-        progress = self.downloads[filename]
-        if total:
-            progress.setMaximum(int(total))
-
-        if int(retrieved) != int(total):
-            progress.setValue(int(retrieved))
 
 
-async def download(url, filename, progress_fn, callback_fn):
+async def download(url, filename, progress_bar, callback_fn):
     import requests
     with requests.get(url, stream=True) as r:
         total = r.headers.get('content-length')
@@ -50,15 +37,19 @@ async def download(url, filename, progress_fn, callback_fn):
         r.raise_for_status()
         with open(filename, 'wb') as f:
             accum = 0
-            for chunk in r.iter_content(chunk_size=8192*2):
+            for chunk in r.iter_content(chunk_size=8192 * 2):
                 # If you have chunk encoded response uncomment if
                 # and set chunk_size parameter to None.
                 if chunk:
                     f.write(chunk)
                     accum += len(chunk)
-                    await progress_fn(filename, accum, total)
+                    if int(accum) != int(total):
+                        if progress_bar:
+                            progress_bar.setMaximum(int(total))
+                            progress_bar.setValue(int(accum))
 
-    await callback_fn(filename)
+    if callback_fn and progress_bar:
+        await callback_fn(progress_bar)
 
 
 class LoopThread(threading.Thread):
@@ -95,29 +86,23 @@ class Download(ComputeNode):
 
         url = self.get_first_param('url')
         filename = self.get_first_param('filename')
-        signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
 
         if url.value and filename.value:
-            if filename not in self.progress_widget.downloads.keys():
-                url = url.value
-                filename = filename.value
+            url = url.value
+            filename = filename.value
+            progress_bar = self.progress_widget.add_download()
 
-                asyncio.run_coroutine_threadsafe(
-                    download(url, filename, progress_fn=self.progress, callback_fn=self.job_complete),
-                    self.loop_thread.loop)
-                self.count += 1
-                self.progress_widget.add_download(filename=filename)
+            asyncio.run_coroutine_threadsafe(
+                download(url, filename, progress_bar=progress_bar, callback_fn=self.job_complete),
+                self.loop_thread.loop)
+            self.count += 1
 
         super().compute()
 
-    async def progress(self, filename, retrieved, total):
-        # print('{filename} {retrieved}/{total}'.format(filename=filename, retrieved=retrieved, total=total))
-        self.progress_widget.update_download(filename, retrieved, total)
-
-    async def job_complete(self, filename):
+    async def job_complete(self, progress_bar):
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
-        self.progress_widget.remove_download(filename)
+        self.progress_widget.remove_download(progress_bar)
         self.count -= 1
         if not self.count:
             self.stop_spinner_signal.emit()
