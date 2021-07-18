@@ -50,6 +50,7 @@ import eventnodes.foreach
 import eventnodes.for_
 import eventnodes.splitstring
 import eventnodes.joinstrings
+import eventnodes.joinstringsmulti
 import eventnodes.slicelist
 import eventnodes.condition
 import eventnodes.collector
@@ -64,6 +65,7 @@ import eventnodes.viewer
 import eventnodes.systemnotification
 import eventnodes.process
 import eventnodes.multiprocess
+import eventnodes.download
 
 import appnode
 
@@ -101,7 +103,7 @@ def connected_plugs(plug1, plug2):
         input = plug1.plug_obj
         output = plug2.plug_obj
 
-        output.connect(input)
+        output.connect_(input)
 
 
 @Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
@@ -120,7 +122,7 @@ def disconnected_plugs(plug1, plug2):
         input = plug1.plug_obj
         output = plug2.plug_obj
 
-        output.disconnect()
+        output.disconnect_()
 
 
 class SplashScreen(QSplashScreen):
@@ -178,6 +180,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.splitstring.SplitString())
         elif type_ == 'JoinStrings':
             node = appnode.ParamNode.from_event_node(eventnodes.joinstrings.JoinStrings())
+        elif type_ == 'JoinStringsMulti':
+            node = appnode.ParamNode.from_event_node(eventnodes.joinstringsmulti.JoinStringsMulti())
         elif type_ == 'SliceList':
             node = appnode.ParamNode.from_event_node(eventnodes.slicelist.SliceList())
         elif type_ == 'Condition':
@@ -204,6 +208,8 @@ class EventFlow(pywerscene.PywerScene):
             node = appnode.EventNode.from_event_node(eventnodes.process.Process())
         elif type_ == 'MultiProcess':
             node = appnode.EventNode.from_event_node(eventnodes.multiprocess.MultiProcess())
+        elif type_ == 'Download':
+            node = appnode.EventNode.from_event_node(eventnodes.download.Download())
         else:
             return None
         return node
@@ -305,6 +311,7 @@ class MainWindow(QMainWindow):
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SliceList", sections=['Data']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SplitString", sections=['String']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="JoinStrings", sections=['String']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="JoinStringsMulti", sections=['String']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="For", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ForEach", sections=['Flow Control']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Counter", sections=['Flow Control']))
@@ -322,6 +329,7 @@ class MainWindow(QMainWindow):
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SystemNotification", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Process", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="MultiProcess", sections=['I/O']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Download", sections=['I/O']))
         toolbox.itemClicked.connect(self.toolbox_item_selected)
 
         scene.nodes_selected.connect(selected_nodes)
@@ -474,6 +482,7 @@ class MainWindow(QMainWindow):
                                  shell=False)
 
     def load_data(self, data):
+        new_nodes = {}
         for node in data['nodes']:
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
@@ -483,35 +492,39 @@ class MainWindow(QMainWindow):
             n.setPos(*node['position'])
             n.setSize(*node.get('size', (100, 100)))
 
-            for pluggable, params in node.get('params', {}).items():
-                pluggable = int(pluggable)
-                for param, value in params.items():
-                    if type(value) == list:
-                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
-                        from eventnodes.params import StringParam
-                        s = []
-                        for item in value:
-                            s.append(StringParam(value=item))
+            new_nodes[n] = node
 
-                        # print(p.value)
-                        p.value.clear()
-                        p.value.extend(s)
-                        continue
-
-                    p = n.node_obj.get_first_param(param, pluggable=pluggable)
-                    from enum import Enum
-                    if issubclass(p.value.__class__, Enum):
-                        p._value = p.enum(value)
-                    else:
-                        p._value = value
+            # for pluggable, params in node.get('params', {}).items():
+            #     pluggable = int(pluggable)
+            #     for param, value in params.items():
+            #         if type(value) == list:
+            #             p = n.node_obj.get_first_param(param, pluggable=pluggable)
+            #             from eventnodes.params import StringParam
+            #             s = []
+            #             for item in value:
+            #                 s.append(StringParam(value=item))
+            #
+            #             p.value.clear()
+            #             p.value.extend(s)
+            #             continue
+            #         p = n.node_obj.get_first_param(param, pluggable=pluggable)
+            #         from enum import Enum
+            #         if not p:
+            #             continue
+            #         if issubclass(p.value.__class__, Enum):
+            #             p._value = p.enum(value)
+            #         else:
+            #             p._value = value
 
             n.node_obj.update()
 
-        for edge in data['edges']:
+        # TODO: when saving files out, edges come in arbitrary order. so nodes with dynamic inputs need to be connected in the right order. sorting here is kind of hack to get the order right
+        for edge in sorted(data['edges'], key=lambda edge_pair: edge_pair[1]):
             source, target = edge
             s_obj_id, s_plug = source.split('.')
             t_obj_id, t_plug = target.split('.')
 
+            source_plug = target_plug = None
             s_node = self.scene.get_node_by_id(s_obj_id)
             for o in s_node.outputs:
                 if o.type_ == s_plug:
@@ -524,7 +537,32 @@ class MainWindow(QMainWindow):
                     target_plug = o
                     break
 
-            self.scene.create_edge(source_plug, target_plug)
+            if source_plug and target_plug:
+                self.scene.create_edge(source_plug, target_plug)
+
+        for n, node in new_nodes.items():
+            for pluggable, params in node.get('params', {}).items():
+                pluggable = int(pluggable)
+                for param, value in params.items():
+                    if type(value) == list:
+                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                        from eventnodes.params import StringParam
+                        s = []
+                        for item in value:
+                            s.append(StringParam(value=item))
+
+                        p.value.clear()
+                        p.value.extend(s)
+                        continue
+                    p = n.node_obj.get_first_param(param, pluggable=pluggable)
+                    from enum import Enum
+                    if not p:
+                        continue
+                    if issubclass(p.value.__class__, Enum):
+                        p._value = p.enum(value)
+                    else:
+                        p._value = value
+            n.node_obj.update()
 
         for group in data['groups']:
             g = self.scene.create_group()
@@ -693,7 +731,7 @@ class MainWindow(QMainWindow):
 
             n.node_obj.update()
 
-        for edge in data['edges']:
+        for edge in sorted(data['edges'], key=lambda edge_pair: edge_pair[1]):
             source, target = edge
             s_obj_id, s_plug = source.split('.')
             t_obj_id, t_plug = target.split('.')

@@ -346,6 +346,12 @@ class PywerNode(PywerItem):
         self.adjust()
         self.resizer.setMinSize(QtCore.QPointF(100, self.height))
 
+    def remove_input(self, plug):
+        self.inputs.remove(plug)
+        plug.setParentItem(None)
+        self.adjust()
+        self.resizer.setMinSize(QtCore.QPointF(100, self.height))
+
     def add_output(self, plug):
         plug.setParentItem(self)
         self.outputs.append(plug)
@@ -367,12 +373,12 @@ class PywerNode(PywerItem):
             self.height = max(
                 [plug.y() + plug.boundingRect().height() + self.plug_spacing for plug in self.inputs + self.outputs])
 
-        self.height = max([self.height, self.resizer.pos().y() + self.resizer.rect.height()])
+        # self.height = max([self.height, self.resizer.pos().y() + self.resizer.rect.height()])
 
-        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, False)
-        resizer_width = self.resizer.rect.width() / 2
-        resizer_offset = QtCore.QPointF(resizer_width * 2, resizer_width * 2)
+        resizer_width = self.resizer.rect.width()
+        resizer_offset = QtCore.QPointF(resizer_width, resizer_width)
         rect = QtCore.QRectF(0, 0, self.width, self.height)
+        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, False)
         self.resizer.setPos(rect.bottomRight() - resizer_offset)
         self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, True)
 

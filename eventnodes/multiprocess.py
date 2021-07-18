@@ -20,12 +20,6 @@ async def run_command(cmd, callback_fn):
 
     await callback_fn()
 
-    # print('[{cmd!r} exited with {proc.returncode}]'.format(cmd=cmd, proc=proc))
-    # if stdout:
-    #     print('[stdout]\n{stdout.decode()}'.format(stdout=stdout))
-    # if stderr:
-    #     print('[stderr]\n{stderr.decode()}'.format(stderr=stderr))
-
 
 class LoopThread(threading.Thread):
     def __init__(self, node):

@@ -11,13 +11,15 @@ SUBTYPE_DIRPATH = 4
 
 
 class Param(object):
-    def __init__(self, name, value=None, pluggable=NONE):
+    def __init__(self, name, value=None, pluggable=NONE, node=None):
+        super().__init__()
         self.name = name
         self._type = None  # int or float or str or list or dict or tuple
         self._subtype = None
         self._value = value
         self.pluggable = pluggable  # NONE means its just a param on the node. otherwise, INPUT_PLUG or OUTPUT_PLUG to make it connectible
         self.connection = None
+        self.node = node
 
     @abstractmethod
     def valid_value(self, value):
@@ -53,20 +55,27 @@ class Param(object):
     def set_pluggable(self, plug_type):
         self.pluggable = plug_type
 
-    def connect(self, param):
+    def connect_(self, param):
         assert (isinstance(param, Param))
         self.connection = param
+        if self.node:
+            self.node.connected_params(connected_param=param, this_param=self)
 
-    def disconnect(self):
+    def disconnect_(self):
         self.connection = None
+        if self.node:
+            self.node.disconnected_params(this_param=self)
+
+    def is_connected(self):
+        return self.connection is not None
 
     def __call__(self, *args, **kwargs):
         return self.value
 
 
 class IntParam(Param):
-    def __init__(self, name='', value=0, minimum=-9999, maximum=9999, pluggable=None, subtype=None):
-        super().__init__(name=name, pluggable=pluggable)
+    def __init__(self, name='', value=0, minimum=-9999, maximum=9999, pluggable=None, subtype=None, node=None):
+        super().__init__(name=name, pluggable=pluggable, node=node)
         self.name = name
         self._type = int
         self._value = value
@@ -86,8 +95,8 @@ class IntParam(Param):
 
 
 class FloatParam(Param):
-    def __init__(self, name='', value=0.0, minimum=-9999, maximum=9999, pluggable=None, subtype=None):
-        super().__init__(name=name, pluggable=pluggable)
+    def __init__(self, name='', value=0.0, minimum=-9999, maximum=9999, pluggable=None, subtype=None, node=None):
+        super().__init__(name=name, pluggable=pluggable, node=node)
         self.name = name
         self._type = float
         self._value = value
@@ -107,8 +116,8 @@ class FloatParam(Param):
 
 
 class StringParam(Param):
-    def __init__(self, name='', value='', pluggable=None, subtype=None):
-        super().__init__(name=name, pluggable=pluggable)
+    def __init__(self, name='', value='', pluggable=None, subtype=None, node=None):
+        super().__init__(name=name, pluggable=pluggable, node=node)
         self.name = name
         self._type = str
         self._subtype = subtype
@@ -116,8 +125,8 @@ class StringParam(Param):
 
 
 class BoolParam(Param):
-    def __init__(self, name='', value=True, pluggable=None, subtype=None):
-        super().__init__(name=name, pluggable=pluggable)
+    def __init__(self, name='', value=True, pluggable=None, subtype=None, node=None):
+        super().__init__(name=name, pluggable=pluggable, node=node)
         self.name = name
         self._type = bool
         self._value = value
@@ -130,8 +139,8 @@ class BoolParam(Param):
 
 
 class ListParam(Param):
-    def __init__(self, name='', value=[], pluggable=None, subtype=None):
-        super().__init__(name=name, pluggable=pluggable)
+    def __init__(self, name='', value=[], pluggable=None, subtype=None, node=None):
+        super().__init__(name=name, pluggable=pluggable, node=node)
         self.name = name
         self._type = list
         self._value = value
@@ -141,8 +150,8 @@ from enum import Enum
 
 
 class EnumParam(Param):
-    def __init__(self, name='', value=Enum, pluggable=None, subtype=None):
-        super().__init__(name=name, pluggable=pluggable)
+    def __init__(self, name='', value=Enum, pluggable=None, subtype=None, node=None):
+        super().__init__(name=name, pluggable=pluggable, node=node)
         self.name = name
         self._type = Enum
         self._value = value

@@ -142,7 +142,8 @@ class Parameters(QtWidgets.QWidget):
 
                     if self.controls_info.get(field):
                         signal, call = self.controls_info.pop(field)
-                        signal.disconnect(call)
+                        if signal and call:
+                            signal.disconnect(call)
 
             self.flayout.removeRow(0)
 
@@ -153,8 +154,11 @@ class Parameters(QtWidgets.QWidget):
 
             for control_ in self.node_obj.get_controls():
                 control, func, signal = control_
-                call_fn = lambda: func()
-                signal.connect(call_fn)
+                if func and signal:
+                    call_fn = lambda: func()
+                    signal.connect(call_fn)
+                else:
+                    call_fn = None
 
                 self.flayout.addWidget(control)
                 self.controls_info[control] = (signal, call_fn)

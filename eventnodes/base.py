@@ -5,8 +5,6 @@ from PySide2.QtCore import Slot, Signal, QEventLoop
 from .params import INPUT_PLUG, OUTPUT_PLUG, PARAM
 from abc import abstractmethod
 
-# thread = None
-
 
 class BaseNode(QtCore.QObject):
     def __init__(self, *args, **kwargs):
@@ -69,15 +67,16 @@ class BaseNode(QtCore.QObject):
     def terminate(self):
         pass
 
+    def connected_params(self, connected_param, this_param):
+        pass
+
+    def disconnected_params(self, this_param):
+        pass
+
 
 class Worker(QtCore.QThread):
     def __init__(self, parent):
         super().__init__(parent=parent)
-    #     self.start()
-    #
-    # def run(self):
-    #     self.exec_()
-
 
 
 class ComputeNode(BaseNode):
@@ -87,10 +86,6 @@ class ComputeNode(BaseNode):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # global thread
-
-        # self.moveToThread(thread)
-
         self.color = (35, 105, 140, 200)
         self.signals = []
         self.calculate.connect(self.compute)
@@ -126,14 +121,6 @@ class ComputeNode(BaseNode):
     def collect(self):
         pass
 
-    # @Slot()
-    # def deactivate(self):
-    #     print('gay')
-    #
-    # @Slot()
-    # def activate(self):
-    #     pass
-
     ##################################
 
     def get_signals(self):
@@ -154,7 +141,7 @@ class ComputeNode(BaseNode):
 
     def connect_from(self, signal, trigger=None):
         if not trigger:
-            signal.connect(self.trigger) #, type=QtCore.Qt.QueuedConnection)
+            signal.connect(self.trigger)  # , type=QtCore.Qt.QueuedConnection)
         else:
             signal.connect(self.map_signal(trigger))
 
@@ -184,16 +171,6 @@ class EventNode(ComputeNode):
             self.activate()
         else:
             self.deactivate()
-
-    # def set_active(self, state):
-    #     self.active = state
-    #     if self.active:
-    #         self.activate_button.setText('Deactivate')
-    #     else:
-    #         self.activate_button.setText('Activate')
-    #
-    #     if self.ui_node:
-    #         self.ui_node.update()
 
     def activate(self):
         super().activate()

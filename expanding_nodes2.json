@@ -1,0 +1,137 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "34031ea3-7d05-4564-83b1-2fb7637b433a",
+            "position": [
+                198.4468691900006,
+                460.2132621200003
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": null
+                },
+                "6": {
+                    "param": "d"
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.joinstringsmulti.JoinStringsMulti",
+            "id": "96f7b2f5-3c7d-414a-b1b6-699b485b9d9d",
+            "position": [
+                566.6568691900006,
+                294.31326212000045
+            ],
+            "params": {
+                "5": {
+                    "separator": "/",
+                    "string1": "",
+                    "string2": "",
+                    "string3": "",
+                    "string4": "",
+                    "string5": ""
+                },
+                "2": {
+                    "string": ""
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "cc19aa69-f85a-4d24-bc9e-337eaa26d0c0",
+            "position": [
+                241.02686919000053,
+                208.29326212000046
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": null
+                },
+                "6": {
+                    "param": "a"
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "8a1c84f9-de7c-4bad-bf79-431b3b7c5dc2",
+            "position": [
+                187.4468691900006,
+                274.9832621200004
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": null
+                },
+                "6": {
+                    "param": "b"
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "d19f2aec-a0e8-4b8b-9910-302710ae1a7d",
+            "position": [
+                211.24686919000055,
+                366.3732621200003
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": null
+                },
+                "6": {
+                    "param": "c"
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.consolewriter.ConsoleWriter",
+            "id": "0d0f1641-3494-4530-9e1f-c4dfcaaca795",
+            "position": [
+                907.0,
+                185.0
+            ],
+            "params": {
+                "4": {
+                    "prefix": "%m/%d/%Y, %H:%M:%S"
+                },
+                "5": {
+                    "message": ""
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "cc19aa69-f85a-4d24-bc9e-337eaa26d0c0.param",
+            "96f7b2f5-3c7d-414a-b1b6-699b485b9d9d.string1"
+        ],
+        [
+            "8a1c84f9-de7c-4bad-bf79-431b3b7c5dc2.param",
+            "96f7b2f5-3c7d-414a-b1b6-699b485b9d9d.string2"
+        ],
+        [
+            "d19f2aec-a0e8-4b8b-9910-302710ae1a7d.param",
+            "96f7b2f5-3c7d-414a-b1b6-699b485b9d9d.string3"
+        ],
+        [
+            "34031ea3-7d05-4564-83b1-2fb7637b433a.param",
+            "96f7b2f5-3c7d-414a-b1b6-699b485b9d9d.string4"
+        ],
+        [
+            "96f7b2f5-3c7d-414a-b1b6-699b485b9d9d.string",
+            "0d0f1641-3494-4530-9e1f-c4dfcaaca795.message"
+        ]
+    ],
+    "groups": []
+}

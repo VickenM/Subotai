@@ -34,9 +34,9 @@ class JoinStrings(BaseNode):
         first = StringParam(name='first', value='', pluggable=PARAM | INPUT_PLUG)
         second = StringParam(name='second', value='', pluggable=PARAM | INPUT_PLUG)
         separator = StringParam(name='separator', value='', pluggable=PARAM | INPUT_PLUG)
+        self.params.append(separator)
         self.params.append(first)
         self.params.append(second)
-        self.params.append(separator)
         self.params.append(JoinParam(first_param=first, second_param=second, sep_param=separator, name='string',
                                      pluggable=OUTPUT_PLUG))
         self.description = \
