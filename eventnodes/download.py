@@ -10,6 +10,26 @@ import asyncio
 import threading
 
 
+class TextProgressBar(QtWidgets.QProgressBar):
+    def __init__(self, text=''):
+        super().__init__()
+        self.text_ = text
+
+    def setText(self, text):
+        self.text_ = text
+
+    def paintEvent(self, paintevent):
+        super().paintEvent(paintevent)
+
+        painter = QtGui.QPainter(self)
+        rect = self.rect()
+
+        painter.setPen(QtGui.QPen(QtGui.Qt.black))
+        rect = painter.boundingRect(rect, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter, self.text_)
+        painter.drawText(self.rect().adjusted(0, 0, -36, 0), int(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter),
+                         self.text_)
+
+
 class Progress(QtWidgets.QWidget):
     add_progress = QtCore.Signal(int)
 
@@ -30,7 +50,9 @@ class Progress(QtWidgets.QWidget):
 
     @QtCore.Slot()
     def do_add_download(self, download_id):
-        progress = QtWidgets.QProgressBar()
+        progress = QtWidgets.QProgressBar() # TextProgressBar()
+        progress.setTextVisible(True);
+        progress.setAlignment(QtCore.Qt.AlignCenter);
         self.downloads[download_id] = progress
         self.layout.addWidget(progress)
 
@@ -44,10 +66,14 @@ class Progress(QtWidgets.QWidget):
         index = self.layout.indexOf(progress_bar)
         item = self.layout.takeAt(index)
         item.widget().deleteLater()
+        del self.downloads[download_id]
 
-    def update_download(self, download_id, received, total):
+    def update_download(self, filename, download_id, received, total):
         if int(received) < int(total):
             progress_bar = self.downloads[download_id]
+            percent = int(100 * (int(received) / int(total)))
+            text = filename + '... ' + str(percent)+'%'
+            progress_bar.setFormat(text);
             progress_bar.setMaximum(int(total))
             progress_bar.setValue(int(received))
 
@@ -66,7 +92,7 @@ async def download(url, filename, progress_id, progress_fn, callback_fn):
                 if chunk:
                     f.write(chunk)
                     accum += len(chunk)
-                    await progress_fn(progress_id, int(accum), int(total))
+                    await progress_fn(filename, progress_id, int(accum), int(total))
 
     await callback_fn(filename, progress_id)
 
@@ -120,8 +146,8 @@ class Download(ComputeNode):
 
         super().compute()
 
-    async def job_progress(self, progress_id, received, total):
-        self.progress_widget.update_download(progress_id, received, total)
+    async def job_progress(self, filename, progress_id, received, total):
+        self.progress_widget.update_download(filename, progress_id, received, total)
 
     async def job_complete(self, filename, progress_id):
         filename_ = self.get_first_param('filename', pluggable=OUTPUT_PLUG)
