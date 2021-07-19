@@ -31,7 +31,7 @@ class TextProgressBar(QtWidgets.QProgressBar):
 
 
 class Progress(QtWidgets.QWidget):
-    add_progress = QtCore.Signal(int)
+    add_progress = QtCore.Signal(int, str)
 
     def __init__(self):
         super().__init__()
@@ -49,16 +49,18 @@ class Progress(QtWidgets.QWidget):
     # Qt gives error related to setParent
 
     @QtCore.Slot()
-    def do_add_download(self, download_id):
-        progress = QtWidgets.QProgressBar() # TextProgressBar()
-        progress.setTextVisible(True);
-        progress.setAlignment(QtCore.Qt.AlignCenter);
+    def do_add_download(self, download_id, filename):
+        progress = QtWidgets.QProgressBar()  # TextProgressBar()
+        progress.setTextVisible(True)
+        progress.setAlignment(QtCore.Qt.AlignCenter)
+        progress.setFormat(filename + '... waiting')
+        progress.setValue(0)
         self.downloads[download_id] = progress
         self.layout.addWidget(progress)
 
-    def add_download(self):
+    def add_download(self, filename):
         self.download_id += 1
-        self.add_progress.emit(self.download_id)
+        self.add_progress.emit(self.download_id, filename)
         return self.download_id
 
     def remove_download(self, download_id):
@@ -72,8 +74,8 @@ class Progress(QtWidgets.QWidget):
         if int(received) < int(total):
             progress_bar = self.downloads[download_id]
             percent = int(100 * (int(received) / int(total)))
-            text = filename + '... ' + str(percent)+'%'
-            progress_bar.setFormat(text);
+            text = filename + '... ' + str(percent) + '%'
+            progress_bar.setFormat(text)
             progress_bar.setMaximum(int(total))
             progress_bar.setValue(int(received))
 
@@ -136,7 +138,7 @@ class Download(ComputeNode):
 
             url = url.value
             filename = filename.value
-            progress_id = self.progress_widget.add_download()
+            progress_id = self.progress_widget.add_download(filename)
 
             asyncio.run_coroutine_threadsafe(
                 download(url, filename, progress_id=progress_id, progress_fn=self.job_progress,
