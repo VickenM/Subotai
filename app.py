@@ -277,11 +277,44 @@ class EventFlow(pywerscene.PywerScene):
             mnode.calculate.emit()
 
 
+class EventView(pywerlines.pywerview.PywerView):
+    node_dropped_signal = QtCore.Signal(str, int, int)
+
+    def __init__(self):
+        super().__init__()
+        self.setAcceptDrops(True)
+
+    def dragMoveEvent(self, event):
+        pass # need to implement this function for the drops to work
+
+    def dragLeaveEvent(self, event):
+        event.ignore()
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().data('application/x-node'):
+            if event.source():
+                event.setDropAction(QtCore.Qt.MoveAction)
+                event.accept()
+            else:
+                event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        node = event.mimeData().data('application/x-node')
+        position = event.pos()
+
+        if node:
+            self.node_dropped_signal.emit(bytes(node).decode(), position.x(), position.y())
+            event.accept()
+        else:
+            event.ignore()
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
-        view = pywerlines.pywerview.PywerView()
+        view = EventView()
         scene = EventFlow()
         scene.setSceneRect(0, 0, 100000, 100000)
         scene.setItemIndexMethod(scene.NoIndex)
@@ -329,7 +362,7 @@ class MainWindow(QMainWindow):
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Process", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="MultiProcess", sections=['I/O']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Download", sections=['I/O']))
-        toolbox.itemClicked.connect(self.toolbox_item_selected)
+        toolbox.itemDoubleClickedSignal.connect(self.toolbox_item_selected)
 
         scene.nodes_selected.connect(selected_nodes)
         scene.nodes_deleted.connect(deleted_nodes)
@@ -357,6 +390,8 @@ class MainWindow(QMainWindow):
         central_widget = QWidget(parent=self)
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
+
+        self.view.node_dropped_signal.connect(self.toolbox_item_dropped)
 
         toolbar = self.addToolBar('Run')
         action = toolbar.addAction('&Run')
@@ -790,6 +825,15 @@ class MainWindow(QMainWindow):
 
         self.copy_selected()
         # self.paste_offset += 20
+
+    @Slot(str, int, int)
+    def toolbox_item_dropped(self, item, x, y):
+        node = self.scene.create_node_of_type(item)
+        node.node_obj.moveToThread(self.thread_)
+        position = QtCore.QPointF(self.view.mapToScene(x, y))
+        node.setPos(position)
+
+        self.unsaved = True
 
     @Slot(str)
     def toolbox_item_selected(self, item):

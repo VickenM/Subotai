@@ -9,6 +9,8 @@ class FilterEdit(QtWidgets.QLineEdit):
 
 
 class SectionView(QtWidgets.QListView):
+    doubleClicked = QtCore.Signal(object)
+
     def __init__(self, parent=None):
         super(SectionView, self).__init__(parent=parent)
         self.setViewMode(self.ListMode)
@@ -55,8 +57,7 @@ class SectionView(QtWidgets.QListView):
             rows = math.ceil(item_count / items_per_row)
             height = (rows * item_height) + (self.size().height() - self.childrenRect().height())
         else:
-            height = (item_height * item_count) + 5 # TODO: hack to get rid of scrollbar
-
+            height = (item_height * item_count) + 5  # TODO: hack to get rid of scrollbar
 
         size = QtCore.QSize()
         size.setHeight(height)
@@ -69,6 +70,40 @@ class SectionView(QtWidgets.QListView):
 
     def filterItems(self, filter_text):
         self.model().setFilterRegExp(filter_text)
+
+    def mouseDoubleClickEvent(self, event):
+        index = self.indexAt(event.pos())
+        if index.isValid():
+            self.doubleClicked.emit(index)
+            # return super().mouseDoubleClickEvent(event)
+
+    def mousePressEvent(self, event):
+        index = self.indexAt(event.pos())
+        if not index.isValid():
+            return
+
+        proxy_model = index.model()
+        source_model = proxy_model.sourceModel()
+        source_index = proxy_model.mapToSource(index)
+        item_label = source_model.itemFromIndex(source_index).label
+
+        icon = source_model.data(index=source_index, role=QtCore.Qt.DecorationRole)
+
+        mimeData = QtCore.QMimeData()
+        mimeData.setText(item_label)
+        mimeData.setData('application/x-node', bytearray(item_label.encode()))
+
+        drag = QtGui.QDrag(self)
+        drag.setMimeData(mimeData)
+        drag.setPixmap(icon.pixmap(32, 32))
+
+        dropAction = drag.exec_(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.CopyAction)
+
+        if dropAction == QtCore.Qt.MoveAction:
+            self.close()
+            self.update()
+
+        return super().mousePressEvent(event)
 
 
 class Section(QtWidgets.QWidget):
@@ -151,7 +186,7 @@ class ToolItem(QtGui.QStandardItem):
 
 
 class ToolBox(QtWidgets.QWidget):
-    itemClicked = QtCore.Signal(str)
+    itemDoubleClickedSignal = QtCore.Signal(str)
 
     def __init__(self, sections=None):
         super(ToolBox, self).__init__()
@@ -225,7 +260,7 @@ class ToolBox(QtWidgets.QWidget):
         proxy_model.setSourceModel(self.model)
         section_view.setModel(proxy_model)
 
-        section_view.clicked.connect(self.itemClickedSignal)
+        section_view.doubleClicked.connect(self.itemDoubleClicked)
 
         section = Section(label=section_name, view=section_view)
 
@@ -243,11 +278,11 @@ class ToolBox(QtWidgets.QWidget):
         self.addSections(tool.sections())
         self.model.appendRow(tool)
 
-    def itemClickedSignal(self, index):
+    def itemDoubleClicked(self, index):
         proxy_model = index.model()
         source_index = proxy_model.mapToSource(index)
         item_label = self.model.itemFromIndex(source_index).label
-        self.itemClicked.emit(item_label)
+        self.itemDoubleClickedSignal.emit(item_label)
 
 
 @QtCore.Slot()
