@@ -55,16 +55,20 @@ Parameters:
         if not self.string_params[-1].is_connected():
             return
 
-        from appnode import plug_color
-        import pywerlines.pyweritems
+        # from appnode import plug_color
+        # import pywerlines.pyweritems
+
+        import appnode
+
         extra_params_count = len(self.string_params) + 1
         param = StringParam(name='string' + str(extra_params_count), value='', pluggable=PARAM | INPUT_PLUG, node=self)
         self.params.append(param)
         self.string_params.append(param)
 
-        i = {'type': param.name, 'path': pywerlines.pyweritems.PywerPlug.ELLIPSE, 'color': plug_color(param),
-             'plug_obj': param}
-        self.ui_node.add_input(pywerlines.pyweritems.PywerPlug(**i))
+        # i = {'type': param.name, 'path': pywerlines.pyweritems.PywerPlug.ELLIPSE, 'color': plug_color(param),
+        #      'plug_obj': param}
+        # self.ui_node.add_input(pywerlines.pyweritems.PywerPlug(**i))
+        self.ui_node.add_input(appnode.Plug.from_param(param_obj=param))
         self.ui_node.adjust()
 
     def disconnected_params(self, this_param):

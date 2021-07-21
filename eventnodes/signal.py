@@ -9,6 +9,7 @@ class Signal(QtCore.QObject):
 
     def __init__(self, node, name, pluggable=OUTPUT_PLUG):
         super().__init__()
+        self.color = (255, 255, 255, 255)
         self.node = node
         self.name = name
         self.pluggable = pluggable  # must be either input or output, cant be None

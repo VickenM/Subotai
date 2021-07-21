@@ -13,6 +13,7 @@ SUBTYPE_DIRPATH = 4
 class Param(object):
     def __init__(self, name, value=None, pluggable=NONE, node=None):
         super().__init__()
+        self.color = (200, 200, 200, 255)
         self.name = name
         self._type = None  # int or float or str or list or dict or tuple
         self._subtype = None
@@ -76,6 +77,7 @@ class Param(object):
 class IntParam(Param):
     def __init__(self, name='', value=0, minimum=-9999, maximum=9999, pluggable=None, subtype=None, node=None):
         super().__init__(name=name, pluggable=pluggable, node=node)
+        self.color = (80, 80, 255, 255)
         self.name = name
         self._type = int
         self._value = value
@@ -97,6 +99,7 @@ class IntParam(Param):
 class FloatParam(Param):
     def __init__(self, name='', value=0.0, minimum=-9999, maximum=9999, pluggable=None, subtype=None, node=None):
         super().__init__(name=name, pluggable=pluggable, node=node)
+        self.color = (200, 120, 255, 255)
         self.name = name
         self._type = float
         self._value = value
@@ -118,6 +121,7 @@ class FloatParam(Param):
 class StringParam(Param):
     def __init__(self, name='', value='', pluggable=None, subtype=None, node=None):
         super().__init__(name=name, pluggable=pluggable, node=node)
+        self.color = (255, 120, 150, 255)
         self.name = name
         self._type = str
         self._subtype = subtype
@@ -141,6 +145,7 @@ class BoolParam(Param):
 class ListParam(Param):
     def __init__(self, name='', value=[], pluggable=None, subtype=None, node=None):
         super().__init__(name=name, pluggable=pluggable, node=node)
+        self.color = (255, 255, 120, 255)
         self.name = name
         self._type = list
         self._value = value
@@ -152,6 +157,7 @@ from enum import Enum
 class EnumParam(Param):
     def __init__(self, name='', value=Enum, pluggable=None, subtype=None, node=None):
         super().__init__(name=name, pluggable=pluggable, node=node)
+        self.color = (255, 160, 0, 255)
         self.name = name
         self._type = Enum
         self._value = value
