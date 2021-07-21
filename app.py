@@ -285,7 +285,7 @@ class EventView(pywerlines.pywerview.PywerView):
         self.setAcceptDrops(True)
 
     def dragMoveEvent(self, event):
-        pass # need to implement this function for the drops to work
+        pass  # need to implement this function for the drops to work
 
     def dragLeaveEvent(self, event):
         event.ignore()
@@ -841,6 +841,9 @@ class MainWindow(QMainWindow):
         node.node_obj.moveToThread(self.thread_)
         position = QtCore.QPointF(self.view.mapToScene(100, 100))
         node.setPos(position)
+
+        self.scene.clearSelection()
+        node.setSelected(True)
 
         self.unsaved = True
 
