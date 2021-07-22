@@ -169,6 +169,8 @@ class SectionModel(QtGui.QStandardItemModel):
                 return item.sections()
             except AttributeError:
                 return []
+        # elif role == QtCore.Qt.ToolTipRole:
+        #     return
 
         return super(SectionModel, self).data(index, role)
 
@@ -180,6 +182,8 @@ class ToolItem(QtGui.QStandardItem):
         self._sections = sections
 
         self.setSizeHint(QtCore.QSize(50, 50))  # XXX if i dont do this, the SizeListView doesnt adjust correctly
+
+        # self.setToolTip("this is a tooltip")
 
     def sections(self):
         return self._sections

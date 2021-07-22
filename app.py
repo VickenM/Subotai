@@ -30,8 +30,6 @@ from toolbox import ToolBox, ToolItem
 from parameters import Parameters
 from pywerlines import pyweritems, pywerscene
 
-import nodes
-
 import eventnodes.base
 import eventnodes.parameter
 import eventnodes.inttostr
@@ -70,6 +68,45 @@ import eventnodes.download
 import appnode
 
 path = os.path.dirname(os.path.abspath(__file__))
+
+node_registry = {
+    'StringParameter': (appnode.ParamNode, eventnodes.parameter.StringParameter),
+    'IntegerParameter': (appnode.ParamNode, eventnodes.parameter.IntegerParameter),
+    'FloatParameter': (appnode.ParamNode, eventnodes.parameter.IntegerParameter),
+    'BooleanParameter': (appnode.ParamNode, eventnodes.parameter.BooleanParameter),
+    'IntToStr': (appnode.ParamNode, eventnodes.inttostr.IntToStr),
+    'Math': (appnode.ParamNode, eventnodes.math.Math),
+    'Timer': (appnode.EventNode, eventnodes.timer.TimerNode),
+    'Hotkey': (appnode.EventNode, eventnodes.hotkey.HotkeyNode),
+    'DirChanged': (appnode.EventNode, eventnodes.dirchange.DirChanged),
+    'FilesChanged': (appnode.EventNode, eventnodes.fileschanged.FilesChanged),
+    'ConsoleWriter': (appnode.EventNode, eventnodes.consolewriter.ConsoleWriter),
+    'ZipFile': (appnode.EventNode, eventnodes.zipfile.ZipFile),
+    'CopyFile': (appnode.EventNode, eventnodes.copyfile.CopyFile),
+    'ListDir': (appnode.EventNode, eventnodes.listdir.ListDir),
+    'Email': (appnode.EventNode, eventnodes.email.Email),
+    'Collector': (appnode.EventNode, eventnodes.collector.Collector),
+    'Counter': (appnode.EventNode, eventnodes.counter.Counter),
+    'ForEach': (appnode.EventNode, eventnodes.foreach.ForEach),
+    'For': (appnode.EventNode, eventnodes.for_.For),
+    'SplitString': (appnode.EventNode, eventnodes.splitstring.SplitString),
+    'JoinStrings': (appnode.ParamNode, eventnodes.joinstrings.JoinStrings),
+    'JoinStringsMulti': (appnode.ParamNode, eventnodes.joinstringsmulti.JoinStringsMulti),
+    'SliceList': (appnode.ParamNode, eventnodes.slicelist.SliceList),
+    'Condition': (appnode.EventNode, eventnodes.condition.Condition),
+    'OpenImage': (appnode.EventNode, eventnodes.image.open.Open),
+    'SaveImage': (appnode.EventNode, eventnodes.image.save.Save),
+    'CropImage': (appnode.EventNode, eventnodes.image.crop.Crop),
+    'ResizeImage': (appnode.EventNode, eventnodes.image.resize.Resize),
+    'ThumbnailImage': (appnode.EventNode, eventnodes.image.thumbnail.Thumbnail),
+    'Camera': (appnode.EventNode, eventnodes.camera.Camera),
+    'FaceDetect': (appnode.EventNode, eventnodes.facedetect.FaceDetect),
+    'Viewer': (appnode.EventNode, eventnodes.viewer.Viewer),
+    'SystemNotification': (appnode.EventNode, eventnodes.systemnotification.SystemNotification),
+    'Process': (appnode.EventNode, eventnodes.process.Process),
+    'MultiProcess': (appnode.EventNode, eventnodes.multiprocess.MultiProcess),
+    'Download': (appnode.EventNode, eventnodes.download.Download)
+}
 
 
 @Slot(list)
@@ -138,80 +175,10 @@ class EventFlow(pywerscene.PywerScene):
         return nodes.list_nodes()
 
     def new_node(self, type_):
-        if type_ == 'StringParameter':
-            node = appnode.ParamNode.from_event_node(eventnodes.parameter.StringParameter())
-        elif type_ == 'IntegerParameter':
-            node = appnode.ParamNode.from_event_node(eventnodes.parameter.IntegerParameter())
-        elif type_ == 'FloatParameter':
-            node = appnode.ParamNode.from_event_node(eventnodes.parameter.FloatParameter())
-        elif type_ == 'BooleanParameter':
-            node = appnode.ParamNode.from_event_node(eventnodes.parameter.BooleanParameter())
-        elif type_ == 'IntToStr':
-            node = appnode.ParamNode.from_event_node(eventnodes.inttostr.IntToStr())
-        elif type_ == 'Math':
-            node = appnode.ParamNode.from_event_node(eventnodes.math.Math())
-        elif type_ == 'Timer':
-            node = appnode.EventNode.from_event_node(eventnodes.timer.TimerNode())
-        elif type_ == 'Hotkey':
-            node = appnode.EventNode.from_event_node(eventnodes.hotkey.HotkeyNode())
-        elif type_ == 'DirChanged':
-            node = appnode.EventNode.from_event_node(eventnodes.dirchange.DirChanged())
-        elif type_ == 'FilesChanged':
-            node = appnode.EventNode.from_event_node(eventnodes.fileschanged.FilesChanged())
-        elif type_ == 'ConsoleWriter':
-            node = appnode.EventNode.from_event_node(eventnodes.consolewriter.ConsoleWriter())
-        elif type_ == 'ZipFile':
-            node = appnode.EventNode.from_event_node(eventnodes.zipfile.ZipFile())
-        elif type_ == 'CopyFile':
-            node = appnode.EventNode.from_event_node(eventnodes.copyfile.CopyFile())
-        elif type_ == 'ListDir':
-            node = appnode.EventNode.from_event_node(eventnodes.listdir.ListDir())
-        elif type_ == 'Email':
-            node = appnode.EventNode.from_event_node(eventnodes.email.Email())
-        elif type_ == 'Collector':
-            node = appnode.EventNode.from_event_node(eventnodes.collector.Collector())
-        elif type_ == 'Counter':
-            node = appnode.EventNode.from_event_node(eventnodes.counter.Counter())
-        elif type_ == 'ForEach':
-            node = appnode.EventNode.from_event_node(eventnodes.foreach.ForEach())
-        elif type_ == 'For':
-            node = appnode.EventNode.from_event_node(eventnodes.for_.For())
-        elif type_ == 'SplitString':
-            node = appnode.EventNode.from_event_node(eventnodes.splitstring.SplitString())
-        elif type_ == 'JoinStrings':
-            node = appnode.ParamNode.from_event_node(eventnodes.joinstrings.JoinStrings())
-        elif type_ == 'JoinStringsMulti':
-            node = appnode.ParamNode.from_event_node(eventnodes.joinstringsmulti.JoinStringsMulti())
-        elif type_ == 'SliceList':
-            node = appnode.ParamNode.from_event_node(eventnodes.slicelist.SliceList())
-        elif type_ == 'Condition':
-            node = appnode.EventNode.from_event_node(eventnodes.condition.Condition())
-        elif type_ == 'OpenImage':
-            node = appnode.EventNode.from_event_node(eventnodes.image.open.Open())
-        elif type_ == 'SaveImage':
-            node = appnode.EventNode.from_event_node(eventnodes.image.save.Save())
-        elif type_ == 'CropImage':
-            node = appnode.EventNode.from_event_node(eventnodes.image.crop.Crop())
-        elif type_ == 'ResizeImage':
-            node = appnode.EventNode.from_event_node(eventnodes.image.resize.Resize())
-        elif type_ == 'ThumbnailImage':
-            node = appnode.EventNode.from_event_node(eventnodes.image.thumbnail.Thumbnail())
-        elif type_ == 'Camera':
-            node = appnode.EventNode.from_event_node(eventnodes.camera.Camera())
-        elif type_ == 'FaceDetect':
-            node = appnode.EventNode.from_event_node(eventnodes.facedetect.FaceDetect())
-        elif type_ == 'Viewer':
-            node = appnode.EventNode.from_event_node(eventnodes.viewer.Viewer())
-        elif type_ == 'SystemNotification':
-            node = appnode.EventNode.from_event_node(eventnodes.systemnotification.SystemNotification())
-        elif type_ == 'Process':
-            node = appnode.EventNode.from_event_node(eventnodes.process.Process())
-        elif type_ == 'MultiProcess':
-            node = appnode.EventNode.from_event_node(eventnodes.multiprocess.MultiProcess())
-        elif type_ == 'Download':
-            node = appnode.EventNode.from_event_node(eventnodes.download.Download())
-        else:
+        if type_ not in node_registry:
             return None
+        app_node, event_node = node_registry[type_]
+        node = app_node.from_event_node(event_node())
         return node
 
     def can_connect(self, source_plug, target_plug):

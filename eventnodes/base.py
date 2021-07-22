@@ -7,6 +7,8 @@ from abc import abstractmethod
 
 
 class BaseNode(QtCore.QObject):
+    description = """Base Node description"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.controls = []
