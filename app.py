@@ -82,7 +82,7 @@ node_registry = {
 
     'StringParameter': (appnode.ParamNode, eventnodes.parameter.StringParameter),
     'IntegerParameter': (appnode.ParamNode, eventnodes.parameter.IntegerParameter),
-    'FloatParameter': (appnode.ParamNode, eventnodes.parameter.IntegerParameter),
+    'FloatParameter': (appnode.ParamNode, eventnodes.parameter.FloatParameter),
     'BooleanParameter': (appnode.ParamNode, eventnodes.parameter.BooleanParameter),
     'IntToStr': (appnode.ParamNode, eventnodes.inttostr.IntToStr),
 
