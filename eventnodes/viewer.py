@@ -43,6 +43,15 @@ class View(QtWidgets.QWidget):
 
 
 class Viewer(ComputeNode):
+    description = \
+        """The **Viewer node** provides a Viewer UI window, for viewing an *image*
+
+
+Parameters:
+
+- *image*: a source image to view
+        """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'Viewer'
@@ -56,14 +65,6 @@ class Viewer(ComputeNode):
         self.show_viewer_button = QtWidgets.QPushButton('Toggle Viewer')
 
         self.controls.append((self.show_viewer_button, self.toggle_viewer, self.show_viewer_button.clicked))
-        self.description = \
-            """The **Viewer node** provides a Viewer UI window, for viewing an *image*
-
-
-Parameters:
-
-- *image*: a source image to view
-            """
 
     def toggle_viewer(self):
         self.widget.setVisible(not self.widget.isVisible())

@@ -8,7 +8,7 @@ from .signal import Signal, OUTPUT_PLUG
 
 import sys
 
-#sys.path.append('D:\\projects\\python\\node2\\pynput')
+# sys.path.append('D:\\projects\\python\\node2\\pynput')
 
 from pynput import keyboard
 
@@ -80,6 +80,11 @@ class ValidExpressionIndicator(QtWidgets.QWidget):
 
 
 class HotkeyNode(EventNode):
+    description = \
+        """
+        ex. <ctrl>+<alt>+h
+"""
+
     def __init__(self):
         super(HotkeyNode, self).__init__()
 
@@ -93,11 +98,6 @@ class HotkeyNode(EventNode):
         self.t = InputListener(node=self)
 
         self.deactivate()
-
-        self.description = \
-            """
-            ex. <ctrl>+<alt>+h
-"""
 
     def update(self):
         hk = self.get_first_param('hotkey').value

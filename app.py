@@ -290,7 +290,8 @@ class MainWindow(QMainWindow):
         self.paste_offset = 20
 
         toolbox = ToolBox()
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="DirChanged", sections=['Events']))
+        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="DirChanged", sections=['Events'],
+                                 tooltip=eventnodes.dirchange.DirChanged.description))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FilesChanged", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Timer", sections=['Events']))
         toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Hotkey", sections=['Events']))

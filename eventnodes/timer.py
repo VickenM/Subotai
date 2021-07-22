@@ -8,6 +8,15 @@ from .signal import Signal, OUTPUT_PLUG
 
 
 class TimerNode(EventNode):
+    description = \
+        """The **Timer node** emits an event at periodically, specified by the *interval* parameter (in miliseconds).
+
+
+Parameters:
+
+- *interval*: The timeout interval (miliseconds)
+        """
+
     def __init__(self):
         super(TimerNode, self).__init__()
         self.type = 'Timer'
@@ -21,15 +30,6 @@ class TimerNode(EventNode):
         self.timer.timeout.connect(self.compute)
 
         self.deactivate()
-
-        self.description = \
-            """The **Timer node** emits an event at periodically, specified by the *interval* parameter (in miliseconds).
-
-
-Parameters:
-
-- *interval*: The timeout interval (miliseconds)
-            """
 
     @Slot()
     def compute(self):

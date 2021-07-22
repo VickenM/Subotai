@@ -8,6 +8,16 @@ import os
 
 
 class DirChanged(EventNode):
+    description = \
+        """The **DirChange node** watches the *directory* path and emits the *event* signal when a change to the directory occurs.
+
+Parameters:
+
+- *directory*: the directory path to watch
+- *new*: the list of files in *directory* that are new
+- *removed*: the list of files in *directory* that were removed
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'DirChanged'
@@ -21,16 +31,6 @@ class DirChanged(EventNode):
         self.watcher = None  # QtCore.QFileSystemWatcher([directory])
         self.current_contents = []
         self.update()
-
-        self.description = \
-            """The **DirChange node** watches the *directory* path and emits the *event* signal when a change to the directory occurs.
-
-Parameters:
-
-- *directory*: the directory path to watch
-- *new*: the list of files in *directory* that are new
-- *removed*: the list of files in *directory* that were removed
-"""
 
     def activate(self):
         super().activate()

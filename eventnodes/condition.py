@@ -18,6 +18,18 @@ class CompareParam(EnumParam):
 
 
 class Condition(ComputeNode):
+    description = \
+        """The **Condition node** compares the values of *value1* and *value2* inputs with the *operation* parameter
+and outputs either the *true* or *false* signal, based on the comparison.
+
+
+Parameters:
+
+- *operation*: The comparison operation to perform on the inputs
+- *value1*: The first value to compare
+- *value2*: The second value to compare
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'Condition'
@@ -29,19 +41,6 @@ class Condition(ComputeNode):
         self.params.append(CompareParam(name='operation', value=CompareParam.Operations.equal, pluggable=PARAM))
         self.params.append(IntParam(name='value1', value=0, pluggable=INPUT_PLUG | PARAM))
         self.params.append(IntParam(name='value2', value=0, pluggable=INPUT_PLUG | PARAM))
-
-        self.description = \
-            """The **Condition node** compares the values of *value1* and *value2* inputs with the *operation* parameter
-and outputs either the *true* or *false* signal, based on the comparison.
-
-
-Parameters:
-
-- *operation*: The comparison operation to perform on the inputs
-- *value1*: The first value to compare
-- *value2*: The second value to compare
-"""
-
 
     @Slot()
     def compute(self):

@@ -7,20 +7,8 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Counter(ComputeNode):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.type = 'Counter'
-
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='reset', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-
-        self.params.append(IntParam(name='initial', value=0, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(IntParam(name='increment', value=1, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(IntParam(name='value', value=0, pluggable=OUTPUT_PLUG))
-
-        self.description = \
-            """The **Counter node** emits the *event* signal each time it increments the *value* parameter by *increment*.
+    description = \
+        """The **Counter node** emits the *event* signal each time it increments the *value* parameter by *increment*.
 
 Parameters:
 
@@ -32,6 +20,18 @@ Signals:
 
 - *reset*: When this signal is triggered, *value* gets reset to *inital* value
 """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.type = 'Counter'
+
+        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
+        self.signals.append(Signal(node=self, name='reset', pluggable=INPUT_PLUG))
+        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+
+        self.params.append(IntParam(name='initial', value=0, pluggable=PARAM | INPUT_PLUG))
+        self.params.append(IntParam(name='increment', value=1, pluggable=PARAM | INPUT_PLUG))
+        self.params.append(IntParam(name='value', value=0, pluggable=OUTPUT_PLUG))
 
     def map_signal(self, signal):
         if signal == 'reset':

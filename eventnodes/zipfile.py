@@ -7,6 +7,17 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ZipFile(ComputeNode):
+    categories = ['FileSystem']
+    description = \
+        """The **ZipFile node** adds the files contained in the *source* directory to the *zipfile* archive file
+
+
+Parameters:
+
+- *source*: the source directory to add to the archive
+- *zipfile*: the zip archive file to create
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'ZipFile'
@@ -17,16 +28,6 @@ class ZipFile(ComputeNode):
         self.params.append(
             StringParam(name='zipfile', value='', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_FILEPATH))
         self.params.append(StringParam(name='zipfile', value='', pluggable=OUTPUT_PLUG, subtype=SUBTYPE_FILEPATH))
-        self.description = \
-            """The **ZipFile node** adds the files contained in the *source* directory to the *zipfile* archive file
-
-
-Parameters:
-
-- *source*: the source directory to add to the archive
-- *zipfile*: the zip archive file to create
-"""
-
 
     def compute(self):
         self.start_spinner_signal.emit()

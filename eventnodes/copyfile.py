@@ -7,24 +7,26 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class CopyFile(ComputeNode):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.type = 'CopyFile'
-
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='source', value='d:\\temp\\source.txt', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_FILEPATH))
-        self.params.append(StringParam(name='destination', value='d:\\temp\\target.txt', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_FILEPATH))
-        self.params.append(StringParam(name='destination', value='d:\\temp\\target.txt', pluggable=OUTPUT_PLUG))
-
-        self.description = \
-            """The **CopyFile node** copies the file in the *source* path to the *destination* path.
+    description = \
+        """The **CopyFile node** copies the file in the *source* path to the *destination* path.
 
 Parameters:
 
 - *source*: Path of the file to copy
 - *destination*: Path of where to copy the source file to
 """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.type = 'CopyFile'
+
+        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
+        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+        self.params.append(StringParam(name='source', value='d:\\temp\\source.txt', pluggable=PARAM | INPUT_PLUG,
+                                       subtype=SUBTYPE_FILEPATH))
+        self.params.append(StringParam(name='destination', value='d:\\temp\\target.txt', pluggable=PARAM | INPUT_PLUG,
+                                       subtype=SUBTYPE_FILEPATH))
+        self.params.append(StringParam(name='destination', value='d:\\temp\\target.txt', pluggable=OUTPUT_PLUG))
 
     def compute(self):
         self.start_spinner_signal.emit()

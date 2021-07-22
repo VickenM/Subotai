@@ -17,6 +17,15 @@ class ToStr(StringParam):
 
 
 class IntToStr(BaseNode):
+    description = \
+        """The **IntToStr node** converts Integer parameter values to Strings.
+
+Parameters:
+
+- *integer*: the input integer
+- *string*: the output string representation of the integer
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'IntToStr'
@@ -24,11 +33,3 @@ class IntToStr(BaseNode):
         input_param = IntParam(name='integer', value=0, pluggable=INPUT_PLUG)
         self.params.append(input_param)
         self.params.append(ToStr(int_param=input_param, name='string', pluggable=OUTPUT_PLUG))
-        self.description = \
-            """The **IntToStr node** converts Integer parameter values to Strings.
-
-Parameters:
-
-- *integer*: the input integer
-- *string*: the output string representation of the integer
-"""

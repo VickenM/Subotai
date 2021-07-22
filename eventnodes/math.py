@@ -54,6 +54,17 @@ class MathParam(IntParam):
 
 
 class Math(BaseNode):
+    description = \
+        """The **Math node** performs the arithmetic *operation* on *value1* and *value2*.
+
+Parameters:
+
+- *value1*: first input
+- *value2*: second input
+- *operation*: the operation to perform on hte inputs
+- *result*: the result of applying the operation on the input values
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'Math'
@@ -67,14 +78,3 @@ class Math(BaseNode):
         self.params.append(second)
         self.params.append(
             MathParam(first_param=first, second_param=second, op_param=op, name='result', pluggable=OUTPUT_PLUG))
-
-        self.description = \
-            """The **Math node** performs the arithmetic *operation* on *value1* and *value2*.
-
-Parameters:
-
-- *value1*: first input
-- *value2*: second input
-- *operation*: the operation to perform on hte inputs
-- *result*: the result of applying the operation on the input values
-"""

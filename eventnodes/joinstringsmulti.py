@@ -26,6 +26,17 @@ class JoinParam(StringParam):
 
 
 class JoinStringsMulti(BaseNode):
+    description = \
+        """The **JoinStringMulti node** joins multiple *string#* inputs together with  *separator* in between.
+Additional stirng inputs are dynamically added as input connections are made
+
+Parameters:
+
+- *input#*: the nth string
+- *separator*: the separator between strings
+- *string*: the resulting string from joining the input strings
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'JoinStringsMulti'
@@ -40,23 +51,10 @@ class JoinStringsMulti(BaseNode):
         self.params.append(string0)
         self.params.append(JoinParam(params=self.string_params, sep_param=separator, name='string',
                                      pluggable=OUTPUT_PLUG))
-        self.description = \
-            """The **JoinStringMulti node** joins multiple *string#* inputs together with  *separator* in between.
-Additional stirng inputs are dynamically added as input connections are made
-
-Parameters:
-
-- *input#*: the nth string
-- *separator*: the separator between strings
-- *string*: the resulting string from joining the input strings
-"""
 
     def connected_params(self, connected_param, this_param):
         if not self.string_params[-1].is_connected():
             return
-
-        # from appnode import plug_color
-        # import pywerlines.pyweritems
 
         import appnode
 
@@ -65,9 +63,6 @@ Parameters:
         self.params.append(param)
         self.string_params.append(param)
 
-        # i = {'type': param.name, 'path': pywerlines.pyweritems.PywerPlug.ELLIPSE, 'color': plug_color(param),
-        #      'plug_obj': param}
-        # self.ui_node.add_input(pywerlines.pyweritems.PywerPlug(**i))
         self.ui_node.add_input(appnode.Plug.from_param(param_obj=param))
         self.ui_node.adjust()
 

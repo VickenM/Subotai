@@ -9,7 +9,7 @@ from .image.imageparam import ImageParam
 
 import sys
 
-#sys.path.append('D:\\projects\\python\\node2\\opencv')
+# sys.path.append('D:\\projects\\python\\node2\\opencv')
 
 from PIL import Image
 
@@ -19,6 +19,24 @@ import numpy as np
 
 
 class FaceDetect(ComputeNode):
+    description = \
+        """The **FaceDetect node** can detect faces from the source *image* input.
+
+Parameters:
+
+- *classifier*:
+
+
+Inputs:
+
+- *image*: source image
+
+
+Outputs:
+
+- *image*: output image
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'FaceDetect'
@@ -46,24 +64,6 @@ class FaceDetect(ComputeNode):
 
         self.cascade = cv2.CascadeClassifier()
         self.classifier_file = None
-
-        self.description = \
-            """The **FaceDetect node** can detect faces from the source *image* input.
-
-Parameters:
-
-- *classifier*:
-
-
-Inputs:
-
-- *image*: source image
-
-
-Outputs:
-
-- *image*: output image
-"""
 
     def update(self):
         super().update()

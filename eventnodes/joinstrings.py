@@ -26,6 +26,17 @@ class JoinParam(StringParam):
 
 
 class JoinStrings(BaseNode):
+    description = \
+        """The **JoinString node** joins *first* with *second* with *separator* in between.
+
+Parameters:
+
+- *first*: the first string
+- *second*: the seconds string
+- *separator*: the separator between strings
+- *string*: the resulting string from joining the input strings
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'JoinStrings'
@@ -39,13 +50,3 @@ class JoinStrings(BaseNode):
         self.params.append(second)
         self.params.append(JoinParam(first_param=first, second_param=second, sep_param=separator, name='string',
                                      pluggable=OUTPUT_PLUG))
-        self.description = \
-            """The **JoinString node** joins *first* with *second* with *separator* in between.
-
-Parameters:
-
-- *first*: the first string
-- *second*: the seconds string
-- *separator*: the separator between strings
-- *string*: the resulting string from joining the input strings
-"""

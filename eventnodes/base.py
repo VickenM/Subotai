@@ -7,6 +7,7 @@ from abc import abstractmethod
 
 
 class BaseNode(QtCore.QObject):
+    categories = ['General']
     description = """Base Node description"""
 
     def __init__(self, *args, **kwargs):
@@ -19,8 +20,6 @@ class BaseNode(QtCore.QObject):
         self.active = True
 
         self.computable = False
-
-        self.description = ''
 
     def is_computable(self):
         return self.computable

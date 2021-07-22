@@ -176,14 +176,15 @@ class SectionModel(QtGui.QStandardItemModel):
 
 
 class ToolItem(QtGui.QStandardItem):
-    def __init__(self, icon, label, sections):
+    def __init__(self, icon, label, sections, tooltip=""):
         super(ToolItem, self).__init__(icon, label)
         self.label = label
         self._sections = sections
 
         self.setSizeHint(QtCore.QSize(50, 50))  # XXX if i dont do this, the SizeListView doesnt adjust correctly
 
-        # self.setToolTip("this is a tooltip")
+        if tooltip:
+            self.setToolTip(tooltip)
 
     def sections(self):
         return self._sections

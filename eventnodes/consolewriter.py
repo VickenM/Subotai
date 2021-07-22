@@ -6,17 +6,8 @@ from PySide2.QtCore import Slot
 
 
 class ConsoleWriter(ComputeNode):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.type = 'ConsoleWriter'
-
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='prefix', value='%m/%d/%Y, %H:%M:%S', pluggable=PARAM))
-        self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
-
-        self.description = \
-            """The **ConsoleWriter node** outputs the text in *message* to the system console.
+    description = \
+        """The **ConsoleWriter node** outputs the text in *message* to the system console.
 The *prefix* parameter can be used to add prefix text to the message line and accepts date time directives by Python's strftime function.
 [See the link for a complete list of strftime directives](https://strftime.org/)
 
@@ -27,7 +18,14 @@ Parameters:
 - *message*: text line to output to the system console
 """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.type = 'ConsoleWriter'
 
+        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
+        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+        self.params.append(StringParam(name='prefix', value='%m/%d/%Y, %H:%M:%S', pluggable=PARAM))
+        self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
 
     @Slot()
     def compute(self):

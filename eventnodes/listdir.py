@@ -7,6 +7,18 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ListDir(ComputeNode):
+    description = \
+        """The **ListDir node** outputs a list of files within the *directory*.
+
+Parameters:
+
+- *directory*: the directory path to look in
+- *pattern*: file expression to match against
+- *recursive*: include files in subdirectories
+- *fullpaths*: return full path names for the files
+
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'ListDir'
@@ -19,18 +31,6 @@ class ListDir(ComputeNode):
         self.params.append(BoolParam(name='recursive', value=False, pluggable=PARAM))
         self.params.append(BoolParam(name='fullpaths', value=False, pluggable=PARAM))
         self.params.append(ListParam(name='files', value=[], pluggable=OUTPUT_PLUG))
-
-        self.description = \
-            """The **ListDir node** outputs a list of files within the *directory*.
-
-Parameters:
-
-- *directory*: the directory path to look in
-- *pattern*: file expression to match against
-- *recursive*: include files in subdirectories
-- *fullpaths*: return full path names for the files
-
-"""
 
     def compute(self):
         self.start_spinner_signal.emit()

@@ -7,6 +7,22 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ForEach(ComputeNode):
+    description = \
+        """The **ForEach node** loops each value in the *items* parameter and emit an event for each value.
+
+Parameters:
+
+- *items*: the list of items
+- *item*: the current item being emitted
+- *index*: the index number of hte current item
+- *count*: the total number of items in the list
+
+
+Events:
+
+- *finished*: emitted event when reached the end
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'ForEach'
@@ -21,22 +37,6 @@ class ForEach(ComputeNode):
         self.params.append(StringParam(name='item', value='', pluggable=OUTPUT_PLUG))
         self.params.append(IntParam(name='index', value=0, pluggable=OUTPUT_PLUG))
         self.params.append(IntParam(name='count', value=0, pluggable=OUTPUT_PLUG))
-
-        self.description = \
-            """The **ForEach node** loops each value in the *items* parameter and emit an event for each value.
-
-Parameters:
-
-- *items*: the list of items
-- *item*: the current item being emitted
-- *index*: the index number of hte current item
-- *count*: the total number of items in the list
-
-
-Events:
-
-- *finished*: emitted event when reached the end
-"""
 
     @Slot()
     def compute(self):

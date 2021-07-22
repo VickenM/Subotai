@@ -9,7 +9,7 @@ from .image.imageparam import ImageParam
 
 import sys
 
-#sys.path.append('D:\\projects\\python\\node2\\opencv')
+# sys.path.append('D:\\projects\\python\\node2\\opencv')
 
 from PIL import Image
 
@@ -19,6 +19,16 @@ from enum import Enum, auto
 
 
 class Camera(ComputeNode):
+    description = \
+        """The **Camera node** can read images from your camera and output the *image*.
+
+Parameters:
+
+- *camera index*: the index of the camera device available on the system to read from
+- *image*: image read from the camera
+
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'Camera'
@@ -35,16 +45,6 @@ class Camera(ComputeNode):
         self.cap = cv2.VideoCapture(self.current_index, cv2.CAP_DSHOW)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
-
-        self.description = \
-            """The **Camera node** can read images from your camera and output the *image*.
-
-Parameters:
-
-- *camera index*: the index of the camera device available on the system to read from
-- *image*: image read from the camera
-
-"""
 
     def update(self):
         index = self.get_first_param('camera index').value

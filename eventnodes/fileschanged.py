@@ -7,6 +7,14 @@ from .signal import Signal, OUTPUT_PLUG
 
 
 class FilesChanged(EventNode):
+    description = \
+        """The **FilesChange node** watches the *files* path and emits the *event* signal when a change to one of the files occurs.
+
+Parameters:
+
+- *files*: the list of files to watch
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'FilesChanged'
@@ -21,14 +29,6 @@ class FilesChanged(EventNode):
         self.watcher.fileChanged.connect(self.compute)
 
         self.update()
-
-        self.description = \
-            """The **FilesChange node** watches the *files* path and emits the *event* signal when a change to one of the files occurs.
-
-Parameters:
-
-- *files*: the list of files to watch
-"""
 
     def activate(self):
         super().activate()

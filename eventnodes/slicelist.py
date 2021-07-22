@@ -25,6 +25,17 @@ class SliceParam(ListParam):
 
 
 class SliceList(BaseNode):
+    description = \
+        """The **SliceList node** takes a list of items and returns the subset list of them, between *start* and *end* indices.
+
+Parameters:
+
+- *list* (input): the input list of items
+- *start*: the start index of the sub list
+- *end*: the end index of the sub list
+- *list* (output): the output list of items
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
@@ -39,13 +50,3 @@ class SliceList(BaseNode):
         self.params.append(list_param)
         self.params.append(
             SliceParam(name='list', start=start_param, end=end_param, list_param=list_param, pluggable=OUTPUT_PLUG))
-        self.description = \
-            """The **SliceList node** takes a list of items and returns the subset list of them, between *start* and *end* indices.
-
-Parameters:
-
-- *list* (input): the input list of items
-- *start*: the start index of the sub list
-- *end*: the end index of the sub list
-- *list* (output): the output list of items
-"""

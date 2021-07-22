@@ -6,7 +6,7 @@ from .params import StringParam, IntParam, PARAM, ListParam
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
-#TODO: implement this the same as splitstring.SplitStringNode, ie without signals
+# TODO: implement this the same as splitstring.SplitStringNode, ie without signals
 
 # class SplitParam(ListParam):
 #     def __init__(self, first_param, second_param, pattern_param, name=None, pluggable=None):
@@ -29,6 +29,16 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class SplitString(ComputeNode):
+    description = \
+        """The **SplitString node** uses *pattern* to split the *source* string into a list of *parts*
+
+Parameters:
+
+- *source*: the input string
+- *pattern*: pattern to split the source string by
+- *parts*: the resulting list of string parts
+"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'SplitString'
@@ -53,12 +63,3 @@ class SplitString(ComputeNode):
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()
         super().compute()
-        self.description = \
-            """The **SplitString node** uses *pattern* to split the *source* string into a list of *parts*
-
-Parameters:
-
-- *source*: the input string
-- *pattern*: pattern to split the source string by
-- *parts*: the resulting list of string parts
-"""
