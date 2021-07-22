@@ -281,7 +281,15 @@ class EventView(pywerlines.pywerview.PywerView):
         else:
             event.ignore()
 
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.RightButton:
+            self.setDragMode(self.NoDrag)
+            return
+        return super().mousePressEvent(event)
+
     def mouseReleaseEvent(self, event):
+        self.setDragMode(self.RubberBandDrag)
+
         def get_nodes_by_category():
             from collections import defaultdict
             nodes_by_categories = defaultdict(list)
