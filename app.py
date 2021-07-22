@@ -281,6 +281,36 @@ class EventView(pywerlines.pywerview.PywerView):
         else:
             event.ignore()
 
+    def mouseReleaseEvent(self, event):
+        def get_nodes_by_category():
+            from collections import defaultdict
+            nodes_by_categories = defaultdict(list)
+
+            for node_name, node_data in node_registry.items():
+                _, node_obj = node_data
+                for category in node_obj.categories:
+                    nodes_by_categories[category].append(node_name)
+
+            return nodes_by_categories
+
+        def show_node_menu():
+            menu = QMenu(self)
+            for category, node_names in get_nodes_by_category().items():
+                submenu = menu.addMenu(category)
+                for node_name in node_names:
+                    submenu.addAction(node_name,
+                                      lambda node_name=node_name: self.node_dropped_signal.emit(node_name,
+                                                                                                event.pos().x() + 1,
+                                                                                                # TODO: if I dont add 1 here, the app will crash when setPos is called in the slot function
+                                                                                                event.pos().y()))
+
+            menu.exec_(self.mapToGlobal(event.pos()))
+
+        if event.button() == QtCore.Qt.RightButton:
+            show_node_menu()
+
+        return super().mouseReleaseEvent(event)
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -302,7 +332,7 @@ class MainWindow(QMainWindow):
             toolbox.addItem(
                 ToolItem(icon=QIcon(path + '/icons/flow.png'), label=node_name, sections=event_node.categories,
                          tooltip=event_node.description))
-        toolbox.itemDoubleClickedSignal.connect(self.toolbox_item_selected)
+        toolbox.itemDoubleClickedSignal.connect(self.new_node_selected)
 
         scene.nodes_selected.connect(selected_nodes)
         scene.nodes_deleted.connect(deleted_nodes)
@@ -331,7 +361,7 @@ class MainWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
-        self.view.node_dropped_signal.connect(self.toolbox_item_dropped)
+        self.view.node_dropped_signal.connect(self.new_node_selected)
 
         toolbar = self.addToolBar('Run')
         action = toolbar.addAction('&Run')
@@ -716,26 +746,14 @@ class MainWindow(QMainWindow):
             n.setSelected(True)
 
         self.copy_selected()
-        # self.paste_offset += 20
 
     @Slot(str, int, int)
-    def toolbox_item_dropped(self, item, x, y):
+    def new_node_selected(self, item, x=100, y=100):
         node = self.scene.create_node_of_type(item)
         node.node_obj.moveToThread(self.thread_)
-        position = QtCore.QPointF(self.view.mapToScene(x, y))
+        position = self.view.mapToScene(x, y)
         node.setPos(position)
-
-        self.unsaved = True
-
-    @Slot(str)
-    def toolbox_item_selected(self, item):
-        node = self.scene.create_node_of_type(item)
-        node.node_obj.moveToThread(self.thread_)
-        position = QtCore.QPointF(self.view.mapToScene(100, 100))
-        node.setPos(position)
-
-        self.scene.clearSelection()
-        node.setSelected(True)
+        self.scene.select_node(node)
 
         self.unsaved = True
 

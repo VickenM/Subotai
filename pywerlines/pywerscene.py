@@ -166,3 +166,7 @@ class PywerScene(QGraphicsScene):
                      isinstance(item, pyweritems.PywerGroup)]
         for node in all_nodes:
             node.setSelected(True)
+
+    def select_node(self, node):
+        self.clearSelection()
+        node.setSelected(True)
