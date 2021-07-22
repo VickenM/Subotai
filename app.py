@@ -171,9 +171,6 @@ class SplashScreen(QSplashScreen):
 
 
 class EventFlow(pywerscene.PywerScene):
-    def list_node_types(self):
-        return nodes.list_nodes()
-
     def new_node(self, type_):
         if type_ not in node_registry:
             return None
@@ -495,30 +492,6 @@ class MainWindow(QMainWindow):
 
             new_nodes[n] = node
 
-            # for pluggable, params in node.get('params', {}).items():
-            #     pluggable = int(pluggable)
-            #     for param, value in params.items():
-            #         if type(value) == list:
-            #             p = n.node_obj.get_first_param(param, pluggable=pluggable)
-            #             from eventnodes.params import StringParam
-            #             s = []
-            #             for item in value:
-            #                 s.append(StringParam(value=item))
-            #
-            #             p.value.clear()
-            #             p.value.extend(s)
-            #             continue
-            #         p = n.node_obj.get_first_param(param, pluggable=pluggable)
-            #         from enum import Enum
-            #         if not p:
-            #             continue
-            #         if issubclass(p.value.__class__, Enum):
-            #             p._value = p.enum(value)
-            #         else:
-            #             p._value = value
-
-            # n.node_obj.update()
-
         # TODO: when saving files out, edges come in arbitrary order. so nodes with dynamic inputs need to be connected in the right order. sorting here is kind of hack to get the order right
         for edge in sorted(data['edges'], key=lambda edge_pair: edge_pair[1]):
             source, target = edge
@@ -698,7 +671,6 @@ class MainWindow(QMainWindow):
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
             n.node_obj.moveToThread(self.thread_)
-            # n.node_obj.obj_id = node['id']
             n.node_obj.set_active(node.get('active', True))
             n.setPos(node['position'][0] + 20, node['position'][1] + 20)
             n.setSize(*node.get('size', (100, 100)))
@@ -707,29 +679,6 @@ class MainWindow(QMainWindow):
             # map the id of the copied node to the id of the newly created one.
             # we'll need this to know how to reconnect the copied edges
             node_map[node['id']] = n.node_obj.obj_id
-
-            # for pluggable, params in node.get('params', {}).items():
-            #     pluggable = int(pluggable)
-            #     for param, value in params.items():
-            #         if type(value) == list:
-            #             p = n.node_obj.get_first_param(param, pluggable=pluggable)
-            #             from eventnodes.params import StringParam
-            #             s = []
-            #             for item in value:
-            #                 s.append(StringParam(value=item))
-            #
-            #             # print(p.value)
-            #             p.value.clear()
-            #             p.value.extend(s)
-            #             continue
-            #         p = n.node_obj.get_first_param(param, pluggable=pluggable)
-            #         from enum import Enum
-            #         if issubclass(p.value.__class__, Enum):
-            #             p._value = p.enum(value)
-            #         else:
-            #             p._value = value
-
-            # n.node_obj.update()
 
         # TODO: when saving files out, edges come in arbitrary order. so nodes with dynamic inputs need to be connected in the right order. sorting here is kind of hack to get the order right
         for edge in sorted(data['edges'], key=lambda edge_pair: edge_pair[1]):
