@@ -37,8 +37,6 @@ class Collector(ComputeNode):
 
     def compute(self):
         self.start_spinner_signal.emit()
-        item = self.get_first_param('item')
-        self._items.append(item.value)
 
         output_items = self.get_first_param('items', pluggable=OUTPUT_PLUG)
 
