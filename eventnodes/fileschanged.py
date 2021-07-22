@@ -7,6 +7,7 @@ from .signal import Signal, OUTPUT_PLUG
 
 
 class FilesChanged(EventNode):
+    categories = ['Events']
     description = \
         """The **FilesChange node** watches the *files* path and emits the *event* signal when a change to one of the files occurs.
 

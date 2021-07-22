@@ -7,6 +7,8 @@ from abc import abstractmethod
 
 
 class BaseImageNode(base.ComputeNode):
+    categories = ['Image']
+    description = """BaseImageNode description"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.color = (35, 140, 105, 200)

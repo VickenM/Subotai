@@ -8,6 +8,7 @@ from PySide2 import QtCore
 
 
 class Process(ComputeNode):
+    categories = ['I/O']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'Process'

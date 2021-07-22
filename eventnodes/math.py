@@ -54,6 +54,7 @@ class MathParam(IntParam):
 
 
 class Math(BaseNode):
+    categories = ['Math']
     description = \
         """The **Math node** performs the arithmetic *operation* on *value1* and *value2*.
 

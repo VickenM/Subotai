@@ -26,6 +26,7 @@ class JoinParam(StringParam):
 
 
 class JoinStrings(BaseNode):
+    categories = ['String']
     description = \
         """The **JoinString node** joins *first* with *second* with *separator* in between.
 

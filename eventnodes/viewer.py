@@ -43,6 +43,7 @@ class View(QtWidgets.QWidget):
 
 
 class Viewer(ComputeNode):
+    categories = ['I/O']
     description = \
         """The **Viewer node** provides a Viewer UI window, for viewing an *image*
 

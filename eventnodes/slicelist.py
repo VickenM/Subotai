@@ -25,6 +25,7 @@ class SliceParam(ListParam):
 
 
 class SliceList(BaseNode):
+    categories = ['Data']
     description = \
         """The **SliceList node** takes a list of items and returns the subset list of them, between *start* and *end* indices.
 

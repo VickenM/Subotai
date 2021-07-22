@@ -6,6 +6,7 @@ from PySide2.QtCore import Slot
 
 
 class ConsoleWriter(ComputeNode):
+    categories = ['I/O']
     description = \
         """The **ConsoleWriter node** outputs the text in *message* to the system console.
 The *prefix* parameter can be used to add prefix text to the message line and accepts date time directives by Python's strftime function.

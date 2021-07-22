@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class For(ComputeNode):
+    categories = ['Flow Control']
     description = \
         """The **For node** loops from *start* to *end* and emit an event for each value. *step* controls each step increment.
 

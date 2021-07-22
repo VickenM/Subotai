@@ -8,6 +8,7 @@ from .signal import Signal, OUTPUT_PLUG
 
 
 class TimerNode(EventNode):
+    categories = ['Events']
     description = \
         """The **Timer node** emits an event at periodically, specified by the *interval* parameter (in miliseconds).
 

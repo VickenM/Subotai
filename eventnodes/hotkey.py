@@ -80,6 +80,7 @@ class ValidExpressionIndicator(QtWidgets.QWidget):
 
 
 class HotkeyNode(EventNode):
+    categories = ['Events']
     description = \
         """
         ex. <ctrl>+<alt>+h

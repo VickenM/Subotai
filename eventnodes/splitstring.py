@@ -29,6 +29,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class SplitString(ComputeNode):
+    categories = ['String']
     description = \
         """The **SplitString node** uses *pattern* to split the *source* string into a list of *parts*
 

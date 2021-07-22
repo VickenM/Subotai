@@ -8,6 +8,7 @@ import os
 
 
 class DirChanged(EventNode):
+    categories = ['Events']
     description = \
         """The **DirChange node** watches the *directory* path and emits the *event* signal when a change to the directory occurs.
 

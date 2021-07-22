@@ -19,6 +19,7 @@ import numpy as np
 
 
 class FaceDetect(ComputeNode):
+    categories = ['I/O']
     description = \
         """The **FaceDetect node** can detect faces from the source *image* input.
 

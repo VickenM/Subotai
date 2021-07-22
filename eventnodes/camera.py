@@ -19,6 +19,7 @@ from enum import Enum, auto
 
 
 class Camera(ComputeNode):
+    categories = ['I/O']
     description = \
         """The **Camera node** can read images from your camera and output the *image*.
 

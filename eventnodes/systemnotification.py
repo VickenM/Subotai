@@ -2,7 +2,6 @@ from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, IntParam, PARAM, SUBTYPE_FILEPATH
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
-
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 from PySide2 import QtCore
@@ -12,6 +11,8 @@ from PIL import ImageQt
 
 
 class SystemNotification(ComputeNode):
+    categories = ['I/O']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'SystemNotification'

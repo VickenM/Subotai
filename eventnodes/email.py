@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Email(ComputeNode):
+    categories = ['FileSystem']
     description = \
         """The **Email node** sends an email over SMTP.
 

@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Counter(ComputeNode):
+    categories = ['Flow Control']
     description = \
         """The **Counter node** emits the *event* signal each time it increments the *value* parameter by *increment*.
 

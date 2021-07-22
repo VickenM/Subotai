@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ListDir(ComputeNode):
+    categories = ['FileSystem']
     description = \
         """The **ListDir node** outputs a list of files within the *directory*.
 

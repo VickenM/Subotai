@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class CopyFile(ComputeNode):
+    categories = ['FileSystem']
     description = \
         """The **CopyFile node** copies the file in the *source* path to the *destination* path.
 

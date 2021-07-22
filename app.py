@@ -70,42 +70,49 @@ import appnode
 path = os.path.dirname(os.path.abspath(__file__))
 
 node_registry = {
+    'Timer': (appnode.EventNode, eventnodes.timer.TimerNode),
+    'Hotkey': (appnode.EventNode, eventnodes.hotkey.HotkeyNode),
+    'DirChanged': (appnode.EventNode, eventnodes.dirchange.DirChanged),
+    'FilesChanged': (appnode.EventNode, eventnodes.fileschanged.FilesChanged),
+
+    'ZipFile': (appnode.EventNode, eventnodes.zipfile.ZipFile),
+    'CopyFile': (appnode.EventNode, eventnodes.copyfile.CopyFile),
+    'ListDir': (appnode.EventNode, eventnodes.listdir.ListDir),
+    'Email': (appnode.EventNode, eventnodes.email.Email),
+
     'StringParameter': (appnode.ParamNode, eventnodes.parameter.StringParameter),
     'IntegerParameter': (appnode.ParamNode, eventnodes.parameter.IntegerParameter),
     'FloatParameter': (appnode.ParamNode, eventnodes.parameter.IntegerParameter),
     'BooleanParameter': (appnode.ParamNode, eventnodes.parameter.BooleanParameter),
     'IntToStr': (appnode.ParamNode, eventnodes.inttostr.IntToStr),
+
     'Math': (appnode.ParamNode, eventnodes.math.Math),
-    'Timer': (appnode.EventNode, eventnodes.timer.TimerNode),
-    'Hotkey': (appnode.EventNode, eventnodes.hotkey.HotkeyNode),
-    'DirChanged': (appnode.EventNode, eventnodes.dirchange.DirChanged),
-    'FilesChanged': (appnode.EventNode, eventnodes.fileschanged.FilesChanged),
-    'ConsoleWriter': (appnode.EventNode, eventnodes.consolewriter.ConsoleWriter),
-    'ZipFile': (appnode.EventNode, eventnodes.zipfile.ZipFile),
-    'CopyFile': (appnode.EventNode, eventnodes.copyfile.CopyFile),
-    'ListDir': (appnode.EventNode, eventnodes.listdir.ListDir),
-    'Email': (appnode.EventNode, eventnodes.email.Email),
-    'Collector': (appnode.EventNode, eventnodes.collector.Collector),
-    'Counter': (appnode.EventNode, eventnodes.counter.Counter),
-    'ForEach': (appnode.EventNode, eventnodes.foreach.ForEach),
-    'For': (appnode.EventNode, eventnodes.for_.For),
+
     'SplitString': (appnode.EventNode, eventnodes.splitstring.SplitString),
     'JoinStrings': (appnode.ParamNode, eventnodes.joinstrings.JoinStrings),
     'JoinStringsMulti': (appnode.ParamNode, eventnodes.joinstringsmulti.JoinStringsMulti),
     'SliceList': (appnode.ParamNode, eventnodes.slicelist.SliceList),
+
+    'Collector': (appnode.EventNode, eventnodes.collector.Collector),
+    'Counter': (appnode.EventNode, eventnodes.counter.Counter),
+    'ForEach': (appnode.EventNode, eventnodes.foreach.ForEach),
+    'For': (appnode.EventNode, eventnodes.for_.For),
     'Condition': (appnode.EventNode, eventnodes.condition.Condition),
+
     'OpenImage': (appnode.EventNode, eventnodes.image.open.Open),
     'SaveImage': (appnode.EventNode, eventnodes.image.save.Save),
     'CropImage': (appnode.EventNode, eventnodes.image.crop.Crop),
     'ResizeImage': (appnode.EventNode, eventnodes.image.resize.Resize),
     'ThumbnailImage': (appnode.EventNode, eventnodes.image.thumbnail.Thumbnail),
+
+    'ConsoleWriter': (appnode.EventNode, eventnodes.consolewriter.ConsoleWriter),
+    'Process': (appnode.EventNode, eventnodes.process.Process),
+    'MultiProcess': (appnode.EventNode, eventnodes.multiprocess.MultiProcess),
+    'Download': (appnode.EventNode, eventnodes.download.Download),
+    'SystemNotification': (appnode.EventNode, eventnodes.systemnotification.SystemNotification),
     'Camera': (appnode.EventNode, eventnodes.camera.Camera),
     'FaceDetect': (appnode.EventNode, eventnodes.facedetect.FaceDetect),
     'Viewer': (appnode.EventNode, eventnodes.viewer.Viewer),
-    'SystemNotification': (appnode.EventNode, eventnodes.systemnotification.SystemNotification),
-    'Process': (appnode.EventNode, eventnodes.process.Process),
-    'MultiProcess': (appnode.EventNode, eventnodes.multiprocess.MultiProcess),
-    'Download': (appnode.EventNode, eventnodes.download.Download)
 }
 
 
@@ -290,43 +297,11 @@ class MainWindow(QMainWindow):
         self.paste_offset = 20
 
         toolbox = ToolBox()
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="DirChanged", sections=['Events'],
-                                 tooltip=eventnodes.dirchange.DirChanged.description))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FilesChanged", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Timer", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Hotkey", sections=['Events']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="CopyFile", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ListDir", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ZipFile", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Email", sections=['FileSystem']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="StringParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="IntegerParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FloatParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="BooleanParameter", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="IntToStr", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Math", sections=['Math']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SliceList", sections=['Data']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SplitString", sections=['String']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="JoinStrings", sections=['String']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="JoinStringsMulti", sections=['String']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="For", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ForEach", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Counter", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Condition", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Collector", sections=['Flow Control']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ConsoleWriter", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="OpenImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SaveImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="CropImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ResizeImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="ThumbnailImage", sections=['Image']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Camera", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="FaceDetect", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Viewer", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="SystemNotification", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Process", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="MultiProcess", sections=['I/O']))
-        toolbox.addItem(ToolItem(icon=QIcon(path + '/icons/flow.png'), label="Download", sections=['I/O']))
+        for node_name, registry_data in node_registry.items():
+            app_node, event_node = registry_data
+            toolbox.addItem(
+                ToolItem(icon=QIcon(path + '/icons/flow.png'), label=node_name, sections=event_node.categories,
+                         tooltip=event_node.description))
         toolbox.itemDoubleClickedSignal.connect(self.toolbox_item_selected)
 
         scene.nodes_selected.connect(selected_nodes)

@@ -35,6 +35,13 @@ class PromoteWidget(QtWidgets.QWidget):
 
 
 class ParamNode(BaseNode):
+    description = """**Parameters Nodes** are a convenient way to provide the same value to multiple
+inputs and can be controlled from a single spot.
+
+If the paramter is promoted, it's value can be set from the commandline interface
+"""
+    categories = ['Data']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

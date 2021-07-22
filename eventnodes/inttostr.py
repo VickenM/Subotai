@@ -17,6 +17,7 @@ class ToStr(StringParam):
 
 
 class IntToStr(BaseNode):
+    categories = ['Data']
     description = \
         """The **IntToStr node** converts Integer parameter values to Strings.
 

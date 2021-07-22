@@ -18,6 +18,7 @@ class CompareParam(EnumParam):
 
 
 class Condition(ComputeNode):
+    categories = ['Flow Control']
     description = \
         """The **Condition node** compares the values of *value1* and *value2* inputs with the *operation* parameter
 and outputs either the *true* or *false* signal, based on the comparison.

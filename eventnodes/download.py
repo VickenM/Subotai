@@ -110,6 +110,7 @@ class LoopThread(threading.Thread):
 
 
 class Download(ComputeNode):
+    categories = ['I/O']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'Download'

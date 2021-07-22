@@ -32,6 +32,7 @@ class LoopThread(threading.Thread):
 
 
 class MultiProcess(ComputeNode):
+    categories = ['I/O']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'MultiProcess'

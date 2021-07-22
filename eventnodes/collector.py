@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Collector(ComputeNode):
+    categories = ['Flow Control']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'Collector'

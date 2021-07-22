@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ForEach(ComputeNode):
+    categories = ['Flow Control']
     description = \
         """The **ForEach node** loops each value in the *items* parameter and emit an event for each value.
 

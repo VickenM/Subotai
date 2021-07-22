@@ -26,6 +26,7 @@ class JoinParam(StringParam):
 
 
 class JoinStringsMulti(BaseNode):
+    categories = ['String']
     description = \
         """The **JoinStringMulti node** joins multiple *string#* inputs together with  *separator* in between.
 Additional stirng inputs are dynamically added as input connections are made
