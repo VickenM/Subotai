@@ -53,6 +53,13 @@ class PywerView(QtWidgets.QGraphicsView):
         for y in range(int(top_right.y()), int(bottom_left.y()), 250):
             painter.drawLine(bottom_left.x(), y, top_right.x(), y)
 
+    def get_node_at(self, position):
+        items = self.items(position) or []
+        items = [i for i in items if isinstance(i, pyweritems.PywerNode)]
+        if not items:
+            return None
+        return items[0]
+
     def get_plug_at(self, position):
         items = self.items(position) or []
         items = [i for i in items if isinstance(i, pyweritems.PywerPlug)]

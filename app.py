@@ -19,7 +19,8 @@ from PySide2.QtWidgets import (
     QMenu,
     QSplashScreen,
     QMessageBox,
-    QDesktopWidget
+    QDesktopWidget,
+    QAction
 )
 from PySide2 import QtGui
 from PySide2 import QtCore
@@ -64,6 +65,8 @@ import eventnodes.systemnotification
 import eventnodes.process
 import eventnodes.multiprocess
 import eventnodes.download
+import eventnodes.apilistener
+import eventnodes.apirequest
 
 import appnode
 
@@ -105,6 +108,8 @@ node_registry = {
     'ResizeImage': (appnode.EventNode, eventnodes.image.resize.Resize),
     'ThumbnailImage': (appnode.EventNode, eventnodes.image.thumbnail.Thumbnail),
 
+    'APIListener': (appnode.EventNode, eventnodes.apilistener.APIListener),
+    'APIRequest': (appnode.EventNode, eventnodes.apirequest.APIRequest),
     'ConsoleWriter': (appnode.EventNode, eventnodes.consolewriter.ConsoleWriter),
     'Process': (appnode.EventNode, eventnodes.process.Process),
     'MultiProcess': (appnode.EventNode, eventnodes.multiprocess.MultiProcess),
@@ -113,6 +118,7 @@ node_registry = {
     'Camera': (appnode.EventNode, eventnodes.camera.Camera),
     'FaceDetect': (appnode.EventNode, eventnodes.facedetect.FaceDetect),
     'Viewer': (appnode.EventNode, eventnodes.viewer.Viewer),
+
 }
 
 
@@ -250,6 +256,7 @@ class EventFlow(pywerscene.PywerScene):
 
 class EventView(pywerlines.pywerview.PywerView):
     node_dropped_signal = QtCore.Signal(str, int, int)
+    context_menu_signal = QtCore.Signal(int, int)
 
     def __init__(self):
         super().__init__()
@@ -289,33 +296,8 @@ class EventView(pywerlines.pywerview.PywerView):
 
     def mouseReleaseEvent(self, event):
         self.setDragMode(self.RubberBandDrag)
-
-        def get_nodes_by_category():
-            from collections import defaultdict
-            nodes_by_categories = defaultdict(list)
-
-            for node_name, node_data in node_registry.items():
-                _, node_obj = node_data
-                for category in node_obj.categories:
-                    nodes_by_categories[category].append(node_name)
-
-            return nodes_by_categories
-
-        def show_node_menu():
-            menu = QMenu(self)
-            for category, node_names in get_nodes_by_category().items():
-                submenu = menu.addMenu(category)
-                for node_name in node_names:
-                    submenu.addAction(node_name,
-                                      lambda node_name=node_name: self.node_dropped_signal.emit(node_name,
-                                                                                                event.pos().x() + 1,
-                                                                                                # TODO: if I dont add 1 here, the app will crash when setPos is called in the slot function
-                                                                                                event.pos().y()))
-
-            menu.exec_(self.mapToGlobal(event.pos()))
-
         if event.button() == QtCore.Qt.RightButton:
-            show_node_menu()
+            self.context_menu_signal.emit(event.pos().x(), event.pos().y())
 
         return super().mouseReleaseEvent(event)
 
@@ -332,7 +314,6 @@ class MainWindow(QMainWindow):
         self.filename = None
         self.unsaved = False
         self.saved_data = None
-        self.paste_offset = 20
 
         toolbox = ToolBox()
         for node_name, registry_data in node_registry.items():
@@ -371,6 +352,8 @@ class MainWindow(QMainWindow):
 
         self.view.node_dropped_signal.connect(self.new_node_selected)
 
+        self.view.context_menu_signal.connect(self.context_menu)
+
         toolbar = self.addToolBar('Run')
         action = toolbar.addAction('&Run')
         action.setIcon(QIcon(path + '/icons/run.jpg'))
@@ -402,26 +385,34 @@ class MainWindow(QMainWindow):
         action.triggered.connect(self.exit_app)
 
         edit_menu = self.menuBar().addMenu('&Edit')
-        action = edit_menu.addAction('&Group Selection')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
-        action.triggered.connect(self.group_selected)
 
-        action = edit_menu.addAction('&Empty Group')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
-        action.triggered.connect(self.new_group)
+        self._create_actions()
+
+        edit_menu.addAction(self.group_action)
+        # action = edit_menu.addAction('&Group Selection')
+        # action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
+        # action.triggered.connect(self.group_selected)
+
+        edit_menu.addAction(self.empty_group_action)
+        # action = edit_menu.addAction('&Empty Group')
+        # action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
+        # action.triggered.connect(self.new_group)
 
         edit_menu.addSeparator()
-        action = edit_menu.addAction('&Copy')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
-        action.triggered.connect(self.copy_selected)
+        edit_menu.addAction(self.copy_action)
+        # action = edit_menu.addAction('&Copy')
+        # action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
+        # action.triggered.connect(self.copy_selected)
 
-        action = edit_menu.addAction('&Paste')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
-        action.triggered.connect(self.paste_selected)
+        edit_menu.addAction(self.paste_action)
+        # action = edit_menu.addAction('&Paste')
+        # action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
+        # action.triggered.connect(self.paste_selected)
 
-        action = edit_menu.addAction('&Delete')
-        action.setShortcut(QtGui.QKeySequence('Delete'))
-        action.triggered.connect(self.delete_selected)
+        edit_menu.addAction(self.delete_action)
+        # action = edit_menu.addAction('&Delete')
+        # action.setShortcut(QtGui.QKeySequence('Delete'))
+        # action.triggered.connect(self.delete_selected)
 
         edit_menu.addSeparator()
         action = edit_menu.addAction('&Select All')
@@ -463,6 +454,28 @@ class MainWindow(QMainWindow):
 
         app = QApplication.instance()
         app.trayIcon = self.trayIcon
+
+    def _create_actions(self):
+        # action = edit_menu.addAction('&Group Selection')
+        self.group_action = QAction('&Group Selection')
+        self.group_action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
+        self.group_action.triggered.connect(self.group_selected)
+
+        self.empty_group_action = QAction('&Empty Group')
+        self.empty_group_action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
+        self.empty_group_action.triggered.connect(self.new_group)
+
+        self.copy_action = QAction('&Copy')
+        self.copy_action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
+        self.copy_action.triggered.connect(self.copy_selected)
+
+        self.paste_action = QAction('&Paste')
+        self.paste_action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
+        self.paste_action.triggered.connect(self.paste_selected)
+
+        self.delete_action = QAction('&Delete')
+        self.delete_action.setShortcut(QtGui.QKeySequence('Delete'))
+        self.delete_action.triggered.connect(self.delete_selected)
 
     # @Slot()
     def start_thread(self):
@@ -647,7 +660,9 @@ class MainWindow(QMainWindow):
     @Slot()
     def copy_selected(self):
         data = {'nodes': [], 'edges': [], 'groups': []}
-        for node in self.scene.get_selected_nodes():
+        # selected_nodes =  sorted(self.scene.get_selected_nodes(), key=lambda n: n.pos().x())
+
+        for node in sorted(self.scene.get_selected_nodes(), key=lambda n: (n.pos().x(), n.pos().y())):
             data['nodes'].append(node.to_dict())
 
         all_ids = [n['id'] for n in data['nodes']]
@@ -662,7 +677,8 @@ class MainWindow(QMainWindow):
                              str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
                 data['edges'].append(edge_info)
 
-        for group in self.scene.get_selected_groups():
+        # for group in self.scene.get_selected_groups():
+        for group in sorted(self.scene.get_selected_groups(), key=lambda g: (g.pos().x(), g.pos().y())):
             data['groups'].append(
                 {'position': (group.pos().x(), group.pos().y()),
                  'size': (group.width, group.height)
@@ -670,23 +686,38 @@ class MainWindow(QMainWindow):
             )
 
         self.saved_data = data
-        # self.paste_offset = 20
 
     # TODO this function is almost identical to load_data
     @Slot()
     def paste_selected(self):
+
+        pos = self.view.mapFromGlobal(QtGui.QCursor.pos())
+        pos = self.view.mapToScene(pos)
+
         if not self.saved_data:
             return
 
         data = self.saved_data
         node_map = {}  # map from copied node id to newly created node id
         new_nodes = {}  # hold onto newly created nodes so that we can change the selection to them after paste
+
+        relative_pos = None
         for node in data['nodes']:
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
             n.node_obj.moveToThread(self.thread_)
             n.node_obj.set_active(node.get('active', True))
-            n.setPos(node['position'][0] + 20, node['position'][1] + 20)
+
+            if not relative_pos:
+                relative_pos = QtCore.QPointF(node['position'][0], node['position'][1])
+                n.setPos(pos.x(), pos.y())
+            else:
+                offset_x = node['position'][0] - relative_pos.x()
+                offset_y = node['position'][1] - relative_pos.y()
+
+                n.setPos(pos.x() + offset_x, pos.y() + offset_y)
+
+            # n.setPos(node['position'][0] + 20, node['position'][1] + 20)
             n.setSize(*node.get('size', (100, 100)))
             new_nodes[n] = node
 
@@ -745,7 +776,17 @@ class MainWindow(QMainWindow):
 
         for group in data['groups']:
             g = self.scene.create_group()
-            g.setPos(group['position'][0] + 20, group['position'][1] + 20)
+            # g.setPos(group['position'][0] + 20, group['position'][1] + 20)
+            # g.setPos(pos.x(), pos.y())
+            if not relative_pos:
+                relative_pos = QtCore.QPointF(group['position'][0], group['position'][1])
+                g.setPos(pos.x(), pos.y())
+            else:
+                offset_x = group['position'][0] - relative_pos.x()
+                offset_y = group['position'][1] - relative_pos.y()
+
+                g.setPos(pos.x() + offset_x, pos.y() + offset_y)
+
             g.setSize(*group['size'])
             new_nodes[g] = group
 
@@ -764,6 +805,47 @@ class MainWindow(QMainWindow):
         self.scene.select_node(node)
 
         self.unsaved = True
+
+    @Slot(int, int)
+    def context_menu(self, x, y):
+        def get_nodes_by_category():
+            from collections import defaultdict
+            nodes_by_categories = defaultdict(list)
+
+            for node_name, node_data in node_registry.items():
+                _, node_obj = node_data
+                for category in node_obj.categories:
+                    nodes_by_categories[category].append(node_name)
+
+            return nodes_by_categories
+
+        def show_options_menu():
+            menu = QMenu(self)
+            menu.exec_(self.view.mapToGlobal(QtCore.QPoint(x, y)))
+
+        def show_new_nodes_menu():
+            menu = QMenu(self)
+
+            new_node_menu = menu.addMenu('Add Node')
+            for category, node_names in get_nodes_by_category().items():
+                submenu = new_node_menu.addMenu(category)
+                for node_name in node_names:
+                    submenu.addAction(node_name,
+                                      lambda node_name=node_name: self.new_node_selected(node_name, x + 1,
+                                                                                         y))  # TODO: if I dont add 1 here, the app will crash when setPos is called in the slot function
+
+            menu.addSeparator()
+            menu.addAction(self.group_action)
+            menu.addAction(self.copy_action)
+            menu.addAction(self.paste_action)
+            menu.addAction(self.delete_action)
+            menu.exec_(self.view.mapToGlobal(QtCore.QPoint(x, y)))
+
+        node = self.view.get_node_at(QtCore.QPoint(x, y))
+        # if node:
+        #     show_options_menu()
+        # else:
+        show_new_nodes_menu()
 
     @Slot(list)
     def selected_nodes(self, nodes):
@@ -954,11 +1036,6 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
         if json_string:
             main_window.load_json(json_string)
 
-    # if list_params:
-    #     print_params_from_scene(scene=main_window.scene)
-    #     main_window.exit_app()
-    #     sys.exit()
-
     set_params(scene=main_window.scene, params=params)
 
     if background:
@@ -967,7 +1044,7 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
         if splashscreen:
             show_splashscreen(animate=True)
 
-        main_window.move(200, 200)  # TODO: Calculate center of desktop to position the MainWindow
+        main_window.move(600, 200)  # TODO: Calculate center of desktop to position the MainWindow
         main_window.show()
     # app.aboutToQuit.connect(main_window.stop_thread)
     return app, main_window
