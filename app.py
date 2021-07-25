@@ -263,7 +263,8 @@ class EventView(pywerlines.pywerview.PywerView):
         self.setAcceptDrops(True)
 
     def dragMoveEvent(self, event):
-        pass  # need to implement this function for the drops to work
+        # needed to include this function for the drops to work
+        pass
 
     def dragLeaveEvent(self, event):
         event.ignore()
@@ -389,30 +390,13 @@ class MainWindow(QMainWindow):
         self._create_actions()
 
         edit_menu.addAction(self.group_action)
-        # action = edit_menu.addAction('&Group Selection')
-        # action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
-        # action.triggered.connect(self.group_selected)
 
         edit_menu.addAction(self.empty_group_action)
-        # action = edit_menu.addAction('&Empty Group')
-        # action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
-        # action.triggered.connect(self.new_group)
 
         edit_menu.addSeparator()
         edit_menu.addAction(self.copy_action)
-        # action = edit_menu.addAction('&Copy')
-        # action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
-        # action.triggered.connect(self.copy_selected)
-
         edit_menu.addAction(self.paste_action)
-        # action = edit_menu.addAction('&Paste')
-        # action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
-        # action.triggered.connect(self.paste_selected)
-
         edit_menu.addAction(self.delete_action)
-        # action = edit_menu.addAction('&Delete')
-        # action.setShortcut(QtGui.QKeySequence('Delete'))
-        # action.triggered.connect(self.delete_selected)
 
         edit_menu.addSeparator()
         action = edit_menu.addAction('&Select All')
@@ -456,7 +440,6 @@ class MainWindow(QMainWindow):
         app.trayIcon = self.trayIcon
 
     def _create_actions(self):
-        # action = edit_menu.addAction('&Group Selection')
         self.group_action = QAction('&Group Selection')
         self.group_action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
         self.group_action.triggered.connect(self.group_selected)

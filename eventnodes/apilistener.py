@@ -69,16 +69,9 @@ class APIListener(ComputeNode):
 
         asyncio.run_coroutine_threadsafe(request_consumer(self.queue, on_response_fn=self.received_response),
                                          self.loop_thread.loop)
-        # self.queue.put('https://dog.ceo/api/breeds/image/random')
-
 
     @QtCore.Slot()
     def compute(self):
-        # self.start_spinner_signal.emit()
-        # asyncio.run_coroutine_threadsafe(request_consumer(self.queue, on_response_fn=self.received_response),
-        #                                  self.loop_thread.loop)
-        # self.queue.put('https://dog.ceo/api/breeds/image/random')
-        # self.stop_spinner_signal.emit()
         super().compute()
 
     async def received_response(self, response):
