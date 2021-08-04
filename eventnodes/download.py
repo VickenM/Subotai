@@ -32,6 +32,7 @@ class TextProgressBar(QtWidgets.QProgressBar):
 
 class Progress(QtWidgets.QWidget):
     add_progress = QtCore.Signal(int, str)
+    update_progress = QtCore.Signal(str, int, int, int)
 
     def __init__(self):
         super().__init__()
@@ -41,6 +42,7 @@ class Progress(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
         self.add_progress.connect(self.do_add_download)
+        self.update_progress.connect(self.do_update_download)
 
         self.downloads = {}
         self.download_id = 0
@@ -70,14 +72,19 @@ class Progress(QtWidgets.QWidget):
         item.widget().deleteLater()
         del self.downloads[download_id]
 
-    def update_download(self, filename, download_id, received, total):
+    @QtCore.Slot(str, int, int, int)
+    def do_update_download(self, filename, download_id, received, total):
         if int(received) < int(total):
-            progress_bar = self.downloads[download_id]
-            percent = int(100 * (int(received) / int(total)))
-            text = filename + '... ' + str(percent) + '%'
-            progress_bar.setFormat(text)
-            progress_bar.setMaximum(int(total))
-            progress_bar.setValue(int(received))
+            progress_bar = self.downloads.get(download_id)
+            if progress_bar:
+                percent = int(100 * (int(received) / int(total)))
+                text = filename + '... ' + str(percent) + '%'
+                progress_bar.setFormat(text)
+                progress_bar.setMaximum(int(total))
+                progress_bar.setValue(int(received))
+
+    def update_download(self, filename, download_id, received, total):
+        self.update_progress.emit(filename, download_id, received, total)
 
 
 async def download(url, filename, progress_id, progress_fn, callback_fn):
@@ -111,6 +118,7 @@ class LoopThread(threading.Thread):
 
 class Download(ComputeNode):
     categories = ['I/O']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = 'Download'

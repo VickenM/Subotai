@@ -58,6 +58,7 @@ import eventnodes.image.save
 import eventnodes.image.crop
 import eventnodes.image.resize
 import eventnodes.image.thumbnail
+import eventnodes.image.blend
 import eventnodes.camera
 import eventnodes.facedetect
 import eventnodes.viewer
@@ -107,6 +108,7 @@ node_registry = {
     'CropImage': (appnode.EventNode, eventnodes.image.crop.Crop),
     'ResizeImage': (appnode.EventNode, eventnodes.image.resize.Resize),
     'ThumbnailImage': (appnode.EventNode, eventnodes.image.thumbnail.Thumbnail),
+    'BlendImage': (appnode.EventNode, eventnodes.image.blend.Blend),
 
     'APIListener': (appnode.EventNode, eventnodes.apilistener.APIListener),
     'APIRequest': (appnode.EventNode, eventnodes.apirequest.APIRequest),
@@ -214,6 +216,19 @@ class EventFlow(pywerscene.PywerScene):
 
     def create_edge(self, source_plug, target_plug):
         super(EventFlow, self).create_edge(source_plug, target_plug)
+
+    # def create_edge(self, source_plug, target_plug):
+    #     edge = super().create_edge(source_plug, target_plug)
+    #     if edge:
+    #         plug = edge.source_plug or edge.taget_plug
+    #         import eventnodes.signal
+    #         if plug and isinstance(plug.plug_obj, eventnodes.signal.Signal):
+    #             edge.line_width = 1.5
+    #         else:
+    #             edge.line_width = 0.75
+    #
+    #     return edge
+
 
     def get_node_by_id(self, obj_id):
         nodes = self.get_all_nodes()
@@ -634,6 +649,7 @@ class MainWindow(QMainWindow):
         self.scene.remove_selected_groups()
 
         self.unsaved = True
+        self.parameters.set_node_obj(None)
 
     @Slot()
     def select_all(self):
@@ -808,6 +824,7 @@ class MainWindow(QMainWindow):
 
         def show_new_nodes_menu():
             menu = QMenu(self)
+
 
             new_node_menu = menu.addMenu('Add Node')
             for category, node_names in get_nodes_by_category().items():

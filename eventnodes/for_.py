@@ -47,9 +47,11 @@ Events:
         current = self.get_first_param('current')
 
         for i in range(start.value, end.value, step.value):
+            QtCore.QCoreApplication.processEvents()
+
             self.start_spinner_signal.emit()
             current.value = i
-            self.stop_spinner_signal.emit()
             signal.emit_event()
+            self.stop_spinner_signal.emit()
 
         finished.emit_event()

@@ -52,6 +52,7 @@ Signals:
 
     @Slot()
     def compute(self):
+        QtCore.QCoreApplication.processEvents()
         self.start_spinner_signal.emit()
         event = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         item = self.get_first_param('value')
