@@ -42,6 +42,7 @@ Parameters:
 
         import os
         import glob
+
         files = []
         if recursive:
             for dirpath, dirnames, filenames in os.walk(directory):

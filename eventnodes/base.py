@@ -84,6 +84,8 @@ class ComputeNode(BaseNode):
     calculate = QtCore.Signal()
     start_spinner_signal = QtCore.Signal()
     stop_spinner_signal = QtCore.Signal()
+    start_glow_signal = QtCore.Signal()
+    stop_glow_signal = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,10 +98,14 @@ class ComputeNode(BaseNode):
         self.ui_node = ui_node
         self.start_spinner_signal.connect(self.ui_node.start_spinner)
         self.stop_spinner_signal.connect(self.ui_node.stop_spinner)
+        self.start_glow_signal.connect(self.ui_node.show_error)
+        self.stop_glow_signal.connect(self.ui_node.clear_error)
 
     def unset_ui_node(self):
         self.start_spinner_signal.disconnect(self.ui_node.start_spinner)
         self.stop_spinner_signal.disconnect(self.ui_node.stop_spinner)
+        self.start_glow_signal.disconnect(self.ui_node.show_error)
+        self.stop_glow_signal.disconnect(self.ui_node.clear_error)
         self.ui_node = None
 
     @Slot()
@@ -151,6 +157,25 @@ class ComputeNode(BaseNode):
             signal.disconnect(self.trigger)
         else:
             signal.disconnect(self.map_signal(trigger))
+
+    class Decorators(object):
+        @classmethod
+        def show_ui_computation(cls, func):
+            import functools
+
+            @functools.wraps(func)
+            def do_show_ui_computation(self):
+                self.start_spinner_signal.emit()
+                self.stop_glow_signal.emit()
+                try:
+                    func(self)
+                except Exception as e:
+                    print(e)
+                    self.start_glow_signal.emit()
+
+                self.stop_spinner_signal.emit()
+
+            return do_show_ui_computation
 
 
 class EventNode(ComputeNode):

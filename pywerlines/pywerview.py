@@ -72,7 +72,7 @@ class PywerView(QtWidgets.QGraphicsView):
 
     def wheelEvent(self, event):
         if event.modifiers() & QtCore.Qt.ControlModifier:
-            zoomInFactor = 1.10
+            zoomInFactor = 1.1
             zoomOutFactor = 1 / zoomInFactor
 
             # Save the scene pos

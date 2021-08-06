@@ -1,0 +1,355 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.image.open.OpenImage",
+            "id": "9d396f96-eb00-4011-90d8-77ec32864d71",
+            "position": [
+                531.5572600000004,
+                527.5560800000001
+            ],
+            "params": {
+                "5": {
+                    "file": "D:\\projects\\python\\node2\\tmp\\wicked.jpg"
+                },
+                "2": {
+                    "width": 500,
+                    "height": 375
+                }
+            },
+            "active": true,
+            "size": [
+                150.82,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.inttostr.IntToStr",
+            "id": "cf6c658a-fb9b-4c45-b7da-3fb490358315",
+            "position": [
+                362.0,
+                191.0
+            ],
+            "params": {
+                "1": {
+                    "integer": 0
+                },
+                "2": {
+                    "string": ""
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.timer.Timer",
+            "id": "1eb8f7f9-2076-4c32-a8a6-b9d67ad5f3fd",
+            "position": [
+                66.27943000000016,
+                574.2968600000003
+            ],
+            "params": {
+                "4": {
+                    "interval": 500
+                }
+            },
+            "active": false,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.image.open.OpenImage",
+            "id": "878a79df-7c5a-42d4-afb3-fc0f658d4358",
+            "position": [
+                500.8811400000002,
+                395.9086300000002
+            ],
+            "params": {
+                "5": {
+                    "file": "D:\\projects\\python\\node2\\tmp\\wicked.png"
+                },
+                "2": {
+                    "width": 1080,
+                    "height": 1350
+                }
+            },
+            "active": true,
+            "size": [
+                148.40000000000003,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.viewer.Viewer",
+            "id": "ebbb2fce-471c-4436-bfd2-78dfbb36b3fe",
+            "position": [
+                1586.4610000000005,
+                508.1379999999999
+            ],
+            "params": {},
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.image.blend.BlendImage",
+            "id": "25fd1b23-ebf0-44ef-bf60-1c8e40c966fe",
+            "position": [
+                1404.6710000000003,
+                519.1379999999999
+            ],
+            "params": {},
+            "active": true,
+            "size": [
+                128.0,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.math.Math",
+            "id": "19612890-4852-4896-b972-b8fed95bf4aa",
+            "position": [
+                1090.6800000000005,
+                478.7300000000001
+            ],
+            "params": {
+                "4": {
+                    "operation": 5
+                },
+                "5": {
+                    "value1": 0,
+                    "value2": 2
+                },
+                "2": {
+                    "result": 0
+                }
+            }
+        },
+        {
+            "node_obj": "eventnodes.counter.Counter",
+            "id": "5f074851-d195-4100-83c5-36d92f787a76",
+            "position": [
+                925.9633,
+                430.97259999999983
+            ],
+            "params": {
+                "5": {
+                    "initial": -1,
+                    "increment": 1
+                },
+                "2": {
+                    "value": 3
+                }
+            },
+            "active": true,
+            "size": [
+                131.46000000000004,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.timer.Timer",
+            "id": "29fe730c-4f3c-4d6d-b6ac-8fb613433a7c",
+            "position": [
+                69.84500000000008,
+                412.2575900000005
+            ],
+            "params": {
+                "4": {
+                    "interval": 500
+                }
+            },
+            "active": false,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.image.resize.ResizeImage",
+            "id": "07608300-1ef7-4232-b10c-71640be3a9c1",
+            "position": [
+                703.6611400000002,
+                396.02862999999996
+            ],
+            "params": {
+                "5": {
+                    "width": 1000,
+                    "height": 1000
+                }
+            },
+            "active": true,
+            "size": [
+                166.54999999999995,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.condition.Condition",
+            "id": "3d1738ab-d32a-4cf9-9da3-145686c7ba27",
+            "position": [
+                1211.9900000000005,
+                432.37999999999994
+            ],
+            "params": {
+                "5": {
+                    "value1": 0,
+                    "value2": 0
+                }
+            },
+            "active": true,
+            "size": [
+                128.0,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.image.resize.ResizeImage",
+            "id": "81dc00bf-5355-4c9b-a29b-7c213601f0d3",
+            "position": [
+                709.4621999999999,
+                526.4801400000003
+            ],
+            "params": {
+                "5": {
+                    "width": 1000,
+                    "height": 1000
+                }
+            },
+            "active": true,
+            "size": [
+                154.44999999999993,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.counter.Counter",
+            "id": "4cde81e2-061d-4f35-afca-b7d4675a2076",
+            "position": [
+                335.5976399999999,
+                480.9600099999999
+            ],
+            "params": {
+                "5": {
+                    "initial": 10,
+                    "increment": 10
+                },
+                "2": {
+                    "value": 30
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                100.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "878a79df-7c5a-42d4-afb3-fc0f658d4358.event",
+            "07608300-1ef7-4232-b10c-71640be3a9c1.event"
+        ],
+        [
+            "4cde81e2-061d-4f35-afca-b7d4675a2076.value",
+            "07608300-1ef7-4232-b10c-71640be3a9c1.height"
+        ],
+        [
+            "878a79df-7c5a-42d4-afb3-fc0f658d4358.image",
+            "07608300-1ef7-4232-b10c-71640be3a9c1.image"
+        ],
+        [
+            "4cde81e2-061d-4f35-afca-b7d4675a2076.value",
+            "07608300-1ef7-4232-b10c-71640be3a9c1.width"
+        ],
+        [
+            "5f074851-d195-4100-83c5-36d92f787a76.value",
+            "19612890-4852-4896-b972-b8fed95bf4aa.value1"
+        ],
+        [
+            "3d1738ab-d32a-4cf9-9da3-145686c7ba27.true",
+            "25fd1b23-ebf0-44ef-bf60-1c8e40c966fe.event"
+        ],
+        [
+            "07608300-1ef7-4232-b10c-71640be3a9c1.image",
+            "25fd1b23-ebf0-44ef-bf60-1c8e40c966fe.image1"
+        ],
+        [
+            "81dc00bf-5355-4c9b-a29b-7c213601f0d3.image",
+            "25fd1b23-ebf0-44ef-bf60-1c8e40c966fe.image2"
+        ],
+        [
+            "5f074851-d195-4100-83c5-36d92f787a76.event",
+            "3d1738ab-d32a-4cf9-9da3-145686c7ba27.event"
+        ],
+        [
+            "19612890-4852-4896-b972-b8fed95bf4aa.result",
+            "3d1738ab-d32a-4cf9-9da3-145686c7ba27.value1"
+        ],
+        [
+            "29fe730c-4f3c-4d6d-b6ac-8fb613433a7c.event",
+            "4cde81e2-061d-4f35-afca-b7d4675a2076.event"
+        ],
+        [
+            "1eb8f7f9-2076-4c32-a8a6-b9d67ad5f3fd.event",
+            "4cde81e2-061d-4f35-afca-b7d4675a2076.reset"
+        ],
+        [
+            "07608300-1ef7-4232-b10c-71640be3a9c1.event",
+            "5f074851-d195-4100-83c5-36d92f787a76.event"
+        ],
+        [
+            "81dc00bf-5355-4c9b-a29b-7c213601f0d3.event",
+            "5f074851-d195-4100-83c5-36d92f787a76.event"
+        ],
+        [
+            "1eb8f7f9-2076-4c32-a8a6-b9d67ad5f3fd.event",
+            "5f074851-d195-4100-83c5-36d92f787a76.reset"
+        ],
+        [
+            "9d396f96-eb00-4011-90d8-77ec32864d71.event",
+            "81dc00bf-5355-4c9b-a29b-7c213601f0d3.event"
+        ],
+        [
+            "4cde81e2-061d-4f35-afca-b7d4675a2076.value",
+            "81dc00bf-5355-4c9b-a29b-7c213601f0d3.height"
+        ],
+        [
+            "9d396f96-eb00-4011-90d8-77ec32864d71.image",
+            "81dc00bf-5355-4c9b-a29b-7c213601f0d3.image"
+        ],
+        [
+            "4cde81e2-061d-4f35-afca-b7d4675a2076.value",
+            "81dc00bf-5355-4c9b-a29b-7c213601f0d3.width"
+        ],
+        [
+            "4cde81e2-061d-4f35-afca-b7d4675a2076.event",
+            "878a79df-7c5a-42d4-afb3-fc0f658d4358.event"
+        ],
+        [
+            "4cde81e2-061d-4f35-afca-b7d4675a2076.event",
+            "9d396f96-eb00-4011-90d8-77ec32864d71.event"
+        ],
+        [
+            "25fd1b23-ebf0-44ef-bf60-1c8e40c966fe.event",
+            "ebbb2fce-471c-4436-bfd2-78dfbb36b3fe.event"
+        ],
+        [
+            "25fd1b23-ebf0-44ef-bf60-1c8e40c966fe.image",
+            "ebbb2fce-471c-4436-bfd2-78dfbb36b3fe.image"
+        ]
+    ],
+    "groups": [
+        {
+            "position": [
+                486.3801400000002,
+                345.41663
+            ],
+            "size": [
+                395.3379999999994,
+                307.3309999999997
+            ]
+        }
+    ]
+}

@@ -80,8 +80,10 @@ Parameters:
         smtp.sendmail(send_from, send_to, msg.as_string())
         smtp.quit()
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
-        self.start_spinner_signal.emit()
+
+        # self.start_spinner_signal.emit()
         sender = self.get_first_param('sender')
         recipients = self.get_first_param('recipients')
         subject = self.get_first_param('subject')
@@ -93,20 +95,19 @@ Parameters:
         password = self.get_first_param('password')
         use_tls = self.get_first_param('use_tls')
 
-        try:
-            self.send_mail(
-                send_from=sender(),
-                send_to=[i.value for i in recipients()],
-                files=[i.value for i in attachments()],
-                subject=subject(),
-                message=message(),
-                server=server(),
-                port=port(),
-                username=username(),
-                password=password(),
-                use_tls=use_tls()
-            )
-        finally:
-            signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-            signal.emit_event()
-            self.stop_spinner_signal.emit()
+
+        self.send_mail(
+            send_from=sender(),
+            send_to=[i.value for i in recipients()],
+            files=[i.value for i in attachments()],
+            subject=subject(),
+            message=message(),
+            server=server(),
+            port=port(),
+            username=username(),
+            password=password(),
+            use_tls=use_tls()
+        )
+        signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
+        signal.emit_event()
+        # self.stop_spinner_signal.emit()

@@ -35,6 +35,6 @@ class Open(BaseImageNode):
         height.value = image.height
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-        self.stop_spinner_signal.emit()
         signal.emit_event()
+        self.stop_spinner_signal.emit()
         super().compute()

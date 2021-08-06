@@ -238,7 +238,9 @@ class PywerSpinner(PywerItem):
         self.color = QtGui.QColor(0, 0, 0)
         self.timeline = QtCore.QTimeLine()
         self.timeline.setLoopCount(0)
-        self.timeline.setDuration(250)
+        self.timeline.setDuration(500)
+        self.timeline.setFrameRange(0, 255)
+        self.timeline.setEasingCurve(QtCore.QEasingCurve(QtCore.QEasingCurve.SineCurve))
         self.timeline.valueChanged.connect(self.next_frame)
 
     def next_frame(self, frame):
@@ -258,6 +260,25 @@ class PywerSpinner(PywerItem):
         painter.setBrush(self.color)
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawPath(shape)
+
+
+class Glow(QtWidgets.QGraphicsDropShadowEffect):
+    def __init__(self):
+        super().__init__()
+        self.setColor(QtGui.QColor(150, 25, 25, 200))
+        self.setXOffset(0)
+        self.setYOffset(0)
+        self.setBlurRadius(0)
+
+        self.timeline = QtCore.QTimeLine()
+        self.timeline.setLoopCount(0)
+        self.timeline.setDuration(1000)
+        self.timeline.setFrameRange(100, 105)
+        self.timeline.setEasingCurve(QtCore.QEasingCurve(QtCore.QEasingCurve.SineCurve))
+        self.timeline.valueChanged.connect(self.next_frame)
+
+    def next_frame(self, frame):
+        self.setBlurRadius(frame * 100)
 
 
 class PywerNode(PywerItem):
@@ -296,6 +317,8 @@ class PywerNode(PywerItem):
         self.spinner = PywerSpinner(parent=self)
         self.spinner.hide()
 
+        self.drop_shadow = Glow()
+
         self.resizer = Resizer(parent=self)
         self.resizer.setConstrainY(True)
         self.resizer.resize_signal.connect(self.resize)
@@ -312,6 +335,19 @@ class PywerNode(PywerItem):
         self.spinner.hide()
         if self.spinner.timeline.state():
             self.spinner.timeline.stop()
+
+    @Slot()
+    def show_error(self):
+        if not self.drop_shadow.timeline.state():
+            self.drop_shadow = Glow()
+            self.setGraphicsEffect(self.drop_shadow)
+            self.drop_shadow.timeline.start()
+
+    @Slot()
+    def clear_error(self):
+        if self.drop_shadow.timeline.state():
+            self.drop_shadow.timeline.stop()
+        self.setGraphicsEffect(None)
 
     @Slot(QtCore.QPointF)
     def resize(self, change):
@@ -396,6 +432,58 @@ class PywerNode(PywerItem):
     def paint(self, painter, option, widget):
         painter.setClipRect(option.exposedRect)
 
+        # painter.setPen(QtCore.Qt.NoPen)
+        # color1 = QtGui.QColor(QtCore.Qt.transparent)
+        # color2 = QtGui.QColor(150,50,50)
+        #
+        # gradient = QtGui.QRadialGradient(0, 0, 10)
+        # gradient.setColorAt(0, color2)
+        # gradient.setColorAt(1, color1)
+        # painter.setBrush(gradient)
+        # painter.drawPie(-10.0, -10.0, 20.0, 20.0, 16 * 90.0, 16 * 90.0)
+        #
+        # gradient = QtGui.QRadialGradient(0, self.height, 10)
+        # gradient.setColorAt(0, color2)
+        # gradient.setColorAt(1, color1)
+        # painter.setBrush(gradient)
+        # painter.drawPie(-10, self.height - 10, 20, 20, 16 * 180, 16 * 90)
+        #
+        # gradient = QtGui.QRadialGradient(self.width, 0, 10)
+        # gradient.setColorAt(0, color2)
+        # gradient.setColorAt(1, color1)
+        # painter.setBrush(gradient)
+        # painter.drawPie(self.width - 10, -10, 20, 20, 16 * 0, 16 * 90)
+        #
+        # gradient = QtGui.QRadialGradient(self.width, self.height, 10)
+        # gradient.setColorAt(0, color2)
+        # gradient.setColorAt(1, color1)
+        # painter.setBrush(gradient)
+        # painter.drawPie(self.width - 10, self.height - 10, 20, 20, 16 * 270, 16 * 90)
+        #
+        # gradient = QtGui.QLinearGradient(0, -10, 0, 0)
+        # gradient.setColorAt(0, color1)
+        # gradient.setColorAt(1, color2)
+        # painter.setBrush(gradient)
+        # painter.drawRect(-0, -10, self.width, 10)
+        #
+        # gradient = QtGui.QLinearGradient(-10, 0, 0, 0)
+        # gradient.setColorAt(0, color1)
+        # gradient.setColorAt(1, color2)
+        # painter.setBrush(gradient)
+        # painter.drawRect(-10, 0, 10, self.height)
+        #
+        # gradient = QtGui.QLinearGradient(0, self.height + 10, 0, self.height)
+        # gradient.setColorAt(0, color1)
+        # gradient.setColorAt(1, color2)
+        # painter.setBrush(gradient)
+        # painter.drawRect(0, self.height, self.width, self.height + 10)
+        #
+        # gradient = QtGui.QLinearGradient(self.width+10, 0, self.width, 0)
+        # gradient.setColorAt(0, color1)
+        # gradient.setColorAt(1, color2)
+        # painter.setBrush(gradient)
+        # painter.drawRect(self.width, 0, self.width+10, self.height)
+
         shape = QtGui.QPainterPath()
         shape.addRoundedRect(0, 0, self.width, self.height, self.corner_radius, self.corner_radius)
 
@@ -411,11 +499,11 @@ class PywerNode(PywerItem):
             pen = QtGui.QPen(QtGui.QColor(*self.selected_color), 1.5)
             painter.setPen(pen)
 
-        for plug in self.inputs + self.outputs:
-            cshape = plug.shape()
-            cshape = cshape.translated(plug.pos())
-
-            shape = shape.subtracted(cshape)
+        # for plug in self.inputs + self.outputs:
+        #     cshape = plug.shape()
+        #     cshape = cshape.translated(plug.pos())
+        #
+        #     shape = shape.subtracted(cshape)
 
         painter.setBrush(gradient)
         painter.drawPath(shape)

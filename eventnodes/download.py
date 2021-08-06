@@ -10,24 +10,24 @@ import asyncio
 import threading
 
 
-class TextProgressBar(QtWidgets.QProgressBar):
-    def __init__(self, text=''):
-        super().__init__()
-        self.text_ = text
-
-    def setText(self, text):
-        self.text_ = text
-
-    def paintEvent(self, paintevent):
-        super().paintEvent(paintevent)
-
-        painter = QtGui.QPainter(self)
-        rect = self.rect()
-
-        painter.setPen(QtGui.QPen(QtGui.Qt.black))
-        rect = painter.boundingRect(rect, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter, self.text_)
-        painter.drawText(self.rect().adjusted(0, 0, -36, 0), int(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter),
-                         self.text_)
+# class TextProgressBar(QtWidgets.QProgressBar):
+#     def __init__(self, text=''):
+#         super().__init__()
+#         self.text_ = text
+#
+#     def setText(self, text):
+#         self.text_ = text
+#
+#     def paintEvent(self, paintevent):
+#         super().paintEvent(paintevent)
+#
+#         painter = QtGui.QPainter(self)
+#         rect = self.rect()
+#
+#         painter.setPen(QtGui.QPen(QtGui.Qt.black))
+#         rect = painter.boundingRect(rect, QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter, self.text_)
+#         painter.drawText(self.rect().adjusted(0, 0, -36, 0), int(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignHCenter),
+#                          self.text_)
 
 
 class Progress(QtWidgets.QWidget):
