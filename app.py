@@ -71,7 +71,7 @@ import eventnodes.apirequest
 
 import appnode
 
-path = os.path.dirname(os.path.abspath(__file__))
+from config import path
 
 node_registry = {
     'Timer': (appnode.EventNode, eventnodes.timer.TimerNode),
@@ -824,7 +824,6 @@ class MainWindow(QMainWindow):
 
         def show_new_nodes_menu():
             menu = QMenu(self)
-
 
             new_node_menu = menu.addMenu('Add Node')
             for category, node_names in get_nodes_by_category().items():

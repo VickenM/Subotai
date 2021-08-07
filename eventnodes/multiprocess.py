@@ -135,16 +135,19 @@ class Progress(QtWidgets.QWidget):
         self.set_process.emit(proc, process_id)
 
 
-async def run_command(cmd, callback_start, callback_progress, callback_fn, process_id):
+async def run_command(cmd, callback_start, callback_progress, callback_end, callback_error, process_id):
     import shlex
     cmd_parts = [c.encode() for c in shlex.split(cmd)]
-    print(cmd_parts)
 
-    proc = await asyncio.create_subprocess_exec(
-        *cmd_parts,
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE)
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd_parts,
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
+    except Exception as e:
+        await callback_error(process_id, e)
+        return
 
     await callback_start(proc, process_id)
 
@@ -156,11 +159,7 @@ async def run_command(cmd, callback_start, callback_progress, callback_fn, proce
         await callback_progress(process_id, c)
 
     await proc.wait()
-
-    await callback_fn(process_id, proc.returncode)
-
-    # await callback_fn(process_id)
-
+    await callback_end(process_id, proc.returncode)
 
 class LoopThread(threading.Thread):
     def __init__(self, node):
@@ -194,6 +193,15 @@ class MultiProcess(ComputeNode):
 
     @QtCore.Slot()
     def compute(self):
+        async def process_error(process_id, exception):
+            self.progress_widget.update_process(process_id, '', 100, 100)
+
+            self.count -= 1
+            if not self.count:
+                self.stop_spinner_signal.emit()
+            print(exception)
+            self.start_glow_signal.emit()
+
         async def process_start(proc, process_id):
             self.progress_widget.set_proc(proc, process_id)
 
@@ -223,7 +231,7 @@ class MultiProcess(ComputeNode):
         self.count += 1
         asyncio.run_coroutine_threadsafe(
             run_command(cmdline, callback_start=process_start, callback_progress=process_progress,
-                        callback_fn=process_complete, process_id=process_id),
+                        callback_end=process_complete, callback_error=process_error, process_id=process_id),
             self.loop_thread.loop)
 
         super().compute()

@@ -432,58 +432,6 @@ class PywerNode(PywerItem):
     def paint(self, painter, option, widget):
         painter.setClipRect(option.exposedRect)
 
-        # painter.setPen(QtCore.Qt.NoPen)
-        # color1 = QtGui.QColor(QtCore.Qt.transparent)
-        # color2 = QtGui.QColor(150,50,50)
-        #
-        # gradient = QtGui.QRadialGradient(0, 0, 10)
-        # gradient.setColorAt(0, color2)
-        # gradient.setColorAt(1, color1)
-        # painter.setBrush(gradient)
-        # painter.drawPie(-10.0, -10.0, 20.0, 20.0, 16 * 90.0, 16 * 90.0)
-        #
-        # gradient = QtGui.QRadialGradient(0, self.height, 10)
-        # gradient.setColorAt(0, color2)
-        # gradient.setColorAt(1, color1)
-        # painter.setBrush(gradient)
-        # painter.drawPie(-10, self.height - 10, 20, 20, 16 * 180, 16 * 90)
-        #
-        # gradient = QtGui.QRadialGradient(self.width, 0, 10)
-        # gradient.setColorAt(0, color2)
-        # gradient.setColorAt(1, color1)
-        # painter.setBrush(gradient)
-        # painter.drawPie(self.width - 10, -10, 20, 20, 16 * 0, 16 * 90)
-        #
-        # gradient = QtGui.QRadialGradient(self.width, self.height, 10)
-        # gradient.setColorAt(0, color2)
-        # gradient.setColorAt(1, color1)
-        # painter.setBrush(gradient)
-        # painter.drawPie(self.width - 10, self.height - 10, 20, 20, 16 * 270, 16 * 90)
-        #
-        # gradient = QtGui.QLinearGradient(0, -10, 0, 0)
-        # gradient.setColorAt(0, color1)
-        # gradient.setColorAt(1, color2)
-        # painter.setBrush(gradient)
-        # painter.drawRect(-0, -10, self.width, 10)
-        #
-        # gradient = QtGui.QLinearGradient(-10, 0, 0, 0)
-        # gradient.setColorAt(0, color1)
-        # gradient.setColorAt(1, color2)
-        # painter.setBrush(gradient)
-        # painter.drawRect(-10, 0, 10, self.height)
-        #
-        # gradient = QtGui.QLinearGradient(0, self.height + 10, 0, self.height)
-        # gradient.setColorAt(0, color1)
-        # gradient.setColorAt(1, color2)
-        # painter.setBrush(gradient)
-        # painter.drawRect(0, self.height, self.width, self.height + 10)
-        #
-        # gradient = QtGui.QLinearGradient(self.width+10, 0, self.width, 0)
-        # gradient.setColorAt(0, color1)
-        # gradient.setColorAt(1, color2)
-        # painter.setBrush(gradient)
-        # painter.drawRect(self.width, 0, self.width+10, self.height)
-
         shape = QtGui.QPainterPath()
         shape.addRoundedRect(0, 0, self.width, self.height, self.corner_radius, self.corner_radius)
 
