@@ -1,6 +1,6 @@
 from PySide2 import QtCore
 
-from .base import EventNode
+from .base import EventNode, ComputeNode
 from .params import StringParam, ListParam, OUTPUT_PLUG, PARAM, SUBTYPE_DIRPATH
 from .signal import Signal, OUTPUT_PLUG
 
@@ -54,6 +54,7 @@ Parameters:
             if self.is_active():
                 self.watcher.directoryChanged.connect(self.compute)
 
+    @ComputeNode.Decorators.show_ui_computation
     @QtCore.Slot()
     def compute(self):
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)

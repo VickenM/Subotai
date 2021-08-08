@@ -43,6 +43,7 @@ Parameters:
         self.params.append(IntParam(name='value1', value=0, pluggable=INPUT_PLUG | PARAM))
         self.params.append(IntParam(name='value2', value=0, pluggable=INPUT_PLUG | PARAM))
 
+    @ComputeNode.Decorators.show_ui_computation
     @Slot()
     def compute(self):
         self.start_spinner_signal.emit()

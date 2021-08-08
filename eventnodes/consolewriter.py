@@ -28,6 +28,7 @@ Parameters:
         self.params.append(StringParam(name='prefix', value='%m/%d/%Y, %H:%M:%S', pluggable=PARAM))
         self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
 
+    @ComputeNode.Decorators.show_ui_computation
     @Slot()
     def compute(self):
         self.start_spinner_signal.emit()

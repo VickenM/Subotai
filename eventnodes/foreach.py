@@ -39,6 +39,7 @@ Events:
         self.params.append(IntParam(name='index', value=0, pluggable=OUTPUT_PLUG))
         self.params.append(IntParam(name='count', value=0, pluggable=OUTPUT_PLUG))
 
+    @ComputeNode.Decorators.show_ui_computation
     @Slot()
     def compute(self):
         items = self.get_first_param('items')

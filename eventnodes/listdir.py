@@ -33,6 +33,8 @@ Parameters:
         self.params.append(BoolParam(name='fullpaths', value=False, pluggable=PARAM))
         self.params.append(ListParam(name='files', value=[], pluggable=OUTPUT_PLUG))
 
+    @ComputeNode.Decorators.show_ui_computation
+    @Slot()
     def compute(self):
         self.start_spinner_signal.emit()
         directory = self.get_first_param('directory').value

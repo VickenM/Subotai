@@ -50,6 +50,7 @@ Signals:
         initial = self.get_first_param('initial')
         item.value = initial.value
 
+    @ComputeNode.Decorators.show_ui_computation
     @Slot()
     def compute(self):
         QtCore.QCoreApplication.processEvents()

@@ -25,6 +25,7 @@ class SystemNotification(ComputeNode):
 
         # self.params.append(IntParam(name='length of time', value=5000, pluggable=PARAM))
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         title = self.get_first_param('title').value
         message = self.get_first_param('message').value

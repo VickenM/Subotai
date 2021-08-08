@@ -82,7 +82,6 @@ Parameters:
 
     @ComputeNode.Decorators.show_ui_computation
     def compute(self):
-
         # self.start_spinner_signal.emit()
         sender = self.get_first_param('sender')
         recipients = self.get_first_param('recipients')

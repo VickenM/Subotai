@@ -137,6 +137,7 @@ class Download(ComputeNode):
 
         self.count = 0
 
+    @ComputeNode.Decorators.show_ui_computation
     @QtCore.Slot()
     def compute(self):
         url = self.get_first_param('url')

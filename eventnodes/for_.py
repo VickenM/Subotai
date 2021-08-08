@@ -36,6 +36,7 @@ Events:
 
         self.params.append(IntParam(name='current', value=0, pluggable=OUTPUT_PLUG))
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         finished = self.get_first_signal('finished', pluggable=OUTPUT_PLUG)

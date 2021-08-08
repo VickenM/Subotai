@@ -70,6 +70,7 @@ Parameters:
     def toggle_viewer(self):
         self.widget.setVisible(not self.widget.isVisible())
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
         image = self.get_first_param('image')

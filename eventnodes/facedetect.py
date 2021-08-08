@@ -76,6 +76,7 @@ Outputs:
             self.cascade.load(classifier_file)
             self.classifier_file = classifier_file
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
 

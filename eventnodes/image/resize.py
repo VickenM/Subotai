@@ -2,6 +2,7 @@ from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
 from .baseimage import BaseImageNode
+from eventnodes.base import ComputeNode
 from eventnodes.params import StringParam, IntParam, PARAM
 from eventnodes.signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 from .imageparam import ImageParam
@@ -21,6 +22,7 @@ class Resize(BaseImageNode):
         self.params.append(IntParam(name='height', value=0, pluggable=PARAM | INPUT_PLUG))
         self.params.append(ImageParam(name='image', value=None, pluggable=PARAM | OUTPUT_PLUG))
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
         width = self.get_first_param('width', pluggable=INPUT_PLUG)

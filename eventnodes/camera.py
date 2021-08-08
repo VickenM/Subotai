@@ -63,6 +63,7 @@ Parameters:
             self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
             self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
         ret, frame = self.cap.read()

@@ -29,6 +29,7 @@ Parameters:
                                        subtype=SUBTYPE_FILEPATH))
         self.params.append(StringParam(name='destination', value='d:\\temp\\target.txt', pluggable=OUTPUT_PLUG))
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
         import shutil

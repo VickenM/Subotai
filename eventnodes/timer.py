@@ -2,7 +2,7 @@ from PySide2 import QtWidgets
 from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
-from .base import EventNode
+from .base import EventNode, ComputeNode
 from .params import IntParam, PARAM
 from .signal import Signal, OUTPUT_PLUG
 
@@ -32,6 +32,7 @@ Parameters:
 
         self.deactivate()
 
+    @ComputeNode.Decorators.show_ui_computation
     @Slot()
     def compute(self):
         for signal in self.signals:

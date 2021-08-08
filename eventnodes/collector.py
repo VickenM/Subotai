@@ -35,6 +35,7 @@ class Collector(ComputeNode):
         elif signal == 'emit':
             return self.trigger
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
 

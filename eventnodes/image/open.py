@@ -2,6 +2,7 @@ from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
 from .baseimage import BaseImageNode
+from eventnodes.base import ComputeNode
 from eventnodes.params import StringParam, IntParam, PARAM, SUBTYPE_FILEPATH
 from eventnodes.signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 from .imageparam import ImageParam
@@ -21,6 +22,7 @@ class Open(BaseImageNode):
         self.params.append(IntParam(name='width', value=0, pluggable=OUTPUT_PLUG))
         self.params.append(IntParam(name='height', value=0, pluggable=OUTPUT_PLUG))
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
         file_ = self.get_first_param('file')

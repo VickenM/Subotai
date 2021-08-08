@@ -2,6 +2,7 @@ from PySide2 import QtCore
 from PySide2.QtCore import Slot
 
 from .baseimage import BaseImageNode
+from eventnodes.base import ComputeNode
 from eventnodes.params import StringParam, IntParam, PARAM, EnumParam
 from eventnodes.signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 from .imageparam import ImageParam
@@ -32,6 +33,7 @@ class Blend(BaseImageNode):
         self.params.append(ImageParam(name='image', value=None, pluggable=OUTPUT_PLUG))
         self.params.append(BlendOpParam(name='blend_mode', value=BlendOpParam.Operations.overlay, pluggable=PARAM))
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
         image1 = self.get_first_param('image1', pluggable=INPUT_PLUG)

@@ -29,6 +29,7 @@ Parameters:
             StringParam(name='zipfile', value='', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_FILEPATH))
         self.params.append(StringParam(name='zipfile', value='', pluggable=OUTPUT_PLUG, subtype=SUBTYPE_FILEPATH))
 
+    @ComputeNode.Decorators.show_ui_computation
     def compute(self):
         self.start_spinner_signal.emit()
         source = self.get_first_param('source', pluggable=INPUT_PLUG)

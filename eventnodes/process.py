@@ -18,6 +18,7 @@ class Process(ComputeNode):
         self.params.append(StringParam(name='process', value='', pluggable=PARAM | INPUT_PLUG))
         self.params.append(StringParam(name='arguments', value='', pluggable=PARAM | INPUT_PLUG))
 
+    @ComputeNode.Decorators.show_ui_computation
     @QtCore.Slot()
     def compute(self):
         self.start_spinner_signal.emit()
