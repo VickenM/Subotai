@@ -336,15 +336,16 @@ class PywerNode(PywerItem):
         if self.spinner.timeline.state():
             self.spinner.timeline.stop()
 
-    @Slot()
-    def show_error(self):
+    @Slot(int)
+    def show_glow(self, color):
         if not self.drop_shadow.timeline.state():
             self.drop_shadow = Glow()
+            self.drop_shadow.setColor(QtGui.QColor(*color))
             self.setGraphicsEffect(self.drop_shadow)
             self.drop_shadow.timeline.start()
 
     @Slot()
-    def clear_error(self):
+    def clear_glow(self):
         if self.drop_shadow.timeline.state():
             self.drop_shadow.timeline.stop()
         self.setGraphicsEffect(None)
@@ -497,6 +498,15 @@ class PywerNode(PywerItem):
             self.scene().itemMoved()
 
         return super(PywerNode, self).itemChange(change, value)
+
+    def hoverMoveEvent(self, event):
+        return super().hoverMoveEvent(event)
+
+    def hoverEnterEvent(self, event):
+        return super().hoverEnterEvent(event)
+
+    def hoverLeaveEvent(self, event):
+        return super().hoverLeaveEvent(event)
 
 
 class Resizer(QtWidgets.QGraphicsObject):

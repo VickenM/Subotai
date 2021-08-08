@@ -161,6 +161,7 @@ async def run_command(cmd, callback_start, callback_progress, callback_end, call
     await proc.wait()
     await callback_end(process_id, proc.returncode)
 
+
 class LoopThread(threading.Thread):
     def __init__(self, node):
         self.node = node
@@ -200,7 +201,7 @@ class MultiProcess(ComputeNode):
             if not self.count:
                 self.stop_spinner_signal.emit()
             print(exception)
-            self.start_glow_signal.emit()
+            self.start_glow_signal.emit(self.error_color)
 
         async def process_start(proc, process_id):
             self.progress_widget.set_proc(proc, process_id)

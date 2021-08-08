@@ -12,6 +12,10 @@ class BaseNode(QtCore.QObject):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.color = (150, 150, 150, 255)
+        self.warning_color = (150, 100, 25, 255)
+        self.error_color = (150, 50, 50, 255)
+
         self.controls = []
         self.params = []
         self.ui_node = None
@@ -84,7 +88,7 @@ class ComputeNode(BaseNode):
     calculate = QtCore.Signal()
     start_spinner_signal = QtCore.Signal()
     stop_spinner_signal = QtCore.Signal()
-    start_glow_signal = QtCore.Signal()
+    start_glow_signal = QtCore.Signal(tuple)
     stop_glow_signal = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
@@ -98,14 +102,14 @@ class ComputeNode(BaseNode):
         self.ui_node = ui_node
         self.start_spinner_signal.connect(self.ui_node.start_spinner)
         self.stop_spinner_signal.connect(self.ui_node.stop_spinner)
-        self.start_glow_signal.connect(self.ui_node.show_error)
-        self.stop_glow_signal.connect(self.ui_node.clear_error)
+        self.start_glow_signal.connect(self.ui_node.show_glow)
+        self.stop_glow_signal.connect(self.ui_node.clear_glow)
 
     def unset_ui_node(self):
         self.start_spinner_signal.disconnect(self.ui_node.start_spinner)
         self.stop_spinner_signal.disconnect(self.ui_node.stop_spinner)
-        self.start_glow_signal.disconnect(self.ui_node.show_error)
-        self.stop_glow_signal.disconnect(self.ui_node.clear_error)
+        self.start_glow_signal.disconnect(self.ui_node.show_glow)
+        self.stop_glow_signal.disconnect(self.ui_node.clear_glow)
         self.ui_node = None
 
     @Slot()
@@ -171,7 +175,7 @@ class ComputeNode(BaseNode):
                     func(self)
                 except Exception as e:
                     print(e)
-                    self.start_glow_signal.emit()
+                    self.start_glow_signal.emit(self.error_color)
 
                 self.stop_spinner_signal.emit()
 
