@@ -50,6 +50,7 @@ import eventnodes.for_
 import eventnodes.splitstring
 import eventnodes.joinstrings
 import eventnodes.joinstringsmulti
+import eventnodes.formatstring
 import eventnodes.slicelist
 import eventnodes.condition
 import eventnodes.collector
@@ -95,6 +96,7 @@ node_registry = {
     'SplitString': (appnode.EventNode, eventnodes.splitstring.SplitString),
     'JoinStrings': (appnode.ParamNode, eventnodes.joinstrings.JoinStrings),
     'JoinStringsMulti': (appnode.ParamNode, eventnodes.joinstringsmulti.JoinStringsMulti),
+    'FormatString': (appnode.ParamNode, eventnodes.formatstring.FormatString),
     'SliceList': (appnode.ParamNode, eventnodes.slicelist.SliceList),
 
     'Collector': (appnode.EventNode, eventnodes.collector.Collector),

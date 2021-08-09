@@ -221,6 +221,7 @@ class MultiProcess(ComputeNode):
                 self.stop_spinner_signal.emit()
 
         self.start_spinner_signal.emit()
+        self.stop_glow_signal.emit()
 
         process = self.get_first_param('process')
         arguments = self.get_first_param('arguments')

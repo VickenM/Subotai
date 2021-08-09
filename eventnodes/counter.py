@@ -56,8 +56,8 @@ Signals:
         QtCore.QCoreApplication.processEvents()
         self.start_spinner_signal.emit()
         event = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
-        item = self.get_first_param('value')
         increment = self.get_first_param('increment')
+        item = self.get_first_param('value')
+        item.value += increment.value
         self.stop_spinner_signal.emit()
         event.emit_event()
-        item.value += increment.value
