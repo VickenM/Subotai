@@ -181,7 +181,6 @@ async def run_command(item, process_id):
 
     c = None
     while c != '':
-        pass
         c = await proc.stdout.readline()
         c = c.decode().strip('\n')
 
@@ -277,7 +276,7 @@ class MultiProcess(ComputeNode):
     @QtCore.Slot()
     def compute(self):
         async def process_error(process_id, exception):
-            self.progress_widget.update_process(process_id, '', 100, 100)
+            self.progress_widget.update_process(process_id, str(exception), 100, 100)
 
             self.queue_thread.count -= 1
             if not self.queue_thread.count:
@@ -288,6 +287,7 @@ class MultiProcess(ComputeNode):
 
         async def process_start(proc, process_id):
             procs.append(proc)
+
             self.progress_widget.set_proc(proc, process_id)
             self.start_spinner_signal.emit()
 
