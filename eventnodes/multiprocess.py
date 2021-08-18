@@ -15,8 +15,8 @@ import queue
 
 
 class ProcessControl(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.progress = QtWidgets.QProgressBar()
 
         self.view = QtWidgets.QToolButton()
@@ -66,32 +66,38 @@ class ProcessControl(QtWidgets.QWidget):
         self.progress.setMaximum(maximum)
 
 
-class Progress(QtWidgets.QWidget):
+class Progress(QtWidgets.QScrollArea):
     add_progress = QtCore.Signal(int, dict)
     update_progress = QtCore.Signal(int, str, int, int)
     set_process = QtCore.Signal(object, int)
 
     def __init__(self, loop_thread):
         super().__init__()
-        self.layout = QtWidgets.QVBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-        self.setLayout(self.layout)
+        self.setWidgetResizable(True)
+        self.setMinimumHeight(200)
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addStretch()
+        self.main_widget = QtWidgets.QWidget(parent=self)
+        self.main_widget.setLayout(layout)
 
-        self.add_progress.connect(self.do_add_process)
-        self.update_progress.connect(self.do_update_process)
-        self.set_process.connect(self.do_set_process)
+        self.setWidget(self.main_widget)
 
         self.processes = {}
         self.process_id = 0
         self.loop_thread = loop_thread
+
+        self.add_progress.connect(self.do_add_process)
+        self.update_progress.connect(self.do_update_process)
+        self.set_process.connect(self.do_set_process)
 
     # Using signals/slots to add download progress bar widgets, because you cant make widgets from different threads.
     # Qt gives error related to setParent
 
     @QtCore.Slot()
     def do_add_process(self, process_id, item):
-        progress = ProcessControl()
+        progress = ProcessControl(parent=self.main_widget)
         progress.item = item
         progress.setTextVisible(True)
         progress.setAlignment(QtCore.Qt.AlignCenter)
@@ -100,7 +106,9 @@ class Progress(QtWidgets.QWidget):
         progress.remove.clicked.connect(lambda x: self.remove_process(process_id))
         progress.cancel.clicked.connect(lambda x: progress.setCompleted())
         self.processes[process_id] = progress
-        self.layout.addWidget(progress)
+        # self.layout.addWidget(progress)
+        count = self.main_widget.layout().count()
+        self.main_widget.layout().insertWidget(count-1, progress)
 
     def add_process(self, item):
         self.process_id += 1
@@ -110,8 +118,8 @@ class Progress(QtWidgets.QWidget):
 
     def remove_process(self, process_id):
         progress_bar = self.processes[process_id]
-        index = self.layout.indexOf(progress_bar)
-        item = self.layout.takeAt(index)
+        index = self.main_widget.layout().indexOf(progress_bar)
+        item = self.main_widget.layout().takeAt(index)
         item.widget().deleteLater()
         del self.processes[process_id]
 
@@ -340,3 +348,4 @@ class MultiProcess(ComputeNode):
                 p.terminate()
 
         self.queue_thread.kill()
+
