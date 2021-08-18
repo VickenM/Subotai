@@ -199,6 +199,8 @@ class EventFlow(pywerscene.PywerScene):
         if not super().can_connect(source_plug, target_plug):
             return False
 
+
+
         import eventnodes.signal
         source_signal = isinstance(source_plug.plug_obj, eventnodes.signal.Signal)
         target_signal = isinstance(target_plug.plug_obj, eventnodes.signal.Signal)
@@ -207,6 +209,9 @@ class EventFlow(pywerscene.PywerScene):
 
         # if any is a signal but all are not, then only one of them is
         if any([source_signal, target_signal]) and not all([source_signal, target_signal]):
+            return False
+
+        if len(target_plug.edges):
             return False
 
         return source_plug.plug_obj.type == target_plug.plug_obj.type
