@@ -152,17 +152,6 @@ class Parameters(QtWidgets.QWidget):
             header = QtWidgets.QLabel(self.node_obj.type)
             self.flayout.addRow('', header)
 
-            for control_ in self.node_obj.get_controls():
-                control, func, signal = control_
-                if func and signal:
-                    call_fn = lambda: func()
-                    signal.connect(call_fn)
-                else:
-                    call_fn = None
-
-                self.flayout.addWidget(control)
-                self.controls_info[control] = (signal, call_fn)
-
             for param in self.node_obj.get_params():
                 if not param.get_pluggable() & PARAM:
                     continue
@@ -226,7 +215,17 @@ class Parameters(QtWidgets.QWidget):
                     # widget = QtWidgets.QLineEdit(str(param.value))
                 self.flayout.addRow(param.name, widget)
 
-            # self.flayout.addWidget(DescriptionWidget(self.node_obj.description))
+            for control_ in self.node_obj.get_controls():
+                control, func, signal = control_
+                if func and signal:
+                    call_fn = lambda: func()
+                    signal.connect(call_fn)
+                else:
+                    call_fn = None
+
+                self.flayout.addWidget(control)
+                self.controls_info[control] = (signal, call_fn)
+
             self.description_layout.addWidget(DescriptionWidget(self.node_obj.description))
 
     def set_enum_param_value(self, node_obj, param, value):
