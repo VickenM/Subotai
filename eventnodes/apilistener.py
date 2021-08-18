@@ -60,7 +60,7 @@ class APIListener(ComputeNode):
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='connected', pluggable=OUTPUT_PLUG))
-        self.signals.append(Signal(node=self, name='response', pluggable=OUTPUT_PLUG))
+        self.signals.append(Signal(node=self, name='received', pluggable=OUTPUT_PLUG))
         self.params.append(QueueParam(name='session', value=self.queue, pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='response', value='', pluggable=OUTPUT_PLUG))
 
@@ -80,7 +80,7 @@ class APIListener(ComputeNode):
         resp = self.get_first_param('response', pluggable=OUTPUT_PLUG)
         resp.value = response.json()['message']
 
-        signal = self.get_first_signal('response', pluggable=OUTPUT_PLUG)
+        signal = self.get_first_signal('received', pluggable=OUTPUT_PLUG)
         signal.emit_event()
 
         self.stop_spinner_signal.emit()

@@ -24,7 +24,7 @@ class APIRequest(ComputeNode):
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(QueueParam(name='session', value=None, pluggable=INPUT_PLUG))
         self.params.append(
-            StringParam(name='request', value='https://dog.ceo/api/breeds/image/random', pluggable=INPUT_PLUG | PARAM))
+            StringParam(name='request', value='n', pluggable=INPUT_PLUG | PARAM))
 
     @QtCore.Slot()
     def compute(self):
