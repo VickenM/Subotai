@@ -8,6 +8,7 @@ from .signal import Signal, OUTPUT_PLUG
 
 
 class TimerNode(EventNode):
+    type = 'Timer'
     categories = ['Events']
     description = \
         """The **Timer node** emits an event at periodically, specified by the *interval* parameter (in miliseconds).
@@ -20,8 +21,6 @@ Parameters:
 
     def __init__(self):
         super(TimerNode, self).__init__()
-        self.type = 'Timer'
-
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(IntParam(name='interval', value=1000, pluggable=PARAM))
 

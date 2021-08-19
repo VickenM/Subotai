@@ -15,10 +15,10 @@ from eventnodes.apilistener import QueueParam
 
 class APIRequest(ComputeNode):
     categories = ['I/O']
+    type = 'APIRequest'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'APIRequest'
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))

@@ -22,9 +22,10 @@ class BlendOpParam(EnumParam):
 
 
 class Blend(BaseImageNode):
+    type = 'BlendImage'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'BlendImage'
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))

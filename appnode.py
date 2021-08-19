@@ -65,12 +65,12 @@ class EventNode(pywerlines.pyweritems.PywerNode):
     @classmethod
     def from_event_node(cls, node_obj):
         node = cls(type=node_obj.type, color=node_obj.color)
-
-        for signal in node_obj.get_signals():
-            if signal.get_pluggable() & eventnodes.signal.INPUT_PLUG:
-                node.add_input(Signal.from_param(param_obj=signal))
-            elif signal.get_pluggable() & eventnodes.signal.OUTPUT_PLUG:
-                node.add_output(Signal.from_param(param_obj=signal))
+        if hasattr(node_obj, 'get_signals'):
+            for signal in node_obj.get_signals():
+                if signal.get_pluggable() & eventnodes.signal.INPUT_PLUG:
+                    node.add_input(Signal.from_param(param_obj=signal))
+                elif signal.get_pluggable() & eventnodes.signal.OUTPUT_PLUG:
+                    node.add_output(Signal.from_param(param_obj=signal))
 
         for param in node_obj.get_params():
             if param.get_pluggable() & eventnodes.params.INPUT_PLUG:

@@ -26,6 +26,7 @@ class JoinParam(StringParam):
 
 
 class JoinStringsMulti(BaseNode):
+    type = 'JoinStringsMulti'
     categories = ['String']
     description = \
         """The **JoinStringMulti node** joins multiple *string#* inputs together with  *separator* in between.
@@ -40,7 +41,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'JoinStringsMulti'
         self.color = (150, 150, 150, 255)
 
         self.string_params = []

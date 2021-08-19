@@ -8,11 +8,10 @@ from PySide2 import QtCore
 
 
 class Process(ComputeNode):
+    type = 'Process'
     categories = ['I/O']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Process'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='process', value='', pluggable=PARAM | INPUT_PLUG))

@@ -66,32 +66,36 @@ If the paramter is promoted, it's value can be set from the commandline interfac
 
 
 class StringParameter(ParamNode):
+    type = 'StringParameter'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'StringParameter'
         self.color = (150, 150, 150, 255)
         self.params.append(StringParam(name='param', value='', pluggable=OUTPUT_PLUG | PARAM))
 
 
 class IntegerParameter(ParamNode):
+    type = 'IntegerParameter'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'IntegerParameter'
         self.color = (150, 150, 150, 255)
         self.params.append(IntParam(name='param', value=0, pluggable=OUTPUT_PLUG | PARAM))
 
 
 class FloatParameter(ParamNode):
+    type = 'FloatParameter'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'FloatParameter'
         self.color = (150, 150, 150, 255)
         self.params.append(FloatParam(name='param', value=0.0, pluggable=OUTPUT_PLUG | PARAM))
 
 
 class BooleanParameter(ParamNode):
+    type = 'BooleanParameter'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'BooleanParameter'
         self.color = (150, 150, 150, 255)
         self.params.append(BoolParam(name='param', value=True, pluggable=OUTPUT_PLUG | PARAM))

@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Email(ComputeNode):
+    type = 'Email'
     categories = ['FileSystem']
     description = \
         """The **Email node** sends an email over SMTP.
@@ -27,8 +28,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Email'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='sender', value='my.name@gmail.com', pluggable=PARAM | INPUT_PLUG))

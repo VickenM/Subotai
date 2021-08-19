@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class CopyFile(ComputeNode):
+    type = 'CopyFile'
     categories = ['FileSystem']
     description = \
         """The **CopyFile node** copies the file in the *source* path to the *destination* path.
@@ -19,8 +20,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'CopyFile'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='source', value='d:\\temp\\source.txt', pluggable=PARAM | INPUT_PLUG,

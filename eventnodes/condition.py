@@ -18,6 +18,7 @@ class CompareParam(EnumParam):
 
 
 class Condition(ComputeNode):
+    type = 'Condition'
     categories = ['Flow Control']
     description = \
         """The **Condition node** compares the values of *value1* and *value2* inputs with the *operation* parameter
@@ -33,8 +34,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Condition'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='true', pluggable=OUTPUT_PLUG))
         self.signals.append(Signal(node=self, name='false', pluggable=OUTPUT_PLUG))

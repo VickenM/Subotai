@@ -43,6 +43,7 @@ class View(QtWidgets.QWidget):
 
 
 class Viewer(ComputeNode):
+    type = 'Viewer'
     categories = ['I/O']
     description = \
         """The **Viewer node** provides a Viewer UI window, for viewing an *image*
@@ -55,8 +56,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Viewer'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.params.append(ImageParam(name='image', value=None, pluggable=INPUT_PLUG))
 

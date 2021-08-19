@@ -78,6 +78,11 @@ class BaseNode(QtCore.QObject):
     def disconnected_params(self, this_param):
         pass
 
+    def set_ui_node(self, ui_node):
+        self.ui_node = ui_node
+
+    def unset_ui_node(self):
+        self.ui_node = None
 
 class Worker(QtCore.QThread):
     def __init__(self, parent):
@@ -99,7 +104,8 @@ class ComputeNode(BaseNode):
         self.computable = True
 
     def set_ui_node(self, ui_node):
-        self.ui_node = ui_node
+        super().set_ui_node(ui_node)
+        # self.ui_node = ui_node
         self.start_spinner_signal.connect(self.ui_node.start_spinner)
         self.stop_spinner_signal.connect(self.ui_node.stop_spinner)
         self.start_glow_signal.connect(self.ui_node.show_glow)
@@ -110,7 +116,8 @@ class ComputeNode(BaseNode):
         self.stop_spinner_signal.disconnect(self.ui_node.stop_spinner)
         self.start_glow_signal.disconnect(self.ui_node.show_glow)
         self.stop_glow_signal.disconnect(self.ui_node.clear_glow)
-        self.ui_node = None
+        super().unset_ui_node()
+        # self.ui_node = None
 
     @Slot()
     def trigger(self):

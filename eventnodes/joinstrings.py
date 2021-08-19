@@ -26,6 +26,7 @@ class JoinParam(StringParam):
 
 
 class JoinStrings(BaseNode):
+    type = 'JoinStrings'
     categories = ['String']
     description = \
         """The **JoinString node** joins *first* with *second* with *separator* in between.
@@ -40,7 +41,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'JoinStrings'
         self.color = (150, 150, 150, 255)
 
         first = StringParam(name='first', value='', pluggable=PARAM | INPUT_PLUG)

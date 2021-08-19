@@ -35,6 +35,7 @@ class JoinParam(StringParam):
 
 
 class FormatString(BaseNode):
+    type = 'FormatString'
     categories = ['String']
     description = \
         """
@@ -42,7 +43,6 @@ class FormatString(BaseNode):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'FormatString'
         self.color = (150, 150, 150, 255)
 
         self.string_params = []

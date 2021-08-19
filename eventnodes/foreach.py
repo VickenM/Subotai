@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ForEach(ComputeNode):
+    type = 'ForEach'
     categories = ['Flow Control']
     description = \
         """The **ForEach node** loops each value in the *items* parameter and emit an event for each value.
@@ -26,8 +27,6 @@ Events:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'ForEach'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.signals.append(Signal(node=self, name='finished', pluggable=OUTPUT_PLUG))

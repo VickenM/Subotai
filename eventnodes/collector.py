@@ -7,10 +7,10 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Collector(ComputeNode):
+    type = 'Collector'
     categories = ['Flow Control']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Collector'
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='emit', pluggable=INPUT_PLUG))

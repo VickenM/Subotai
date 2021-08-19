@@ -117,12 +117,11 @@ class LoopThread(threading.Thread):
 
 
 class Download(ComputeNode):
+    type = 'Download'
     categories = ['I/O']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Download'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='url', value='', pluggable=PARAM | INPUT_PLUG))

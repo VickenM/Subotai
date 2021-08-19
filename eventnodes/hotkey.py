@@ -80,6 +80,7 @@ class ValidExpressionIndicator(QtWidgets.QWidget):
 
 
 class HotkeyNode(EventNode):
+    type = 'Hotkey'
     categories = ['Events']
     description = \
         """
@@ -88,9 +89,6 @@ class HotkeyNode(EventNode):
 
     def __init__(self):
         super(HotkeyNode, self).__init__()
-
-        self.type = 'Hotkey'
-
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='hotkey', value='', pluggable=PARAM))
         # self.expression_indicator = ValidExpressionIndicator()

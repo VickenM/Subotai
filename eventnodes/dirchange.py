@@ -8,6 +8,7 @@ import os
 
 
 class DirChanged(EventNode):
+    type = 'DirChanged'
     categories = ['Events']
     description = \
         """The **DirChange node** watches the *directory* path and emits the *event* signal when a change to the directory occurs.
@@ -21,7 +22,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'DirChanged'
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(
             StringParam(name='directory', value='', pluggable=OUTPUT_PLUG | PARAM, subtype=SUBTYPE_DIRPATH))

@@ -124,7 +124,38 @@ node_registry = {
     'Viewer': (appnode.EventNode, eventnodes.viewer.Viewer),
 
 }
+import pkgutil
+import inspect
+import sys
 
+
+def load_addons(mod):
+    for importer, modname, ispkg in pkgutil.iter_modules(mod.__path__, mod.__name__ + '.'):
+        if ispkg:
+            pkg = __import__(modname, fromlist="dummy")
+            load_addons(pkg)
+        else:
+            module = __import__(modname, fromlist="dummy")
+            for name, obj in inspect.getmembers(module, lambda member: inspect.isclass(member) and (
+                    member.__module__.startswith(mod.__name__ + '.'))):
+                if obj.type in node_registry:
+                    print('Node with name', obj.type, 'can only be added once')
+                    continue
+                node_registry[obj.type] = (appnode.EventNode, obj)
+
+
+addons_path = os.getenv('PYWERLINES_ADDONS')
+if addons_path:
+    print('including addons path', addons_path)
+    # sys.path.append('D:/projects/python/node2/tmp')
+    sys.path.append(addons_path)
+    sys.path.append(addons_path + '/modules')
+    try:
+        import nodes
+    except ImportError:
+        print('error importing nodes from addons path')
+    else:
+        load_addons(nodes)
 
 @Slot(list)
 def selected_nodes(data):
@@ -199,8 +230,6 @@ class EventFlow(pywerscene.PywerScene):
         if not super().can_connect(source_plug, target_plug):
             return False
 
-
-
         import eventnodes.signal
         source_signal = isinstance(source_plug.plug_obj, eventnodes.signal.Signal)
         target_signal = isinstance(target_plug.plug_obj, eventnodes.signal.Signal)
@@ -218,7 +247,8 @@ class EventFlow(pywerscene.PywerScene):
 
     def create_node_of_type(self, type_):
         node = self.new_node(type_)
-        self.add_node(node)
+        if node:
+            self.add_node(node)
         return node
 
     def create_edge(self, source_plug, target_plug):
@@ -516,6 +546,9 @@ class MainWindow(QMainWindow):
         for node in data['nodes']:
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
+            if not n:
+                print('WARNING: was unable to create node of type', type_)
+                continue
             n.node_obj.moveToThread(self.thread_)
             n.node_obj.obj_id = node['id']
             n.node_obj.set_active(node.get('active', True))

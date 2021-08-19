@@ -6,6 +6,7 @@ from PySide2.QtCore import Slot
 
 
 class ConsoleWriter(ComputeNode):
+    type = 'ConsoleWriter'
     categories = ['I/O']
     description = \
         """The **ConsoleWriter node** outputs the text in *message* to the system console.
@@ -21,8 +22,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'ConsoleWriter'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='prefix', value='%m/%d/%Y, %H:%M:%S', pluggable=PARAM))

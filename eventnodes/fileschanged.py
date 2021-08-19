@@ -7,6 +7,7 @@ from .signal import Signal, OUTPUT_PLUG
 
 
 class FilesChanged(EventNode):
+    type = 'FilesChanged'
     categories = ['Events']
     description = \
         """The **FilesChange node** watches the *files* path and emits the *event* signal when a change to one of the files occurs.
@@ -18,7 +19,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'FilesChanged'
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(ListParam(
             name='files',

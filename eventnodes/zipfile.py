@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ZipFile(ComputeNode):
+    type = 'ZipFile'
     categories = ['FileSystem']
     description = \
         """The **ZipFile node** adds the files contained in the *source* directory to the *zipfile* archive file
@@ -20,8 +21,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'ZipFile'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='source', value='', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_DIRPATH))

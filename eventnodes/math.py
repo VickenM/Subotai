@@ -54,6 +54,7 @@ class MathParam(IntParam):
 
 
 class Math(BaseNode):
+    type = 'Math'
     categories = ['Math']
     description = \
         """The **Math node** performs the arithmetic *operation* on *value1* and *value2*.
@@ -68,7 +69,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Math'
         self.color = (150, 150, 150, 255)
 
         op = MathOpParam(name='operation', value=MathOpParam.Operations.add, pluggable=PARAM)

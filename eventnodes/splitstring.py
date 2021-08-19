@@ -29,6 +29,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class SplitString(ComputeNode):
+    type = 'SplitString'
     categories = ['String']
     description = \
         """The **SplitString node** uses *pattern* to split the *source* string into a list of *parts*
@@ -42,8 +43,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'SplitString'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.params.append(StringParam(name='source', value='', pluggable=PARAM | INPUT_PLUG))

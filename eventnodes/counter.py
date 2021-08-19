@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Counter(ComputeNode):
+    type = 'Counter'
     categories = ['Flow Control']
     description = \
         """The **Counter node** emits the *event* signal each time it increments the *value* parameter by *increment*.
@@ -24,8 +25,6 @@ Signals:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Counter'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='reset', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))

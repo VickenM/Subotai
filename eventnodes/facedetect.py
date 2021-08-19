@@ -19,6 +19,7 @@ import numpy as np
 
 
 class FaceDetect(ComputeNode):
+    type = 'FaceDetect'
     categories = ['I/O']
     description = \
         """The **FaceDetect node** can detect faces from the source *image* input.
@@ -40,8 +41,6 @@ Outputs:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'FaceDetect'
-
         p = os.path.dirname(os.path.abspath(__file__))
 
         scaleFactor = 1.1,

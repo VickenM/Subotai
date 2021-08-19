@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ListDir(ComputeNode):
+    type = 'ListDir'
     categories = ['FileSystem']
     description = \
         """The **ListDir node** outputs a list of files within the *directory*.
@@ -22,7 +23,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'ListDir'
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))

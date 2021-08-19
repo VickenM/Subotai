@@ -11,12 +11,11 @@ from PIL import ImageQt
 
 
 class SystemNotification(ComputeNode):
+    type = 'SystemNotification'
     categories = ['I/O']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'SystemNotification'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.params.append(StringParam(name='title', value='', pluggable=PARAM))
         self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))

@@ -51,11 +51,10 @@ async def request_consumer(queue, on_response_fn):
 
 class APIListener(ComputeNode):
     categories = ['I/O']
+    type = 'APIListener'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'APIListener'
-
         self.queue = queue.Queue()
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))

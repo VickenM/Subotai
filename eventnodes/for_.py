@@ -7,6 +7,7 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class For(ComputeNode):
+    type = 'For'
     categories = ['Flow Control']
     description = \
         """The **For node** loops from *start* to *end* and emit an event for each value. *step* controls each step increment.
@@ -25,8 +26,6 @@ Events:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'For'
-
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
         self.signals.append(Signal(node=self, name='finished', pluggable=OUTPUT_PLUG))

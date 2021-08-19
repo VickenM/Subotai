@@ -19,6 +19,7 @@ from enum import Enum, auto
 
 
 class Camera(ComputeNode):
+    type = 'Camera'
     categories = ['I/O']
     description = \
         """The **Camera node** can read images from your camera and output the *image*.
@@ -32,8 +33,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'Camera'
-
         self.current_index = 1
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))

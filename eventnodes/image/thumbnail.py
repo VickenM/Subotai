@@ -11,9 +11,10 @@ from PIL import Image
 
 
 class Thumbnail(BaseImageNode):
+    type = 'ThumbnailImage'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'ThumbnailImage'
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))

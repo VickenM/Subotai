@@ -11,9 +11,10 @@ from PIL import Image
 
 
 class Open(BaseImageNode):
+    type = 'OpenImage'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'OpenImage'
 
         self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
         self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))

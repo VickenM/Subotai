@@ -25,6 +25,7 @@ class SliceParam(ListParam):
 
 
 class SliceList(BaseNode):
+    type = 'SliceList'
     categories = ['Data']
     description = \
         """The **SliceList node** takes a list of items and returns the subset list of them, between *start* and *end* indices.
@@ -40,7 +41,6 @@ Parameters:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
-        self.type = 'SliceList'
 
         start_param = IntParam(name='start', value=0, pluggable=PARAM | INPUT_PLUG)
         end_param = IntParam(name='end', value=-1, pluggable=PARAM | INPUT_PLUG)
