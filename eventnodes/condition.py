@@ -9,7 +9,7 @@ from enum import Enum, auto
 
 
 class CompareParam(EnumParam):
-    class Operations(Enum):
+    class Operations(int, Enum):
         less_than = auto()
         greater_than = auto()
         equal = auto()

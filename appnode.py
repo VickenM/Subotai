@@ -96,9 +96,9 @@ class EventNode(pywerlines.pyweritems.PywerNode):
         }
 
         for param in self.node_obj.params:
-            from enum import Enum
-            if param._type not in [list, int, bool, float, str, type(None)]:
-                continue
+            # from enum import Enum
+            # if param._type not in [list, int, bool, float, str, type(None)]:
+            #     continue
 
             if param._type == list:
                 value = [v._value for v in param._value]
