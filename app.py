@@ -473,7 +473,7 @@ class MainWindow(QMainWindow):
         app_path = os.path.abspath(__file__)
         json_string = self.dump_json()
 
-        args = [py_path, app_path, '--no-splash', '--load-json', json_string]
+        args = [py_path, app_path, '--load-json', json_string]
         if background:
             args = [py_path, app_path, '--background', '--load-json', json_string]
 
@@ -927,7 +927,7 @@ def show_about(parent):
 def show_splashscreen(animate=False):
     splash_pix = QtGui.QPixmap(path + '/icons/splashscreen.002.png')
     splash = SplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
-    splash.showMessage(splash.tr("PywerLines 1.0.0 Beta (c) Vicken Mavlian 2021"),
+    splash.showMessage(splash.tr("Subotai 1.0.0 Beta"),
                        QtCore.Qt.AlignBottom or QtCore.Qt.AlignHCenter,
                        color=QtGui.QColor(255, 255, 255))
 
@@ -1036,8 +1036,8 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--no-splash", action='store_true', default=False,
-                        help="disable startup splashscreen (only in GUI mode)")
+    parser.add_argument("--splash", action='store_true', default=False,
+                        help="show startup splashscreen (only in GUI mode)")
     parser.add_argument("--background", action='store_true', help="run in a background process (no GUI)")
     parser.add_argument('--list-params', action='store_true',
                         help='list the params available in the given scene file')
@@ -1065,7 +1065,7 @@ if __name__ == "__main__":
     if args.load_json:
         json_string = args.load_json
 
-    splashscreen = not args.no_splash
+    splashscreen = args.splash
 
     params = args.params
 
