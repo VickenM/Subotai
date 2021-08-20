@@ -77,7 +77,7 @@ def _register_nodes_module(mod):
 
 
 def register_addon_nodes_module():
-    addons_path = os.getenv('PYWERLINES_ADDONS')
+    addons_path = os.getenv('SUBOTAI_ADDONS')
     if addons_path:
         # print('including addons path', addons_path)
         sys.path.append(addons_path)
