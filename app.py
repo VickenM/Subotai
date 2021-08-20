@@ -31,131 +31,72 @@ from toolbox import ToolBox, ToolItem
 from parameters import Parameters
 from pywerlines import pyweritems, pywerscene
 
-import eventnodes.base
-import eventnodes.parameter
-import eventnodes.inttostr
-import eventnodes.math
-import eventnodes.timer
-import eventnodes.hotkey
-import eventnodes.zipfile
-import eventnodes.copyfile
-import eventnodes.listdir
-import eventnodes.dirchange
-import eventnodes.fileschanged
-import eventnodes.email
-import eventnodes.consolewriter
-import eventnodes.counter
-import eventnodes.foreach
-import eventnodes.for_
-import eventnodes.splitstring
-import eventnodes.joinstrings
-import eventnodes.joinstringsmulti
-import eventnodes.formatstring
-import eventnodes.slicelist
-import eventnodes.condition
-import eventnodes.collector
-import eventnodes.image.open
-import eventnodes.image.save
-import eventnodes.image.crop
-import eventnodes.image.resize
-import eventnodes.image.thumbnail
-import eventnodes.image.blend
-import eventnodes.camera
-import eventnodes.facedetect
-import eventnodes.viewer
-import eventnodes.systemnotification
-import eventnodes.process
-import eventnodes.multiprocess
-import eventnodes.download
-import eventnodes.apilistener
-import eventnodes.apirequest
-
+import eventnodes
 import appnode
 
 from config import path
 
-node_registry = {
-    'Timer': (appnode.EventNode, eventnodes.timer.TimerNode),
-    'Hotkey': (appnode.EventNode, eventnodes.hotkey.HotkeyNode),
-    'DirChanged': (appnode.EventNode, eventnodes.dirchange.DirChanged),
-    'FilesChanged': (appnode.EventNode, eventnodes.fileschanged.FilesChanged),
+node_registry = {}
+# default set of categories in desired order for ui elements
+node_categories = ['Events', 'FileSystem', 'Data', 'Math', 'String', 'Flow Control', 'Image', 'I/O']
 
-    'ZipFile': (appnode.EventNode, eventnodes.zipfile.ZipFile),
-    'CopyFile': (appnode.EventNode, eventnodes.copyfile.CopyFile),
-    'ListDir': (appnode.EventNode, eventnodes.listdir.ListDir),
-    'Email': (appnode.EventNode, eventnodes.email.Email),
-
-    'StringParameter': (appnode.ParamNode, eventnodes.parameter.StringParameter),
-    'IntegerParameter': (appnode.ParamNode, eventnodes.parameter.IntegerParameter),
-    'FloatParameter': (appnode.ParamNode, eventnodes.parameter.FloatParameter),
-    'BooleanParameter': (appnode.ParamNode, eventnodes.parameter.BooleanParameter),
-    'IntToStr': (appnode.ParamNode, eventnodes.inttostr.IntToStr),
-
-    'Math': (appnode.ParamNode, eventnodes.math.Math),
-
-    'SplitString': (appnode.EventNode, eventnodes.splitstring.SplitString),
-    'JoinStrings': (appnode.ParamNode, eventnodes.joinstrings.JoinStrings),
-    'JoinStringsMulti': (appnode.ParamNode, eventnodes.joinstringsmulti.JoinStringsMulti),
-    'FormatString': (appnode.ParamNode, eventnodes.formatstring.FormatString),
-    'SliceList': (appnode.ParamNode, eventnodes.slicelist.SliceList),
-
-    'Collector': (appnode.EventNode, eventnodes.collector.Collector),
-    'Counter': (appnode.EventNode, eventnodes.counter.Counter),
-    'ForEach': (appnode.EventNode, eventnodes.foreach.ForEach),
-    'For': (appnode.EventNode, eventnodes.for_.For),
-    'Condition': (appnode.EventNode, eventnodes.condition.Condition),
-
-    'OpenImage': (appnode.EventNode, eventnodes.image.open.Open),
-    'SaveImage': (appnode.EventNode, eventnodes.image.save.Save),
-    'CropImage': (appnode.EventNode, eventnodes.image.crop.Crop),
-    'ResizeImage': (appnode.EventNode, eventnodes.image.resize.Resize),
-    'ThumbnailImage': (appnode.EventNode, eventnodes.image.thumbnail.Thumbnail),
-    'BlendImage': (appnode.EventNode, eventnodes.image.blend.Blend),
-
-    'APIListener': (appnode.EventNode, eventnodes.apilistener.APIListener),
-    'APIRequest': (appnode.EventNode, eventnodes.apirequest.APIRequest),
-    'ConsoleWriter': (appnode.EventNode, eventnodes.consolewriter.ConsoleWriter),
-    'Process': (appnode.EventNode, eventnodes.process.Process),
-    'MultiProcess': (appnode.EventNode, eventnodes.multiprocess.MultiProcess),
-    'Download': (appnode.EventNode, eventnodes.download.Download),
-    'SystemNotification': (appnode.EventNode, eventnodes.systemnotification.SystemNotification),
-    'Camera': (appnode.EventNode, eventnodes.camera.Camera),
-    'FaceDetect': (appnode.EventNode, eventnodes.facedetect.FaceDetect),
-    'Viewer': (appnode.EventNode, eventnodes.viewer.Viewer),
-
-}
 import pkgutil
 import inspect
 import sys
 
 
-def load_addons(mod):
+def _register_nodes_module(mod):
     for importer, modname, ispkg in pkgutil.iter_modules(mod.__path__, mod.__name__ + '.'):
         if ispkg:
-            pkg = __import__(modname, fromlist="dummy")
-            load_addons(pkg)
+            try:
+                pkg = __import__(modname, fromlist="dummy")
+            except Exception as e:
+                print('Error: Unable to load node package {} {}'.format(modname, e))
+                continue
+            _register_nodes_module(pkg)
         else:
-            module = __import__(modname, fromlist="dummy")
+            try:
+                module = __import__(modname, fromlist="dummy")
+            except Exception as e:
+                print('Error: Unable to load node module {} {}'.format(modname, e))
+                continue
             for name, obj in inspect.getmembers(module, lambda member: inspect.isclass(member) and (
                     member.__module__.startswith(mod.__name__ + '.'))):
-                if obj.type in node_registry:
-                    print('Node with name', obj.type, 'can only be added once')
+
+                if not issubclass(obj, eventnodes.base.BaseNode):
                     continue
-                node_registry[obj.type] = (appnode.EventNode, obj)
+
+                # skip classes that dont have a type attr. they're not nodes, or they're base classes (BaseNode, ComputeNode, EventNode)
+                if not hasattr(obj, 'type'):
+                    continue
+
+                if obj.type in node_registry:
+                    print('ERROR: Node with name', obj.type, 'can only be added once')
+                    continue
+                node_registry[obj.type] = obj
 
 
-addons_path = os.getenv('PYWERLINES_ADDONS')
-if addons_path:
-    print('including addons path', addons_path)
-    # sys.path.append('D:/projects/python/node2/tmp')
-    sys.path.append(addons_path)
-    sys.path.append(addons_path + '/modules')
-    try:
-        import nodes
-    except ImportError:
-        print('error importing nodes from addons path')
-    else:
-        load_addons(nodes)
+def register_addon_nodes_module():
+    addons_path = os.getenv('PYWERLINES_ADDONS')
+    if addons_path:
+        # print('including addons path', addons_path)
+        sys.path.append(addons_path)
+        sys.path.append(addons_path + '/modules')
+        try:
+            import nodes
+        except ImportError as e:
+            print('Error: unable to include nodes from addons path {}'.format(e))
+        else:
+            _register_nodes_module(nodes)
+
+
+def register_core_nodes_module():
+    _register_nodes_module(eventnodes)
+
+
+register_core_nodes_module()
+register_addon_nodes_module()
+
 
 @Slot(list)
 def selected_nodes(data):
@@ -222,8 +163,8 @@ class EventFlow(pywerscene.PywerScene):
     def new_node(self, type_):
         if type_ not in node_registry:
             return None
-        app_node, event_node = node_registry[type_]
-        node = app_node.from_event_node(event_node())
+        event_node = node_registry[type_]
+        node = appnode.EventNode.from_event_node(event_node())
         return node
 
     def can_connect(self, source_plug, target_plug):
@@ -368,9 +309,11 @@ class MainWindow(QMainWindow):
         self.unsaved = False
         self.saved_data = None
 
+        from itertools import groupby
+
         toolbox = ToolBox()
-        for node_name, registry_data in node_registry.items():
-            app_node, event_node = registry_data
+        toolbox.addSections(node_categories)
+        for node_name, event_node in node_registry.items():
             toolbox.addItem(
                 ToolItem(icon=QIcon(path + '/icons/flow.png'), label=node_name, sections=event_node.categories,
                          tooltip=event_node.description))
@@ -851,8 +794,10 @@ class MainWindow(QMainWindow):
             from collections import defaultdict
             nodes_by_categories = defaultdict(list)
 
-            for node_name, node_data in node_registry.items():
-                _, node_obj = node_data
+            for category in node_categories:  # prime with default category set to get desired order in UI
+                nodes_by_categories[category] = []
+
+            for node_name, node_obj in node_registry.items():
                 for category in node_obj.categories:
                     nodes_by_categories[category].append(node_name)
 

@@ -1,17 +1,10 @@
 from PySide2 import QtCore
-from PySide2.QtCore import Slot
 
 from .base import ComputeNode
-from .params import StringParam, IntParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
-
 from .image.imageparam import ImageParam
 
-import sys
-
-from PIL import Image
-from PySide2.QtGui import QPainter, QPixmap
-
+from PySide2.QtGui import QPixmap
 from PySide2 import QtWidgets
 from PIL import ImageQt
 

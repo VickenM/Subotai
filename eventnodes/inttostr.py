@@ -19,6 +19,7 @@ class ToStr(StringParam):
 
 
 class IntToStr(BaseNode):
+    type = 'IntToStr'
     categories = ['Data']
     description = \
         """The **IntToStr node** converts Integer parameter values to Strings.
@@ -31,7 +32,6 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.type = 'IntToStr'
         self.color = (150, 150, 150, 255)
         input_param = IntParam(name='integer', value=0, pluggable=INPUT_PLUG)
         zeropard_param = IntParam(name='zeropad', value=0, pluggable=PARAM)

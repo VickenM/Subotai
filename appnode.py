@@ -21,44 +21,44 @@ class Signal(pywerlines.pyweritems.PywerPlug):
         return plug
 
 
-class ParamNode(pywerlines.pyweritems.PywerNode):
-    @classmethod
-    def from_event_node(cls, node_obj):
-        node = cls(type=node_obj.type, color=node_obj.color)
-        for param in node_obj.get_params():
-            if param.get_pluggable() & eventnodes.params.INPUT_PLUG:
-                node.add_input(Plug.from_param(param_obj=param))
-            elif param.get_pluggable() & eventnodes.params.OUTPUT_PLUG:
-                node.add_output(Plug.from_param(param_obj=param))
-
-        node.node_obj = node_obj
-        node_obj.ui_node = node
-        node_obj.obj_id = uuid.uuid4()
-        return node
-
-    def to_dict(self):
-        dict_ = {
-            'node_obj': self.node_obj.__module__ + '.' + self.node_obj.__class__.__name__,
-            'id': str(self.node_obj.obj_id),
-            'position': (self.pos().x(), self.pos().y()),
-            'params': {}
-        }
-        for param in self.node_obj.params:
-            from enum import Enum
-            if param._type not in [list, int, bool, float, str, type(None), Enum]:
-                continue
-
-            if issubclass(param.value.__class__, Enum):
-                value = param._value.value
-            elif param._type == list:
-                value = [v._value for v in param._value]
-            else:
-                value = param._value
-
-            pluggable = dict_['params'].setdefault(param.pluggable, {})
-            pluggable[param.name] = value
-
-        return dict_
+# class ParamNode(pywerlines.pyweritems.PywerNode):
+#     @classmethod
+#     def from_event_node(cls, node_obj):
+#         node = cls(type=node_obj.type, color=node_obj.color)
+#         for param in node_obj.get_params():
+#             if param.get_pluggable() & eventnodes.params.INPUT_PLUG:
+#                 node.add_input(Plug.from_param(param_obj=param))
+#             elif param.get_pluggable() & eventnodes.params.OUTPUT_PLUG:
+#                 node.add_output(Plug.from_param(param_obj=param))
+#
+#         node.node_obj = node_obj
+#         node_obj.ui_node = node
+#         node_obj.obj_id = uuid.uuid4()
+#         return node
+#
+#     def to_dict(self):
+#         dict_ = {
+#             'node_obj': self.node_obj.__module__ + '.' + self.node_obj.__class__.__name__,
+#             'id': str(self.node_obj.obj_id),
+#             'position': (self.pos().x(), self.pos().y()),
+#             'params': {}
+#         }
+#         for param in self.node_obj.params:
+#             from enum import Enum
+#             if param._type not in [list, int, bool, float, str, type(None), Enum]:
+#                 continue
+#
+#             if issubclass(param.value.__class__, Enum):
+#                 value = param._value.value
+#             elif param._type == list:
+#                 value = [v._value for v in param._value]
+#             else:
+#                 value = param._value
+#
+#             pluggable = dict_['params'].setdefault(param.pluggable, {})
+#             pluggable[param.name] = value
+#
+#         return dict_
 
 
 class EventNode(pywerlines.pyweritems.PywerNode):
