@@ -1,0 +1,427 @@
+{
+    "nodes": [
+        {
+            "node_obj": "eventnodes.for_.For",
+            "id": "3907fb27-ba21-45e6-89b7-3a93d0363002",
+            "position": [
+                530.6826119135226,
+                293.6172216347481
+            ],
+            "params": {
+                "5": {
+                    "start": 1,
+                    "end": 2,
+                    "step": 1
+                },
+                "2": {
+                    "current": 2
+                }
+            },
+            "active": true,
+            "size": [
+                150.66664459999993,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "6182e5fd-d020-40b0-9e1e-6fa6f73256d7",
+            "position": [
+                156.52542946816334,
+                504.893581333846
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": ""
+                },
+                "6": {
+                    "param": "D:\\\\projects\\\\python\\\\node2\\\\app\\\\examples\\\\blender\\\\pywerlines.blend"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "dd4982db-8385-4548-a2d6-66fba1200c56",
+            "position": [
+                59.89411609222793,
+                596.3442448129595
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": ""
+                },
+                "6": {
+                    "param": "D:\\\\projects\\\\python\\\\node2\\\\app\\\\examples\\\\blender\\\\frame."
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.formatstring.FormatString",
+            "id": "d51401e1-4c05-4ab2-bc69-67ffd9a5a640",
+            "position": [
+                1149.161484831382,
+                650.562061540507
+            ],
+            "params": {
+                "4": {
+                    "format": "{1}{0}.png"
+                },
+                "5": {
+                    "string1": "D:\\\\projects\\\\python\\\\node2\\\\app\\\\examples\\\\blender\\\\frame.",
+                    "string2": "",
+                    "string3": ""
+                },
+                "2": {
+                    "string": ""
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.counter.Counter",
+            "id": "59e80d8f-fd81-4c04-8ad8-a371248bad8c",
+            "position": [
+                1511.9536456908654,
+                367.07846967030815
+            ],
+            "params": {
+                "5": {
+                    "initial": 0,
+                    "increment": 1
+                },
+                "2": {
+                    "value": 10
+                }
+            },
+            "active": true,
+            "size": [
+                100.0,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.condition.Condition",
+            "id": "de0c1c01-fae7-4ee5-a107-70907e02df4a",
+            "position": [
+                1845.7956959472806,
+                357.92378646244765
+            ],
+            "params": {
+                "5": {
+                    "value1": 0,
+                    "value2": 0
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.systemnotification.SystemNotification",
+            "id": "343d713b-d441-4820-80c3-cf0c8c5e6335",
+            "position": [
+                2612.753922443532,
+                295.3168191521849
+            ],
+            "params": {
+                "4": {
+                    "title": "Finished"
+                },
+                "5": {
+                    "message": "Render finished. Check your inbox"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.multiprocess.MultiProcess",
+            "id": "22d71ae0-c32f-47e2-a27f-c0eeb87a912d",
+            "position": [
+                1305.2405038139875,
+                367.57132791968786
+            ],
+            "params": {
+                "5": {
+                    "process": "",
+                    "arguments": ""
+                },
+                "4": {
+                    "concurrency": 2
+                }
+            },
+            "active": true,
+            "size": [
+                133.8800000000001,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.email.Email",
+            "id": "f9ec86c5-4fec-4d1f-90d7-312a099d3c44",
+            "position": [
+                2351.1237927269763,
+                300.2434383465597
+            ],
+            "params": {
+                "5": {
+                    "sender": "sender@gmail.com",
+                    "recipients": [
+                        "recipient@gmail.com"
+                    ],
+                    "subject": "render",
+                    "message": "here's the render you wanted",
+                    "attachments": [],
+                    "server": "smtp.gmail.com",
+                    "port": 587,
+                    "username": "sender@gmail.com",
+                    "password": "",
+                    "use_tls": true
+                }
+            },
+            "active": true,
+            "size": [
+                100.0,
+                226.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.formatstring.FormatString",
+            "id": "7107015f-b8b0-43a0-875b-a1e2d63ee3de",
+            "position": [
+                1117.5018826203525,
+                494.07797298123535
+            ],
+            "params": {
+                "4": {
+                    "format": "-b {} -o {} -f {}"
+                },
+                "5": {
+                    "string1": "",
+                    "string2": "",
+                    "string3": "",
+                    "string4": ""
+                },
+                "2": {
+                    "string": ""
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                100.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.hotkey.Hotkey",
+            "id": "8405cb82-854b-432c-b316-f5e657565d6c",
+            "position": [
+                225.45102968182096,
+                249.7346561376886
+            ],
+            "params": {
+                "4": {
+                    "hotkey": "<ctrl>+<alt>+b"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "6be446a7-8805-4120-acd2-079c0f90ccc8",
+            "position": [
+                58.96431680536136,
+                394.14994584703913
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": null
+                },
+                "6": {
+                    "param": "\"C:\\Program Files\\Blender Foundation\\Blender 2.82\\blender.exe\""
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.inttostr.IntToStr",
+            "id": "54127958-3511-4ca5-bbdb-16d666d8ba26",
+            "position": [
+                909.5277090337008,
+                586.3879246763988
+            ],
+            "params": {
+                "1": {
+                    "integer": 0
+                },
+                "4": {
+                    "zeropad": 4
+                },
+                "2": {
+                    "string": ""
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.math.Math",
+            "id": "e1cf898b-efb4-474f-8111-b3a9cb7fbcf1",
+            "position": [
+                1689.9810043221985,
+                463.2666973005413
+            ],
+            "params": {
+                "5": {
+                    "value1": 0,
+                    "value2": 2
+                },
+                "2": {
+                    "result": 0
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.collector.Collector",
+            "id": "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b",
+            "position": [
+                2062.1446076509874,
+                297.6920022283446
+            ],
+            "params": {
+                "1": {
+                    "item": ""
+                },
+                "2": {
+                    "items": []
+                }
+            },
+            "active": true,
+            "size": [
+                149.10000000000036,
+                82.0
+            ]
+        }
+    ],
+    "edges": [
+        [
+            "3907fb27-ba21-45e6-89b7-3a93d0363002.event",
+            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.event"
+        ],
+        [
+            "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string",
+            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.arguments"
+        ],
+        [
+            "dd4982db-8385-4548-a2d6-66fba1200c56.param",
+            "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string2"
+        ],
+        [
+            "54127958-3511-4ca5-bbdb-16d666d8ba26.string",
+            "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string3"
+        ],
+        [
+            "de0c1c01-fae7-4ee5-a107-70907e02df4a.true",
+            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.emit"
+        ],
+        [
+            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.event",
+            "59e80d8f-fd81-4c04-8ad8-a371248bad8c.event"
+        ],
+        [
+            "6182e5fd-d020-40b0-9e1e-6fa6f73256d7.param",
+            "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string1"
+        ],
+        [
+            "3907fb27-ba21-45e6-89b7-3a93d0363002.event",
+            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.event"
+        ],
+        [
+            "6be446a7-8805-4120-acd2-079c0f90ccc8.param",
+            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.process"
+        ],
+        [
+            "8405cb82-854b-432c-b316-f5e657565d6c.event",
+            "3907fb27-ba21-45e6-89b7-3a93d0363002.event"
+        ],
+        [
+            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.event",
+            "343d713b-d441-4820-80c3-cf0c8c5e6335.event"
+        ],
+        [
+            "3907fb27-ba21-45e6-89b7-3a93d0363002.current",
+            "54127958-3511-4ca5-bbdb-16d666d8ba26.integer"
+        ],
+        [
+            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.items",
+            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.attachments"
+        ],
+        [
+            "54127958-3511-4ca5-bbdb-16d666d8ba26.string",
+            "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string1"
+        ],
+        [
+            "dd4982db-8385-4548-a2d6-66fba1200c56.param",
+            "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string2"
+        ],
+        [
+            "e1cf898b-efb4-474f-8111-b3a9cb7fbcf1.result",
+            "de0c1c01-fae7-4ee5-a107-70907e02df4a.value1"
+        ],
+        [
+            "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string",
+            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.item"
+        ],
+        [
+            "59e80d8f-fd81-4c04-8ad8-a371248bad8c.event",
+            "de0c1c01-fae7-4ee5-a107-70907e02df4a.event"
+        ],
+        [
+            "59e80d8f-fd81-4c04-8ad8-a371248bad8c.value",
+            "e1cf898b-efb4-474f-8111-b3a9cb7fbcf1.value1"
+        ],
+        [
+            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.event",
+            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.event"
+        ]
+    ],
+    "groups": []
+}
