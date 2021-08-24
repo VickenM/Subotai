@@ -12,7 +12,7 @@ from enum import Enum, auto
 
 
 class BlendOpParam(EnumParam):
-    class Operations(Enum):
+    class Operations(int, Enum):
         multiply = auto()
         soft_light = auto()
         hard_light = auto()

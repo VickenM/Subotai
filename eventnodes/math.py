@@ -9,7 +9,7 @@ from enum import Enum, auto
 
 
 class MathOpParam(EnumParam):
-    class Operations(Enum):
+    class Operations(int, Enum):
         add = auto()
         subtract = auto()
         multiply = auto()
