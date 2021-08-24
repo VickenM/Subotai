@@ -1011,7 +1011,7 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
     main_window = MainWindow()
     main_window.start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
     # QtCore.QTimer(app).singleShot(0, self.start_thread)
-    main_window.setWindowTitle('PywerLines')
+    main_window.setWindowTitle('Subotai')
     main_window.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
 
     if scene_file:
