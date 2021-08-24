@@ -36,7 +36,7 @@
                     "promote name": ""
                 },
                 "6": {
-                    "param": "D:\\\\projects\\\\python\\\\node2\\\\app\\\\examples\\\\blender\\\\pywerlines.blend"
+                    "param": ".\\\\examples\\\\blender\\\\pywerlines.blend"
                 }
             },
             "active": true,
@@ -58,7 +58,7 @@
                     "promote name": ""
                 },
                 "6": {
-                    "param": "D:\\\\projects\\\\python\\\\node2\\\\app\\\\examples\\\\blender\\\\frame."
+                    "param": ".\\\\examples\\\\blender\\\\frame."
                 }
             },
             "active": true,
@@ -123,6 +123,9 @@
                 357.92378646244765
             ],
             "params": {
+                "4": {
+                    "operation": 3
+                },
                 "5": {
                     "value1": 0,
                     "value2": 0
@@ -147,6 +150,9 @@
                 },
                 "5": {
                     "message": "Render finished. Check your inbox"
+                },
+                "1": {
+                    "icon": null
                 }
             },
             "active": true,
@@ -305,6 +311,9 @@
                 463.2666973005413
             ],
             "params": {
+                "4": {
+                    "operation": 5
+                },
                 "5": {
                     "value1": 0,
                     "value2": 2
@@ -343,12 +352,36 @@
     ],
     "edges": [
         [
+            "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string",
+            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.arguments"
+        ],
+        [
             "3907fb27-ba21-45e6-89b7-3a93d0363002.event",
             "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.event"
         ],
         [
-            "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string",
-            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.arguments"
+            "6be446a7-8805-4120-acd2-079c0f90ccc8.param",
+            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.process"
+        ],
+        [
+            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.event",
+            "343d713b-d441-4820-80c3-cf0c8c5e6335.event"
+        ],
+        [
+            "8405cb82-854b-432c-b316-f5e657565d6c.event",
+            "3907fb27-ba21-45e6-89b7-3a93d0363002.event"
+        ],
+        [
+            "3907fb27-ba21-45e6-89b7-3a93d0363002.current",
+            "54127958-3511-4ca5-bbdb-16d666d8ba26.integer"
+        ],
+        [
+            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.event",
+            "59e80d8f-fd81-4c04-8ad8-a371248bad8c.event"
+        ],
+        [
+            "6182e5fd-d020-40b0-9e1e-6fa6f73256d7.param",
+            "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string1"
         ],
         [
             "dd4982db-8385-4548-a2d6-66fba1200c56.param",
@@ -363,36 +396,12 @@
             "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.emit"
         ],
         [
-            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.event",
-            "59e80d8f-fd81-4c04-8ad8-a371248bad8c.event"
-        ],
-        [
-            "6182e5fd-d020-40b0-9e1e-6fa6f73256d7.param",
-            "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string1"
-        ],
-        [
             "3907fb27-ba21-45e6-89b7-3a93d0363002.event",
             "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.event"
         ],
         [
-            "6be446a7-8805-4120-acd2-079c0f90ccc8.param",
-            "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.process"
-        ],
-        [
-            "8405cb82-854b-432c-b316-f5e657565d6c.event",
-            "3907fb27-ba21-45e6-89b7-3a93d0363002.event"
-        ],
-        [
-            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.event",
-            "343d713b-d441-4820-80c3-cf0c8c5e6335.event"
-        ],
-        [
-            "3907fb27-ba21-45e6-89b7-3a93d0363002.current",
-            "54127958-3511-4ca5-bbdb-16d666d8ba26.integer"
-        ],
-        [
-            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.items",
-            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.attachments"
+            "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string",
+            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.item"
         ],
         [
             "54127958-3511-4ca5-bbdb-16d666d8ba26.string",
@@ -403,20 +412,20 @@
             "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string2"
         ],
         [
-            "e1cf898b-efb4-474f-8111-b3a9cb7fbcf1.result",
-            "de0c1c01-fae7-4ee5-a107-70907e02df4a.value1"
-        ],
-        [
-            "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string",
-            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.item"
-        ],
-        [
             "59e80d8f-fd81-4c04-8ad8-a371248bad8c.event",
             "de0c1c01-fae7-4ee5-a107-70907e02df4a.event"
         ],
         [
+            "e1cf898b-efb4-474f-8111-b3a9cb7fbcf1.result",
+            "de0c1c01-fae7-4ee5-a107-70907e02df4a.value1"
+        ],
+        [
             "59e80d8f-fd81-4c04-8ad8-a371248bad8c.value",
             "e1cf898b-efb4-474f-8111-b3a9cb7fbcf1.value1"
+        ],
+        [
+            "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.items",
+            "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.attachments"
         ],
         [
             "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.event",
