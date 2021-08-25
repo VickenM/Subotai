@@ -13,7 +13,7 @@ numpy==1.21.0
 parso==0.7.1
 pefile==2019.4.18
 pickleshare==0.7.5
-Pillow==8.1.0
+Pillow==8.2.0
 prompt-toolkit==3.0.8
 Pygments==2.7.3
 pyinstaller==4.1
