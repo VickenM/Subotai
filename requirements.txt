@@ -21,6 +21,7 @@ pyinstaller-hooks-contrib==2020.11
 pynput==1.6.8
 PySide2==5.15.2
 pywin32-ctypes==0.2.0
+requests==2.26.0
 shiboken2==5.15.2
 six==1.16.0
 traitlets==5.0.5
