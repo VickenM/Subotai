@@ -17,4 +17,4 @@ Note: All dependency packages of *Subotai* are cross platform, however *Subotai*
 3. git clone https://github.com/VickenM/Subotai.git 
 4. cd Subotai
 5. python -m pip install -r requirements.txt
-6. python app.py
+6. python subotai.py
