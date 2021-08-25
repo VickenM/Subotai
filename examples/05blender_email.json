@@ -1,11 +1,104 @@
 {
     "nodes": [
         {
+            "node_obj": "eventnodes.unzipfile.UnzipFile",
+            "id": "d4f4ef5c-a452-4f74-8127-532acbfc7033",
+            "position": [
+                570.5321478040992,
+                339.6793680149656
+            ],
+            "params": {
+                "5": {
+                    "zipfile": "",
+                    "target": ""
+                },
+                "2": {
+                    "target": "C:\\temp\\blender\\"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "6be446a7-8805-4120-acd2-079c0f90ccc8",
+            "position": [
+                218.29503831736793,
+                614.9795570237407
+            ],
+            "params": {
+                "0": {
+                    "promote state": false,
+                    "promote name": null
+                },
+                "6": {
+                    "param": "blender-windows64\\blender.exe"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.inttostr.IntToStr",
+            "id": "54127958-3511-4ca5-bbdb-16d666d8ba26",
+            "position": [
+                989.0191728746008,
+                775.6949950486649
+            ],
+            "params": {
+                "1": {
+                    "integer": 0
+                },
+                "4": {
+                    "zeropad": 4
+                },
+                "2": {
+                    "string": ""
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.math.Math",
+            "id": "e1cf898b-efb4-474f-8111-b3a9cb7fbcf1",
+            "position": [
+                1959.2869791696253,
+                560.8875152028211
+            ],
+            "params": {
+                "4": {
+                    "operation": 5
+                },
+                "5": {
+                    "value1": 0,
+                    "value2": 2
+                },
+                "2": {
+                    "result": 0
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                64.0
+            ]
+        },
+        {
             "node_obj": "eventnodes.for_.For",
             "id": "3907fb27-ba21-45e6-89b7-3a93d0363002",
             "position": [
-                530.6826119135226,
-                293.6172216347481
+                744.4760219218214,
+                350.73463161081406
             ],
             "params": {
                 "5": {
@@ -24,11 +117,38 @@
             ]
         },
         {
+            "node_obj": "eventnodes.formatstring.FormatString",
+            "id": "d51401e1-4c05-4ab2-bc69-67ffd9a5a640",
+            "position": [
+                1196.3653025109606,
+                669.3569612984929
+            ],
+            "params": {
+                "4": {
+                    "format": "{0}{1}{2}.png"
+                },
+                "5": {
+                    "string1": "D:\\\\projects\\\\python\\\\node2\\\\app\\\\examples\\\\blender\\\\frame.",
+                    "string2": "",
+                    "string3": "\\\\examples\\\\blender\\\\frame.",
+                    "string4": ""
+                },
+                "2": {
+                    "string": ""
+                }
+            },
+            "active": true,
+            "size": [
+                143.55999999999995,
+                100.0
+            ]
+        },
+        {
             "node_obj": "eventnodes.parameter.StringParameter",
             "id": "6182e5fd-d020-40b0-9e1e-6fa6f73256d7",
             "position": [
-                156.52542946816334,
-                504.893581333846
+                211.7147120672621,
+                707.1240849024111
             ],
             "params": {
                 "0": {
@@ -49,8 +169,8 @@
             "node_obj": "eventnodes.parameter.StringParameter",
             "id": "dd4982db-8385-4548-a2d6-66fba1200c56",
             "position": [
-                59.89411609222793,
-                596.3442448129595
+                218.4255081322267,
+                890.3447474022255
             ],
             "params": {
                 "0": {
@@ -58,7 +178,7 @@
                     "promote name": ""
                 },
                 "6": {
-                    "param": ".\\\\examples\\\\blender\\\\frame."
+                    "param": "\\\\examples\\\\blender\\\\frame."
                 }
             },
             "active": true,
@@ -68,37 +188,11 @@
             ]
         },
         {
-            "node_obj": "eventnodes.formatstring.FormatString",
-            "id": "d51401e1-4c05-4ab2-bc69-67ffd9a5a640",
-            "position": [
-                1149.161484831382,
-                650.562061540507
-            ],
-            "params": {
-                "4": {
-                    "format": "{1}{0}.png"
-                },
-                "5": {
-                    "string1": "D:\\\\projects\\\\python\\\\node2\\\\app\\\\examples\\\\blender\\\\frame.",
-                    "string2": "",
-                    "string3": ""
-                },
-                "2": {
-                    "string": ""
-                }
-            },
-            "active": true,
-            "size": [
-                100,
-                82.0
-            ]
-        },
-        {
             "node_obj": "eventnodes.counter.Counter",
             "id": "59e80d8f-fd81-4c04-8ad8-a371248bad8c",
             "position": [
-                1511.9536456908654,
-                367.07846967030815
+                1821.1126775054504,
+                496.6728181516121
             ],
             "params": {
                 "5": {
@@ -106,7 +200,7 @@
                     "increment": 1
                 },
                 "2": {
-                    "value": 10
+                    "value": 23
                 }
             },
             "active": true,
@@ -119,8 +213,8 @@
             "node_obj": "eventnodes.condition.Condition",
             "id": "de0c1c01-fae7-4ee5-a107-70907e02df4a",
             "position": [
-                1845.7956959472806,
-                357.92378646244765
+                2092.777533508349,
+                469.1207196742628
             ],
             "params": {
                 "4": {
@@ -141,8 +235,8 @@
             "node_obj": "eventnodes.systemnotification.SystemNotification",
             "id": "343d713b-d441-4820-80c3-cf0c8c5e6335",
             "position": [
-                2612.753922443532,
-                295.3168191521849
+                2776.736001281402,
+                367.8669897085101
             ],
             "params": {
                 "4": {
@@ -165,8 +259,8 @@
             "node_obj": "eventnodes.multiprocess.MultiProcess",
             "id": "22d71ae0-c32f-47e2-a27f-c0eeb87a912d",
             "position": [
-                1305.2405038139875,
-                367.57132791968786
+                1621.2997051361876,
+                488.37477581940675
             ],
             "params": {
                 "5": {
@@ -187,8 +281,8 @@
             "node_obj": "eventnodes.email.Email",
             "id": "f9ec86c5-4fec-4d1f-90d7-312a099d3c44",
             "position": [
-                2351.1237927269763,
-                300.2434383465597
+                2587.7306604476457,
+                362.4186390624848
             ],
             "params": {
                 "5": {
@@ -216,15 +310,15 @@
             "node_obj": "eventnodes.formatstring.FormatString",
             "id": "7107015f-b8b0-43a0-875b-a1e2d63ee3de",
             "position": [
-                1117.5018826203525,
-                494.07797298123535
+                1188.9677253597301,
+                791.3431873611453
             ],
             "params": {
                 "4": {
                     "format": "-b {} -o {} -f {}"
                 },
                 "5": {
-                    "string1": "",
+                    "string1": ".\\\\examples\\\\blender\\\\pywerlines.blend",
                     "string2": "",
                     "string3": "",
                     "string4": ""
@@ -243,8 +337,8 @@
             "node_obj": "eventnodes.hotkey.Hotkey",
             "id": "8405cb82-854b-432c-b316-f5e657565d6c",
             "position": [
-                225.45102968182096,
-                249.7346561376886
+                140.1352688395201,
+                304.5580054668545
             ],
             "params": {
                 "4": {
@@ -258,19 +352,65 @@
             ]
         },
         {
-            "node_obj": "eventnodes.parameter.StringParameter",
-            "id": "6be446a7-8805-4120-acd2-079c0f90ccc8",
+            "node_obj": "eventnodes.collector.Collector",
+            "id": "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b",
             "position": [
-                58.96431680536136,
-                394.14994584703913
+                2340.251354733255,
+                357.27346048416985
+            ],
+            "params": {
+                "1": {
+                    "item": ""
+                },
+                "2": {
+                    "items": [
+                        "D:\\\\projects\\\\python\\\\node2\\\\subotai\\\\examples\\\\blender\\\\frame.0001.png",
+                        "D:\\\\projects\\\\python\\\\node2\\\\subotai\\\\examples\\\\blender\\\\frame.0002.png"
+                    ]
+                }
+            },
+            "active": true,
+            "size": [
+                149.10000000000036,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.download.Download",
+            "id": "1e1778eb-6851-49bd-868c-cc1d53380dd2",
+            "position": [
+                339.10791973279925,
+                307.1976701553658
+            ],
+            "params": {
+                "5": {
+                    "url": "https://download.blender.org/release/Blender2.93/blender-2.93.0-windows-x64.zip",
+                    "filename": "C:\\temp\\blender-2.93.0-windows-x64.zip"
+                },
+                "2": {
+                    "filename": "C:\\temp\\blender-2.93.0-windows-x64.zip"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                82.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "3cacd967-621a-4cba-9030-697e7c82f0fa",
+            "position": [
+                209.78572487546887,
+                498.11891342669173
             ],
             "params": {
                 "0": {
                     "promote state": false,
-                    "promote name": null
+                    "promote name": ""
                 },
                 "6": {
-                    "param": "\"C:\\Program Files\\Blender Foundation\\Blender 2.82\\blender.exe\""
+                    "param": "C:\\temp\\blender\\"
                 }
             },
             "active": true,
@@ -280,18 +420,42 @@
             ]
         },
         {
-            "node_obj": "eventnodes.inttostr.IntToStr",
-            "id": "54127958-3511-4ca5-bbdb-16d666d8ba26",
+            "node_obj": "eventnodes.parameter.StringParameter",
+            "id": "fe81eea8-fa4d-4b4b-a4ce-f29a380d87e1",
             "position": [
-                909.5277090337008,
-                586.3879246763988
+                211.0055098275684,
+                803.946721217692
             ],
             "params": {
-                "1": {
-                    "integer": 0
+                "0": {
+                    "promote state": false,
+                    "promote name": ""
                 },
+                "6": {
+                    "param": "D:\\\\projects\\\\python\\\\node2\\\\subotai"
+                }
+            },
+            "active": true,
+            "size": [
+                100,
+                46.0
+            ]
+        },
+        {
+            "node_obj": "eventnodes.formatstring.FormatString",
+            "id": "4d0432e3-e86e-4f00-bcfe-18abb8b5b091",
+            "position": [
+                382.78859151049835,
+                552.916037602005
+            ],
+            "params": {
                 "4": {
-                    "zeropad": 4
+                    "format": "\"{}{}\""
+                },
+                "5": {
+                    "string1": "",
+                    "string2": "",
+                    "string3": ""
                 },
                 "2": {
                     "string": ""
@@ -300,57 +464,41 @@
             "active": true,
             "size": [
                 100,
-                46.0
+                82.0
             ]
         },
         {
-            "node_obj": "eventnodes.math.Math",
-            "id": "e1cf898b-efb4-474f-8111-b3a9cb7fbcf1",
+            "node_obj": "eventnodes.formatstring.FormatString",
+            "id": "3240662a-0dac-4b65-bec8-8721aeafc40c",
             "position": [
-                1689.9810043221985,
-                463.2666973005413
+                372.30576264659476,
+                834.6263267303361
             ],
             "params": {
                 "4": {
-                    "operation": 5
+                    "format": "{0}{1}"
                 },
                 "5": {
-                    "value1": 0,
-                    "value2": 2
+                    "string1": "D:\\\\projects\\\\python\\\\node2\\\\app\\\\examples\\\\blender\\\\frame.",
+                    "string2": "",
+                    "string3": ""
                 },
                 "2": {
-                    "result": 0
+                    "string": ""
                 }
             },
             "active": true,
             "size": [
-                100,
-                64.0
-            ]
-        },
-        {
-            "node_obj": "eventnodes.collector.Collector",
-            "id": "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b",
-            "position": [
-                2062.1446076509874,
-                297.6920022283446
-            ],
-            "params": {
-                "1": {
-                    "item": ""
-                },
-                "2": {
-                    "items": []
-                }
-            },
-            "active": true,
-            "size": [
-                149.10000000000036,
+                143.55999999999995,
                 82.0
             ]
         }
     ],
     "edges": [
+        [
+            "8405cb82-854b-432c-b316-f5e657565d6c.event",
+            "1e1778eb-6851-49bd-868c-cc1d53380dd2.event"
+        ],
         [
             "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string",
             "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.arguments"
@@ -360,16 +508,32 @@
             "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.event"
         ],
         [
-            "6be446a7-8805-4120-acd2-079c0f90ccc8.param",
+            "4d0432e3-e86e-4f00-bcfe-18abb8b5b091.string",
             "22d71ae0-c32f-47e2-a27f-c0eeb87a912d.process"
+        ],
+        [
+            "fe81eea8-fa4d-4b4b-a4ce-f29a380d87e1.param",
+            "3240662a-0dac-4b65-bec8-8721aeafc40c.string1"
+        ],
+        [
+            "dd4982db-8385-4548-a2d6-66fba1200c56.param",
+            "3240662a-0dac-4b65-bec8-8721aeafc40c.string2"
         ],
         [
             "f9ec86c5-4fec-4d1f-90d7-312a099d3c44.event",
             "343d713b-d441-4820-80c3-cf0c8c5e6335.event"
         ],
         [
-            "8405cb82-854b-432c-b316-f5e657565d6c.event",
+            "d4f4ef5c-a452-4f74-8127-532acbfc7033.event",
             "3907fb27-ba21-45e6-89b7-3a93d0363002.event"
+        ],
+        [
+            "3cacd967-621a-4cba-9030-697e7c82f0fa.param",
+            "4d0432e3-e86e-4f00-bcfe-18abb8b5b091.string1"
+        ],
+        [
+            "6be446a7-8805-4120-acd2-079c0f90ccc8.param",
+            "4d0432e3-e86e-4f00-bcfe-18abb8b5b091.string2"
         ],
         [
             "3907fb27-ba21-45e6-89b7-3a93d0363002.current",
@@ -384,7 +548,7 @@
             "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string1"
         ],
         [
-            "dd4982db-8385-4548-a2d6-66fba1200c56.param",
+            "3240662a-0dac-4b65-bec8-8721aeafc40c.string",
             "7107015f-b8b0-43a0-875b-a1e2d63ee3de.string2"
         ],
         [
@@ -404,12 +568,28 @@
             "7e1b14fc-a9f6-4b10-b8b8-fb4fba74a53b.item"
         ],
         [
-            "54127958-3511-4ca5-bbdb-16d666d8ba26.string",
+            "1e1778eb-6851-49bd-868c-cc1d53380dd2.event",
+            "d4f4ef5c-a452-4f74-8127-532acbfc7033.event"
+        ],
+        [
+            "3cacd967-621a-4cba-9030-697e7c82f0fa.param",
+            "d4f4ef5c-a452-4f74-8127-532acbfc7033.target"
+        ],
+        [
+            "1e1778eb-6851-49bd-868c-cc1d53380dd2.filename",
+            "d4f4ef5c-a452-4f74-8127-532acbfc7033.zipfile"
+        ],
+        [
+            "fe81eea8-fa4d-4b4b-a4ce-f29a380d87e1.param",
             "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string1"
         ],
         [
             "dd4982db-8385-4548-a2d6-66fba1200c56.param",
             "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string2"
+        ],
+        [
+            "54127958-3511-4ca5-bbdb-16d666d8ba26.string",
+            "d51401e1-4c05-4ab2-bc69-67ffd9a5a640.string3"
         ],
         [
             "59e80d8f-fd81-4c04-8ad8-a371248bad8c.event",
