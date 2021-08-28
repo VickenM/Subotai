@@ -7,9 +7,9 @@ Some example uses are:
 * Automatically uploading files from a watch folder
 * Executing long running processes (rendering, media conversion, etc) and receiving notifications when complete
 
-*Subotai* uses a node-based interface to represent tasks and data flow. If additional capabilities are required that cannot be handled, it's easy to write a new nodes to add the features. Take a look at the Wiki (coming soon) or [Subota-extras](https://github.com/VickenM/Subotai-extras) for additional examples on creating new nodes.
+*Subotai* uses a node-based interface to represent tasks and data flow. If additional capabilities are required that cannot be handled, it's easy to write a new nodes to add the features. Take a look at the [Wiki](../../wiki) or [Subota-extras](https://github.com/VickenM/Subotai-extras) for additional examples on creating new nodes.
 
-![alt text](https://github.com/VickenM/Subotai/blob/master/screenshot.png?raw=true)
+![alt text](https://github.com/VickenM/Subotai/blob/master/resources/screenshot.png?raw=true)
 
 > **_NOTE:_** The project is under active development with large parts subject to change. 
 
