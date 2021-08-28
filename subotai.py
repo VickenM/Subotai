@@ -1,40 +1,32 @@
-import os
-import sys
-import json
 import argparse
+import json
+import os
 
-import pywerlines.pywerview
-
+from PySide2 import QtCore
+from PySide2 import QtGui
+from PySide2.QtCore import Slot
+from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import (
     QApplication,
-    QLabel,
     QMainWindow,
-    QDockWidget,
     QWidget,
     QHBoxLayout,
-    QGraphicsScene,
     QSplitter,
     QFileDialog,
     QSystemTrayIcon,
     QMenu,
     QSplashScreen,
     QMessageBox,
-    QDesktopWidget,
     QAction
 )
-from PySide2 import QtGui
-from PySide2 import QtCore
-from PySide2.QtGui import QIcon
-from PySide2.QtCore import Slot
+from ui.parameters import Parameters
 
-from toolbox import ToolBox, ToolItem
-from parameters import Parameters
-from pywerlines import pyweritems, pywerscene
-
-import eventnodes
 import appnode
-
+import eventnodes
+import pywerlines.pywerview
 from config import path
+from pywerlines import pyweritems, pywerscene
+from ui.toolbox import ToolBox, ToolItem
 
 node_registry = {}
 # default set of categories in desired order for ui elements
@@ -308,8 +300,6 @@ class MainWindow(QMainWindow):
         self.filename = None
         self.unsaved = False
         self.saved_data = None
-
-        from itertools import groupby
 
         toolbox = ToolBox()
         toolbox.addSections(node_categories)
