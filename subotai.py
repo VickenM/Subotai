@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import sys
 
 from PySide2 import QtCore
 from PySide2 import QtGui
@@ -19,75 +20,23 @@ from PySide2.QtWidgets import (
     QMessageBox,
     QAction
 )
-from ui.parameters import Parameters
+from pywerlines import (
+    pyweritems,
+    pywerscene,
+    pywerview
+)
 
-import appnode
-import eventnodes
-import pywerlines.pywerview
-from config import path
-from pywerlines import pyweritems, pywerscene
+from config import (
+    path,
+    node_categories
+)
+
+from ui.parameters import Parameters
 from ui.toolbox import ToolBox, ToolItem
 
-node_registry = {}
-# default set of categories in desired order for ui elements
-node_categories = ['Events', 'FileSystem', 'Data', 'Math', 'String', 'Flow Control', 'Image', 'I/O']
-
-import pkgutil
-import inspect
-import sys
-
-
-def _register_nodes_module(mod):
-    for importer, modname, ispkg in pkgutil.iter_modules(mod.__path__, mod.__name__ + '.'):
-        if ispkg:
-            try:
-                pkg = __import__(modname, fromlist="dummy")
-            except Exception as e:
-                print('Error: Unable to load node package {} {}'.format(modname, e))
-                continue
-            _register_nodes_module(pkg)
-        else:
-            try:
-                module = __import__(modname, fromlist="dummy")
-            except Exception as e:
-                print('Error: Unable to load node module {} {}'.format(modname, e))
-                continue
-            for name, obj in inspect.getmembers(module, lambda member: inspect.isclass(member) and (
-                    member.__module__.startswith(mod.__name__ + '.'))):
-
-                if not issubclass(obj, eventnodes.base.BaseNode):
-                    continue
-
-                # skip classes that dont have a type attr. they're not nodes, or they're base classes (BaseNode, ComputeNode, EventNode)
-                if not hasattr(obj, 'type'):
-                    continue
-
-                if obj.type in node_registry:
-                    print('ERROR: Node with name', obj.type, 'can only be added once')
-                    continue
-                node_registry[obj.type] = obj
-
-
-def register_addon_nodes_module():
-    addons_path = os.getenv('SUBOTAI_ADDONS')
-    if addons_path:
-        # print('including addons path', addons_path)
-        sys.path.append(addons_path)
-        sys.path.append(addons_path + '/modules')
-        try:
-            import nodes
-        except ImportError as e:
-            print('Error: unable to include nodes from addons path {}'.format(e))
-        else:
-            _register_nodes_module(nodes)
-
-
-def register_core_nodes_module():
-    _register_nodes_module(eventnodes)
-
-
-register_core_nodes_module()
-register_addon_nodes_module()
+import register
+import appnode
+import eventnodes
 
 
 @Slot(list)
@@ -153,9 +102,9 @@ class SplashScreen(QSplashScreen):
 
 class EventFlow(pywerscene.PywerScene):
     def new_node(self, type_):
-        if type_ not in node_registry:
+        if type_ not in register.node_registry:
             return None
-        event_node = node_registry[type_]
+        event_node = register.node_registry[type_]
         node = appnode.EventNode.from_event_node(event_node())
         return node
 
@@ -239,7 +188,7 @@ class EventFlow(pywerscene.PywerScene):
             mnode.calculate.emit()
 
 
-class EventView(pywerlines.pywerview.PywerView):
+class EventView(pywerview.PywerView):
     node_dropped_signal = QtCore.Signal(str, int, int)
     context_menu_signal = QtCore.Signal(int, int)
 
@@ -301,13 +250,9 @@ class MainWindow(QMainWindow):
         self.unsaved = False
         self.saved_data = None
 
-        toolbox = ToolBox()
-        toolbox.addSections(node_categories)
-        for node_name, event_node in node_registry.items():
-            toolbox.addItem(
-                ToolItem(icon=QIcon(path + '/icons/flow.png'), label=node_name, sections=event_node.categories,
-                         tooltip=event_node.description))
-        toolbox.itemDoubleClickedSignal.connect(self.new_node_selected)
+        self.toolbox = ToolBox()
+        self._populate_toolbox()
+        self.toolbox.itemDoubleClickedSignal.connect(self.new_node_selected)
 
         scene.nodes_selected.connect(selected_nodes)
         scene.nodes_deleted.connect(deleted_nodes)
@@ -323,7 +268,7 @@ class MainWindow(QMainWindow):
         self.parameters = Parameters()
 
         splitter = QSplitter()
-        splitter.addWidget(toolbox)
+        splitter.addWidget(self.toolbox)
         splitter.addWidget(view)
         splitter.addWidget(self.parameters)
         splitter.setSizes([100, 400, 100])
@@ -337,7 +282,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         self.view.node_dropped_signal.connect(self.new_node_selected)
-
         self.view.context_menu_signal.connect(self.context_menu)
 
         toolbar = self.addToolBar('Run')
@@ -363,6 +307,11 @@ class MainWindow(QMainWindow):
         action = file_menu.addAction('&Save Scene As')
         action.setShortcut(QtGui.QKeySequence('Ctrl+Shift+s'))
         action.triggered.connect(self.save_scene_as)
+
+        file_menu.addSeparator()
+        action = file_menu.addAction('&Reload Nodes')
+        action.setShortcut(QtGui.QKeySequence('F3'))
+        action.triggered.connect(self.refresh_nodes)
 
         file_menu.addSeparator()
 
@@ -423,6 +372,14 @@ class MainWindow(QMainWindow):
 
         app = QApplication.instance()
         app.trayIcon = self.trayIcon
+
+    def _populate_toolbox(self):
+        self.toolbox.clear()
+        self.toolbox.addSections(node_categories)
+        for node_name, event_node in register.node_registry.items():
+            self.toolbox.addItem(
+                ToolItem(icon=QIcon(path + '/icons/flow.png'), label=node_name, sections=event_node.categories,
+                         tooltip=event_node.description))
 
     def _create_actions(self):
         self.group_action = QAction('&Group Selection')
@@ -787,7 +744,7 @@ class MainWindow(QMainWindow):
             for category in node_categories:  # prime with default category set to get desired order in UI
                 nodes_by_categories[category] = []
 
-            for node_name, node_obj in node_registry.items():
+            for node_name, node_obj in register.node_registry.items():
                 for category in node_obj.categories:
                     nodes_by_categories[category].append(node_name)
 
@@ -855,6 +812,13 @@ class MainWindow(QMainWindow):
                 return False
 
         return True
+
+    @Slot()
+    def refresh_nodes(self):
+        register.clear_node_registry()
+        register.register_core_nodes_module()
+        register.register_addon_nodes_module()
+        self._populate_toolbox()
 
     @Slot()
     def new_scene(self):
@@ -986,7 +950,8 @@ def print_params_from_data(data):
 
 
 def main(splashscreen=True, background=False, scene_file=None, json_string=None, list_params=False, params={}):
-    import signal as signal_
+    register.register_core_nodes_module()
+    register.register_addon_nodes_module()
 
     if list_params:
         with open(scene_file, 'r') as fp:
@@ -1013,6 +978,7 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
     set_params(scene=main_window.scene, params=params)
 
     if background:
+        import signal as signal_
         signal_.signal(signal_.SIGINT, signal_.SIG_DFL)  # accept ctrl-c signal when in background mode to quit
     else:
         if splashscreen:

@@ -279,9 +279,22 @@ class ToolBox(QtWidgets.QWidget):
         for section_name in section_names:
             self.addSection(section_name)
 
+    def removeSection(self, section_name):
+        for index, section in enumerate(self.sections()):
+            if section.label == section_name:
+                item = self.main_widget.layout().takeAt(index)
+                item = item.layout() or item.widget()
+                item.setParent(None)
+                return
+
     def addItem(self, tool):
         self.addSections(tool.sections())
         self.model.appendRow(tool)
+
+    def clear(self):
+        self.model.clear()
+        for section_name in self.sectionNames():
+            self.removeSection(section_name=section_name)
 
     def itemDoubleClicked(self, index):
         proxy_model = index.model()
