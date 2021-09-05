@@ -10,20 +10,22 @@ import eventnodes
 node_registry = {}
 
 
-def _register_nodes_module(mod):
+def _register_nodes_module(mod, reload=False):
     for importer, modname, ispkg in pkgutil.iter_modules(mod.__path__, mod.__name__ + '.'):
         if ispkg:
             try:
+                # pkg = __import__(modname, fromlist="dummy")
                 pkg = importlib.import_module(modname)
-                importlib.reload(pkg)
             except Exception as e:
                 print('Error: Unable to load node package {} {}'.format(modname, e))
                 continue
-            _register_nodes_module(pkg)
+            _register_nodes_module(pkg, reload=reload)
         else:
             try:
+                # module = __import__(modname, fromlist="dummy")
                 module = importlib.import_module(modname)
-                importlib.reload(module)
+                if reload:
+                    importlib.reload(module)
             except Exception as e:
                 print('Error: Unable to load node module {} {}'.format(modname, e))
                 continue
@@ -37,9 +39,9 @@ def _register_nodes_module(mod):
                 if not hasattr(obj, 'type'):
                     continue
 
-                # if obj.type in node_registry:
-                #     print('ERROR: Node with name', obj.type, 'can only be added once')
-                #     continue
+                if obj.type in node_registry:
+                    print('ERROR: Node with name', obj.type, 'can only be added once')
+                    continue
                 node_registry[obj.type] = obj
 
 
@@ -56,7 +58,7 @@ def register_addon_nodes_module():
         except ImportError as e:
             print('Error: unable to include nodes from addons path {}'.format(e))
         else:
-            _register_nodes_module(nodes)
+            _register_nodes_module(nodes, reload=True)
 
 
 def register_core_nodes_module():
@@ -66,3 +68,9 @@ def register_core_nodes_module():
 def clear_node_registry():
     global node_registry
     node_registry = {}
+
+
+def reload_node_registry():
+    clear_node_registry()
+    register_core_nodes_module()
+    register_addon_nodes_module()

@@ -38,7 +38,6 @@ import register
 import appnode
 import eventnodes
 
-
 @Slot(list)
 def selected_nodes(data):
     pass
@@ -815,9 +814,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def refresh_nodes(self):
-        register.clear_node_registry()
-        register.register_core_nodes_module()
-        register.register_addon_nodes_module()
+        register.reload_node_registry()
         self._populate_toolbox()
 
     @Slot()
@@ -950,8 +947,7 @@ def print_params_from_data(data):
 
 
 def main(splashscreen=True, background=False, scene_file=None, json_string=None, list_params=False, params={}):
-    register.register_core_nodes_module()
-    register.register_addon_nodes_module()
+    register.reload_node_registry()
 
     if list_params:
         with open(scene_file, 'r') as fp:
