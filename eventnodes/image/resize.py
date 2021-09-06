@@ -32,9 +32,10 @@ class Resize(BaseImageNode):
         image_ = self.get_first_param('image', pluggable=INPUT_PLUG)
         out_image_ = self.get_first_param('image', pluggable=OUTPUT_PLUG)
 
-        img = image_()
-        img = img.resize((int(width()), int(height())))
-        out_image_.value = img
+        if image_():
+            img = image_()
+            img = img.resize((int(width()), int(height())))
+            out_image_.value = img
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         self.stop_spinner_signal.emit()
