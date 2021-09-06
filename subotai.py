@@ -38,6 +38,7 @@ import register
 import appnode
 import eventnodes
 
+
 @Slot(list)
 def selected_nodes(data):
     pass
@@ -121,8 +122,17 @@ class EventFlow(pywerscene.PywerScene):
         if any([source_signal, target_signal]) and not all([source_signal, target_signal]):
             return False
 
-        if len(target_plug.edges):
-            return False
+        # only one connection allowed to param plugs
+        import eventnodes.params
+        if (source_plug.plug_obj.get_pluggable() & eventnodes.params.INPUT_PLUG):
+            input_plug = source_plug
+        else:
+            input_plug = target_plug
+
+        if len(input_plug.edges):
+            drag_edge = [e for e in input_plug.edges if not all([e.source_plug, e.target_plug])]
+            if not drag_edge:
+                return False
 
         return source_plug.plug_obj.type == target_plug.plug_obj.type
 
