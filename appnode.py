@@ -56,16 +56,7 @@ class EventNode(pywerlines.pyweritems.PywerNode):
         }
 
         for param in self.node_obj.params:
-            # from enum import Enum
-            # if param._type not in [list, int, bool, float, str, type(None)]:
-            #     continue
-
-            if param._type == list:
-                value = [v._value for v in param._value]
-            else:
-                value = param._value
-
             pluggable = dict_['params'].setdefault(param.pluggable, {})
-            pluggable[param.name] = value
+            pluggable[param.name] = param.to_dict()
 
         return dict_

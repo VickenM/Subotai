@@ -10,3 +10,5 @@ class ImageParam(Param):
         self._type = Image
         self._value = value
 
+    def to_dict(self):
+        return None

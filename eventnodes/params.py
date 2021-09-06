@@ -70,6 +70,9 @@ class Param(object):
     def is_connected(self):
         return self.connection is not None
 
+    def to_dict(self):
+        return self._value
+
     def __call__(self, *args, **kwargs):
         return self.value
 
@@ -149,6 +152,9 @@ class ListParam(Param):
         self.name = name
         self._type = list
         self._value = value
+
+    def to_dict(self):
+        return [v._value for v in self._value]
 
 
 from enum import Enum
