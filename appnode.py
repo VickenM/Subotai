@@ -52,7 +52,8 @@ class EventNode(pywerlines.pyweritems.PywerNode):
             'position': (self.pos().x(), self.pos().y()),
             'params': {},
             'active': self.node_obj.active,
-            'size': (self.width, self.height)
+            'size': (self.width, self.height),
+            'name': self.name.toPlainText()
         }
 
         for param in self.node_obj.params:

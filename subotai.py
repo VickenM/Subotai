@@ -249,6 +249,10 @@ class EventView(pywerview.PywerView):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.setWindowTitle('Subotai')
+        self.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
+
         view = EventView()
         scene = EventFlow()
         scene.setSceneRect(0, 0, 100000, 100000)
@@ -275,6 +279,7 @@ class MainWindow(QMainWindow):
         self.view = view
 
         self.parameters = Parameters()
+        self.parameters.parameter_changed.connect(self.parameter_changed)
 
         splitter = QSplitter()
         splitter.addWidget(self.toolbox)
@@ -349,7 +354,7 @@ class MainWindow(QMainWindow):
         view_menu = self.menuBar().addMenu('&View')
         action = view_menu.addAction('&Sow/Hide names')
         action.setShortcut(QtGui.QKeySequence('Ctrl+.'))
-        action.triggered.connect(lambda x: self.scene.toggle_labels())
+        action.triggered.connect(lambda x: self.scene.toggle_names())
 
         self.menuBar().addSeparator()
 
@@ -381,6 +386,17 @@ class MainWindow(QMainWindow):
 
         app = QApplication.instance()
         app.trayIcon = self.trayIcon
+
+    def _update_window_title(self):
+        title = 'Subotai'
+
+        if self.filename:
+            title += ' - {}'.format(self.filename)
+
+        if self.unsaved:
+            title += '*'
+
+        self.setWindowTitle(title)
 
     def _populate_toolbox(self):
         self.toolbox.clear()
@@ -453,7 +469,7 @@ class MainWindow(QMainWindow):
             n.node_obj.set_active(node.get('active', True))
             n.setPos(*node['position'])
             n.setSize(*node.get('size', (100, 100)))
-
+            n.name.setPlainText(node.get('name', n.name_))
             new_nodes[n] = node
 
         # TODO: when saving files out, edges come in arbitrary order. so nodes with dynamic inputs need to be connected in the right order. sorting here is kind of hack to get the order right
@@ -506,6 +522,7 @@ class MainWindow(QMainWindow):
             g = self.scene.create_group()
             g.setPos(*group['position'])
             g.setSize(*group['size'])
+            g.name.setPlainText(group.get('name', g.name_))
 
             # print(data)
 
@@ -524,7 +541,8 @@ class MainWindow(QMainWindow):
         for group in self.scene.get_all_groups():
             data['groups'].append(
                 {'position': (group.pos().x(), group.pos().y()),
-                 'size': (group.width, group.height)
+                 'size': (group.width, group.height),
+                 'name': group.name.toPlainText()
                  }
             )
 
@@ -546,6 +564,8 @@ class MainWindow(QMainWindow):
         self.filename = file_name
         self.saved_data = {}
 
+        self._update_window_title()
+
     def save_file(self, file_name):
         data = self.save_data()
         with open(file_name, 'w') as fp:
@@ -553,6 +573,8 @@ class MainWindow(QMainWindow):
 
         self.unsaved = False
         self.filename = file_name
+
+        self._update_window_title()
 
     def keyPressEvent(self, event):
         pass
@@ -575,12 +597,14 @@ class MainWindow(QMainWindow):
         group.setPos(position)
 
         self.unsaved = True
+        self._update_window_title()
 
     @Slot()
     def group_selected(self):
         self.scene.group_selected_nodes()
 
         self.unsaved = True
+        self._update_window_title()
 
     @Slot()
     def delete_selected(self):
@@ -589,6 +613,7 @@ class MainWindow(QMainWindow):
 
         self.unsaved = True
         self.parameters.set_node_obj(None)
+        self._update_window_title()
 
     @Slot()
     def select_all(self):
@@ -619,7 +644,8 @@ class MainWindow(QMainWindow):
         for group in sorted(self.scene.get_selected_groups(), key=lambda g: (g.pos().x(), g.pos().y())):
             data['groups'].append(
                 {'position': (group.pos().x(), group.pos().y()),
-                 'size': (group.width, group.height)
+                 'size': (group.width, group.height),
+                 'name': group.name
                  }
             )
 
@@ -657,6 +683,7 @@ class MainWindow(QMainWindow):
 
             # n.setPos(node['position'][0] + 20, node['position'][1] + 20)
             n.setSize(*node.get('size', (100, 100)))
+            n.name.setPlainText(node.get('name', n.name_))
             new_nodes[n] = node
 
             # map the id of the copied node to the id of the newly created one.
@@ -726,6 +753,7 @@ class MainWindow(QMainWindow):
                 g.setPos(pos.x() + offset_x, pos.y() + offset_y)
 
             g.setSize(*group['size'])
+            g.name.setPlainText(group.get('name', g.name_))
             new_nodes[g] = group
 
         self.scene.clearSelection()
@@ -743,6 +771,7 @@ class MainWindow(QMainWindow):
         self.scene.select_node(node)
 
         self.unsaved = True
+        self._update_window_title()
 
     @Slot(int, int)
     def context_menu(self, x, y):
@@ -797,6 +826,12 @@ class MainWindow(QMainWindow):
     @Slot()
     def items_moved(self):
         self.unsaved = True
+        self._update_window_title()
+
+    @Slot()
+    def parameter_changed(self):
+        self.unsaved = True
+        self._update_window_title()
 
     def save_changes_dialog(self):
         """
@@ -839,6 +874,8 @@ class MainWindow(QMainWindow):
             self.unsaved = False
             self.saved_data = {}
 
+            self._update_window_title()
+
     @Slot()
     def open_scene(self):
         if self.save_changes_dialog():
@@ -849,6 +886,8 @@ class MainWindow(QMainWindow):
                 self.scene.clear()
                 self.start_thread()  # TODO: do i need this? test removing it.
                 self.load_file(filename)
+
+                self._update_window_title()
 
     @Slot()
     def save_scene_as(self):
@@ -862,6 +901,7 @@ class MainWindow(QMainWindow):
             self.save_file(self.filename)
         else:
             self.save_scene_as()
+        self._update_window_title()
 
     def toggle_visible(self):
         self.setVisible(not self.isVisible())
@@ -972,8 +1012,6 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
     main_window = MainWindow()
     main_window.start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
     # QtCore.QTimer(app).singleShot(0, self.start_thread)
-    main_window.setWindowTitle('Subotai')
-    main_window.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
 
     if scene_file:
         main_window.load_file(scene_file)

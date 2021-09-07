@@ -155,11 +155,11 @@ class PywerScene(QGraphicsScene):
     def list_nodes(self):
         return [item for item in self.items() if isinstance(item, pyweritems.PywerNode)]
 
-    def toggle_labels(self):
+    def toggle_names(self):
         all_nodes = [item for item in self.items() if isinstance(item, pyweritems.PywerNode) or \
                      isinstance(item, pyweritems.PywerGroup)]
         for node in all_nodes:
-            node.label.setVisible(not node.label.isVisible())
+            node.name.setVisible(not node.name.isVisible())
 
     def select_all(self):
         all_nodes = [item for item in self.items() if isinstance(item, pyweritems.PywerNode) or \

@@ -282,6 +282,8 @@ class Glow(QtWidgets.QGraphicsDropShadowEffect):
 
 
 class PywerNode(PywerItem):
+    name_ = 'name'
+
     def __init__(self, *args, **kwargs):
         self.node_obj = kwargs.pop('node_obj', None)
         self.header_color = kwargs.pop('color', (35, 105, 140, 200))
@@ -305,14 +307,14 @@ class PywerNode(PywerItem):
 
         self.active = True
 
-        self.label = QtWidgets.QGraphicsTextItem(parent=self)
-        font = self.label.font()
+        self.name = QtWidgets.QGraphicsTextItem(parent=self)
+        font = self.name.font()
         font.setPointSize(8)
-        self.label.setFont(font)
-        self.label.setTextInteractionFlags(QtCore.Qt.TextEditable)
-        self.label.setPlainText('name')
-        self.label.setDefaultTextColor(QtCore.Qt.white)
-        self.label.setPos(self.pos().x(), self.pos().y() - 20)
+        self.name.setFont(font)
+        self.name.setTextInteractionFlags(QtCore.Qt.TextEditable)
+        self.name.setPlainText(self.name_)
+        self.name.setDefaultTextColor(QtCore.Qt.white)
+        self.name.setPos(self.pos().x(), self.pos().y() - 20)
 
         self.spinner = PywerSpinner(parent=self)
         self.spinner.hide()
@@ -582,6 +584,8 @@ class Resizer(QtWidgets.QGraphicsObject):
 
 
 class PywerGroup(PywerItem):
+    name_ = 'name'
+
     def __init__(self, *args, **kwargs):
         super(PywerGroup, self).__init__(*args, **kwargs)
 
@@ -596,14 +600,14 @@ class PywerGroup(PywerItem):
 
         self.setFlag(self.ItemIsMovable)
 
-        self.label = QtWidgets.QGraphicsTextItem(parent=self)
-        font = self.label.font()
+        self.name = QtWidgets.QGraphicsTextItem(parent=self)
+        font = self.name.font()
         font.setPointSize(8)
-        self.label.setFont(font)
-        self.label.setTextInteractionFlags(QtCore.Qt.TextEditable)
-        self.label.setPlainText('group name')
-        self.label.setDefaultTextColor(QtCore.Qt.white)
-        self.label.setPos(self.pos().x(), self.pos().y() - 20)
+        self.name.setFont(font)
+        self.name.setTextInteractionFlags(QtCore.Qt.TextEditable)
+        self.name.setPlainText(self.name_)
+        self.name.setDefaultTextColor(QtCore.Qt.white)
+        self.name.setPos(self.pos().x(), self.pos().y() - 20)
 
         self.resizer = Resizer(parent=self)
         self.resizer.resize_signal.connect(self.resize)
