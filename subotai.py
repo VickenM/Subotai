@@ -5,56 +5,39 @@ import sys
 
 from PySide2 import QtCore
 from PySide2 import QtGui
-from PySide2.QtCore import Slot
-from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QWidget,
-    QHBoxLayout,
-    QSplitter,
-    QFileDialog,
-    QSystemTrayIcon,
-    QMenu,
-    QSplashScreen,
-    QMessageBox,
-    QAction
-)
+from PySide2 import QtWidgets
+
 from pywerlines import (
     pyweritems,
     pywerscene,
     pywerview
 )
 
-from config import (
-    path,
-    node_categories
-)
-
 from ui.parameters import Parameters
 from ui.toolbox import ToolBox, ToolItem
 
+import config
 import register
 import appnode
 import eventnodes
 
 
-@Slot(list)
+@QtCore.Slot(list)
 def selected_nodes(data):
     pass
 
 
-@Slot(list)
+@QtCore.Slot(list)
 def added_nodes(data):
     pass
 
 
-@Slot(list)
+@QtCore.Slot(list)
 def deleted_nodes(data):
     pass
 
 
-@Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
+@QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def connected_plugs(plug1, plug2):
     source = plug1.parentItem().node_obj
     target = plug2.parentItem().node_obj
@@ -73,7 +56,7 @@ def connected_plugs(plug1, plug2):
         output.connect_(input)
 
 
-@Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
+@QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def disconnected_plugs(plug1, plug2):
     source = plug1.parentItem().node_obj
     target = plug2.parentItem().node_obj
@@ -92,7 +75,7 @@ def disconnected_plugs(plug1, plug2):
         output.disconnect_()
 
 
-class SplashScreen(QSplashScreen):
+class SplashScreen(QtWidgets.QSplashScreen):
     def __init__(self, pixmap, flags):
         super().__init__(pixmap, flags)
 
@@ -246,12 +229,12 @@ class EventView(pywerview.PywerView):
         return super().mouseReleaseEvent(event)
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle('Subotai')
-        self.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
+        self.setWindowIcon(QtGui.QIcon(config.path + "/icons/waves.003.png"))
 
         view = EventView()
         scene = EventFlow()
@@ -281,17 +264,17 @@ class MainWindow(QMainWindow):
         self.parameters = Parameters()
         self.parameters.parameter_changed.connect(self.parameter_changed)
 
-        splitter = QSplitter()
+        splitter = QtWidgets.QSplitter()
         splitter.addWidget(self.toolbox)
         splitter.addWidget(view)
         splitter.addWidget(self.parameters)
         splitter.setSizes([100, 400, 100])
 
-        layout = QHBoxLayout()
+        layout = QtWidgets.QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
 
-        central_widget = QWidget(parent=self)
+        central_widget = QtWidgets.QWidget(parent=self)
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
@@ -300,7 +283,7 @@ class MainWindow(QMainWindow):
 
         toolbar = self.addToolBar('Run')
         action = toolbar.addAction('&Run')
-        action.setIcon(QIcon(path + '/icons/run.jpg'))
+        action.setIcon(QtGui.QIcon(config.path + '/icons/run.jpg'))
         action.setShortcut(QtGui.QKeySequence('Space'))
         action.triggered.connect(lambda x: self.scene.eval())
 
@@ -372,19 +355,19 @@ class MainWindow(QMainWindow):
         action = help_menu.addAction('About')
         action.triggered.connect(lambda x: show_splashscreen(animate=False))
 
-        self.trayIcon = QSystemTrayIcon(self)
-        self.trayIcon.setIcon(QIcon(path + '/icons/waves.003.png'))
+        self.trayIcon = QtWidgets.QSystemTrayIcon(self)
+        self.trayIcon.setIcon(QtGui.QIcon(config.path + '/icons/waves.003.png'))
         self.trayIcon.setVisible(True)
         self.trayIcon.activated.connect(self.showNormal)
 
-        self.trayIconMenu = QMenu(self)
+        self.trayIconMenu = QtWidgets.QMenu(self)
         self.trayIconMenu.addAction('Show/Hide Window').triggered.connect(self.toggle_visible)
         self.trayIconMenu.addSeparator()
         self.trayIconMenu.addAction('Exit').triggered.connect(self.exit_app)
 
         self.trayIcon.setContextMenu(self.trayIconMenu)
 
-        app = QApplication.instance()
+        app = QtWidgets.QApplication.instance()
         app.trayIcon = self.trayIcon
 
     def _update_window_title(self):
@@ -400,39 +383,39 @@ class MainWindow(QMainWindow):
 
     def _populate_toolbox(self):
         self.toolbox.clear()
-        self.toolbox.addSections(node_categories)
+        self.toolbox.addSections(config.node_categories)
         for node_name, event_node in register.node_registry.items():
             self.toolbox.addItem(
-                ToolItem(icon=QIcon(path + '/icons/flow.png'), label=node_name, sections=event_node.categories,
+                ToolItem(icon=QtGui.QIcon(config.path + '/icons/flow.png'), label=node_name, sections=event_node.categories,
                          tooltip=event_node.description))
 
     def _create_actions(self):
-        self.group_action = QAction('&Group Selection')
+        self.group_action = QtWidgets.QAction('&Group Selection')
         self.group_action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
         self.group_action.triggered.connect(self.group_selected)
 
-        self.empty_group_action = QAction('&Empty Group')
+        self.empty_group_action = QtWidgets.QAction('&Empty Group')
         self.empty_group_action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
         self.empty_group_action.triggered.connect(self.new_group)
 
-        self.copy_action = QAction('&Copy')
+        self.copy_action = QtWidgets.QAction('&Copy')
         self.copy_action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
         self.copy_action.triggered.connect(self.copy_selected)
 
-        self.paste_action = QAction('&Paste')
+        self.paste_action = QtWidgets.QAction('&Paste')
         self.paste_action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
         self.paste_action.triggered.connect(self.paste_selected)
 
-        self.delete_action = QAction('&Delete')
+        self.delete_action = QtWidgets.QAction('&Delete')
         self.delete_action.setShortcut(QtGui.QKeySequence('Delete'))
         self.delete_action.triggered.connect(self.delete_selected)
 
-    # @Slot()
+    # @QtCore.Slot()
     def start_thread(self):
         self.thread_ = eventnodes.base.Worker(parent=self)
         self.thread_.start()
 
-    # @Slot()
+    # @QtCore.Slot()
     def stop_thread(self):
         self.scene.clear()
         self.thread_.exit()
@@ -590,7 +573,7 @@ class MainWindow(QMainWindow):
         for timer in timers:
             timer.node_obj.deactivate()
 
-    @Slot()
+    @QtCore.Slot()
     def new_group(self):
         group = self.scene.create_group()
         position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
@@ -599,14 +582,14 @@ class MainWindow(QMainWindow):
         self.unsaved = True
         self._update_window_title()
 
-    @Slot()
+    @QtCore.Slot()
     def group_selected(self):
         self.scene.group_selected_nodes()
 
         self.unsaved = True
         self._update_window_title()
 
-    @Slot()
+    @QtCore.Slot()
     def delete_selected(self):
         self.scene.remove_selected_nodes()
         self.scene.remove_selected_groups()
@@ -615,12 +598,12 @@ class MainWindow(QMainWindow):
         self.parameters.set_node_obj(None)
         self._update_window_title()
 
-    @Slot()
+    @QtCore.Slot()
     def select_all(self):
         self.scene.select_all()
 
     # TODO this function is almost identical to save_data
-    @Slot()
+    @QtCore.Slot()
     def copy_selected(self):
         data = {'nodes': [], 'edges': [], 'groups': []}
         # selected_nodes =  sorted(self.scene.get_selected_nodes(), key=lambda n: n.pos().x())
@@ -652,7 +635,7 @@ class MainWindow(QMainWindow):
         self.saved_data = data
 
     # TODO this function is almost identical to load_data
-    @Slot()
+    @QtCore.Slot()
     def paste_selected(self):
 
         pos = self.view.mapFromGlobal(QtGui.QCursor.pos())
@@ -762,7 +745,7 @@ class MainWindow(QMainWindow):
 
         self.copy_selected()
 
-    @Slot(str, int, int)
+    @QtCore.Slot(str, int, int)
     def new_node_selected(self, item, x=100, y=100):
         node = self.scene.create_node_of_type(item)
         node.node_obj.moveToThread(self.thread_)
@@ -773,13 +756,13 @@ class MainWindow(QMainWindow):
         self.unsaved = True
         self._update_window_title()
 
-    @Slot(int, int)
+    @QtCore.Slot(int, int)
     def context_menu(self, x, y):
         def get_nodes_by_category():
             from collections import defaultdict
             nodes_by_categories = defaultdict(list)
 
-            for category in node_categories:  # prime with default category set to get desired order in UI
+            for category in config.node_categories:  # prime with default category set to get desired order in UI
                 nodes_by_categories[category] = []
 
             for node_name, node_obj in register.node_registry.items():
@@ -789,11 +772,11 @@ class MainWindow(QMainWindow):
             return nodes_by_categories
 
         def show_options_menu():
-            menu = QMenu(self)
+            menu = QtWidgets.QMenu(self)
             menu.exec_(self.view.mapToGlobal(QtCore.QPoint(x, y)))
 
         def show_new_nodes_menu():
-            menu = QMenu(self)
+            menu = QtWidgets.QMenu(self)
 
             new_node_menu = menu.addMenu('Add Node')
             for category, node_names in get_nodes_by_category().items():
@@ -816,19 +799,19 @@ class MainWindow(QMainWindow):
         # else:
         show_new_nodes_menu()
 
-    @Slot(list)
+    @QtCore.Slot(list)
     def selected_nodes(self, nodes):
         if nodes:
             self.parameters.set_node_obj(nodes[0].node_obj)
         else:
             self.parameters.set_node_obj(None)
 
-    @Slot()
+    @QtCore.Slot()
     def items_moved(self):
         self.unsaved = True
         self._update_window_title()
 
-    @Slot()
+    @QtCore.Slot()
     def parameter_changed(self):
         self.unsaved = True
         self._update_window_title()
@@ -840,29 +823,30 @@ class MainWindow(QMainWindow):
         """
         if self.unsaved:
             filename = os.path.basename(self.filename) if self.filename else 'Untitled'
-            save_dialog = QMessageBox()
+            save_dialog = QtWidgets.QMessageBox()
             save_dialog.setWindowTitle("Save changes to '{filename}' before closing?".format(filename=filename))
             save_dialog.setText("Changes will be lost if you don't save them")
-            save_dialog.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-            save_dialog.setDefaultButton(QMessageBox.Save)
+            save_dialog.setStandardButtons(
+                QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel)
+            save_dialog.setDefaultButton(QtWidgets.QMessageBox.Save)
 
             ret = save_dialog.exec_()
-            if ret == QMessageBox.Save:
+            if ret == QtWidgets.QMessageBox.Save:
                 self.save_scene()
                 return True
-            elif ret == QMessageBox.Discard:
+            elif ret == QtWidgets.QMessageBox.Discard:
                 return True
-            elif ret == QMessageBox.Cancel:
+            elif ret == QtWidgets.QMessageBox.Cancel:
                 return False
 
         return True
 
-    @Slot()
+    @QtCore.Slot()
     def refresh_nodes(self):
         register.reload_node_registry()
         self._populate_toolbox()
 
-    @Slot()
+    @QtCore.Slot()
     def new_scene(self):
         if self.save_changes_dialog():
             self.stop_thread()
@@ -876,10 +860,11 @@ class MainWindow(QMainWindow):
 
             self._update_window_title()
 
-    @Slot()
+    @QtCore.Slot()
     def open_scene(self):
         if self.save_changes_dialog():
-            filename, filter_ = QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(), 'Scene Files (*.json)')
+            filename, filter_ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(),
+                                                                      'Scene Files (*.json)')
             if filename:
                 self.stop_thread()
                 self.stop_timers()
@@ -889,13 +874,14 @@ class MainWindow(QMainWindow):
 
                 self._update_window_title()
 
-    @Slot()
+    @QtCore.Slot()
     def save_scene_as(self):
-        filename, filter_ = QFileDialog.getSaveFileName(self, 'Save Scene', os.getcwd(), 'Scene Files (*.json)')
+        filename, filter_ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save Scene', os.getcwd(),
+                                                                  'Scene Files (*.json)')
         if filename:
             self.save_file(filename)
 
-    @Slot()
+    @QtCore.Slot()
     def save_scene(self):
         if self.filename:
             self.save_file(self.filename)
@@ -906,11 +892,11 @@ class MainWindow(QMainWindow):
     def toggle_visible(self):
         self.setVisible(not self.isVisible())
 
-    @Slot()
+    @QtCore.Slot()
     def exit_app(self):
         self.stop_thread()
         self.thread_.deleteLater()
-        qapp = QApplication.instance()
+        qapp = QtWidgets.QApplication.instance()
         qapp.exit()
 
     def closeEvent(self, event):
@@ -926,7 +912,7 @@ def show_about(parent):
 
 
 def show_splashscreen(animate=False):
-    splash_pix = QtGui.QPixmap(path + '/icons/splashscreen.002.png')
+    splash_pix = QtGui.QPixmap(config.path + '/icons/splashscreen.002.png')
     splash = SplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     splash.showMessage(splash.tr("Subotai 1.0.0 Beta"),
                        QtCore.Qt.AlignBottom or QtCore.Qt.AlignHCenter,
@@ -1005,9 +991,9 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
         print_params_from_data(data=data)
         sys.exit()
 
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     app.startingUp()
-    app.setWindowIcon(QIcon(path + "/icons/waves.003.png"))
+    app.setWindowIcon(QtGui.QIcon(config.path + "/icons/waves.003.png"))
 
     main_window = MainWindow()
     main_window.start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
