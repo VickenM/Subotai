@@ -666,7 +666,7 @@ def show_about(parent):
 def show_splashscreen(animate=False):
     splash_pix = QtGui.QPixmap(config.path + '/icons/splashscreen.002.png')
     splash = SplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
-    splash.showMessage(splash.tr("Subotai 1.0.0 Beta"),
+    splash.showMessage(splash.tr("Subotai " + config.version),
                        QtCore.Qt.AlignBottom or QtCore.Qt.AlignHCenter,
                        color=QtGui.QColor(255, 255, 255))
 
