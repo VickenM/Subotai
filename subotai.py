@@ -223,7 +223,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
 
         self.setWindowTitle('Subotai')
-        self.setWindowIcon(QtGui.QIcon(config.path + "/icons/waves.003.png"))
+        self.setWindowIcon(QtGui.QIcon(config.path + "/icons/icon.png"))
 
         self.view = EventView()
         self.scene = EventFlow()
@@ -311,7 +311,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.trayIconMenu.addAction(self.actions_map.get_action('exit'))
 
         self.trayIcon = QtWidgets.QSystemTrayIcon(self)
-        self.trayIcon.setIcon(QtGui.QIcon(config.path + '/icons/waves.003.png'))
+        self.trayIcon.setIcon(QtGui.QIcon(config.path + '/icons/icon.png'))
         self.trayIcon.setVisible(True)
         self.trayIcon.activated.connect(self.showNormal)
         self.trayIcon.setContextMenu(self.trayIconMenu)
@@ -664,7 +664,7 @@ def show_about(parent):
 
 
 def show_splashscreen(animate=False):
-    splash_pix = QtGui.QPixmap(config.path + '/icons/splashscreen.002.png')
+    splash_pix = QtGui.QPixmap(config.path + '/icons/splashscreen.png')
     splash = SplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
     splash.showMessage(splash.tr("Subotai " + config.version),
                        QtCore.Qt.AlignBottom or QtCore.Qt.AlignHCenter,
@@ -745,7 +745,7 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
 
     app = QtWidgets.QApplication(sys.argv)
     app.startingUp()
-    app.setWindowIcon(QtGui.QIcon(config.path + "/icons/waves.003.png"))
+    app.setWindowIcon(QtGui.QIcon(config.path + "/icons/icon.png"))
 
     main_window = MainWindow()
     main_window.start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted

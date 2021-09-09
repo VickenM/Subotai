@@ -1,5 +1,7 @@
 import os
 
+version = '0.1.0'
+
 path = os.path.dirname(os.path.abspath(__file__))
 
 addons_env_var = 'SUBOTAI_ADDONS'
