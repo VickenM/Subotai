@@ -271,7 +271,6 @@ class MainWindow(QtWidgets.QMainWindow):
         layout = QtWidgets.QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(splitter)
-
         central_widget = QtWidgets.QWidget(parent=self)
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
@@ -318,20 +317,18 @@ class MainWindow(QtWidgets.QMainWindow):
         help_menu = self.menuBar().addMenu('Help')
         help_menu.addAction(self.actions_map.get_action('about'))
 
-        self.trayIcon = QtWidgets.QSystemTrayIcon(self)
-        self.trayIcon.setIcon(QtGui.QIcon(config.path + '/icons/waves.003.png'))
-        self.trayIcon.setVisible(True)
-        self.trayIcon.activated.connect(self.showNormal)
-
         self.trayIconMenu = QtWidgets.QMenu(self)
         self.trayIconMenu.addAction(self.actions_map.get_action('toggle_window'))
         self.trayIconMenu.addSeparator()
         self.trayIconMenu.addAction(self.actions_map.get_action('exit'))
 
+        self.trayIcon = QtWidgets.QSystemTrayIcon(self)
+        self.trayIcon.setIcon(QtGui.QIcon(config.path + '/icons/waves.003.png'))
+        self.trayIcon.setVisible(True)
+        self.trayIcon.activated.connect(self.showNormal)
         self.trayIcon.setContextMenu(self.trayIconMenu)
 
-        app = QtWidgets.QApplication.instance()
-        app.trayIcon = self.trayIcon
+        QtWidgets.QApplication.instance().trayIcon = self.trayIcon
 
     def _update_window_title(self):
         title = 'Subotai'
