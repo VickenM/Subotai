@@ -409,20 +409,37 @@ class MainWindow(QtWidgets.QMainWindow):
                                  shell=False)
 
     def load_data(self, data):
-        new_nodes = {}
+        self.load_scene_data(data, pos=None)
+
+    def load_scene_data(self, data, pos=None):
+        node_map = {}  # map from copied node id to newly created node id
+        new_nodes = {}  # hold onto newly created nodes so that we can change the selection to them after paste
+
+        relative_pos = None
         for node in data['nodes']:
             type_ = node['node_obj'].split('.')[-1]
             n = self.scene.create_node_of_type(type_)
-            if not n:
-                print('WARNING: was unable to create node of type', type_)
-                continue
             n.node_obj.moveToThread(self.thread_)
-            n.node_obj.obj_id = node['id']
             n.node_obj.set_active(node.get('active', True))
-            n.setPos(*node['position'])
+
+            if pos:
+                if not relative_pos:
+                    relative_pos = QtCore.QPointF(node['position'][0], node['position'][1])
+                    n.setPos(pos.x(), pos.y())
+                else:
+                    offset_x = node['position'][0] - relative_pos.x()
+                    offset_y = node['position'][1] - relative_pos.y()
+                    n.setPos(pos.x() + offset_x, pos.y() + offset_y)
+            else:
+                n.setPos(*node['position'])
+
             n.setSize(*node.get('size', (100, 100)))
             n.name.setPlainText(node.get('name', n.name_))
             new_nodes[n] = node
+
+            # map the id of the copied node to the id of the newly created one.
+            # we'll need this to know how to reconnect the copied edges
+            node_map[node['id']] = n.node_obj.obj_id
 
         # TODO: when saving files out, edges come in arbitrary order. so nodes with dynamic inputs need to be connected in the right order. sorting here is kind of hack to get the order right
         for edge in sorted(data['edges'], key=lambda edge_pair: edge_pair[1]):
@@ -430,7 +447,10 @@ class MainWindow(QtWidgets.QMainWindow):
             s_obj_id, s_plug = source.split('.')
             t_obj_id, t_plug = target.split('.')
 
-            source_plug = target_plug = None
+            # remap the source and target nodes to the newly created nodes
+            s_obj_id = node_map[s_obj_id]
+            t_obj_id = node_map[t_obj_id]
+
             s_node = self.scene.get_node_by_id(s_obj_id)
             for o in s_node.outputs:
                 if o.type_ == s_plug:
@@ -472,25 +492,50 @@ class MainWindow(QtWidgets.QMainWindow):
 
         for group in data['groups']:
             g = self.scene.create_group()
-            g.setPos(*group['position'])
+            if pos:
+                if not relative_pos:
+                    relative_pos = QtCore.QPointF(group['position'][0], group['position'][1])
+                    g.setPos(pos.x(), pos.y())
+                else:
+                    offset_x = group['position'][0] - relative_pos.x()
+                    offset_y = group['position'][1] - relative_pos.y()
+
+                    g.setPos(pos.x() + offset_x, pos.y() + offset_y)
+            else:
+                g.setPos(*group['position'])
+
             g.setSize(*group['size'])
             g.name.setPlainText(group.get('name', g.name_))
+            new_nodes[g] = group
 
-            # print(data)
+        return new_nodes
 
-    def save_data(self):
+    def get_scene_data(self, selected=False):
         data = {'nodes': [], 'edges': [], 'groups': []}
-        for node in self.scene.get_all_nodes():
+
+        if selected:
+            nodes = sorted(self.scene.get_selected_nodes(), key=lambda n: (n.pos().x(), n.pos().y()))
+            groups = sorted(self.scene.get_selected_groups(), key=lambda g: (g.pos().x(), g.pos().y()))
+        else:
+            nodes = self.scene.get_all_nodes()
+            groups = self.scene.get_all_groups()
+
+        for node in nodes:
             data['nodes'].append(node.to_dict())
+
+        all_ids = [n['id'] for n in data['nodes']]
 
         # TODO: should do edges and groups like nodes with to_dict()
 
         for edge in self.scene.get_all_edges():
-            edge_info = (str(edge.source_plug.parentItem().node_obj.obj_id) + '.' + edge.source_plug.type_,
-                         str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
-            data['edges'].append(edge_info)
+            source_id = str(edge.source_plug.parentItem().node_obj.obj_id)
+            target_id = str(edge.target_plug.parentItem().node_obj.obj_id)
+            if (source_id in all_ids) and (target_id in all_ids):
+                edge_info = (str(edge.source_plug.parentItem().node_obj.obj_id) + '.' + edge.source_plug.type_,
+                             str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
+                data['edges'].append(edge_info)
 
-        for group in self.scene.get_all_groups():
+        for group in groups:
             data['groups'].append(
                 {'position': (group.pos().x(), group.pos().y()),
                  'size': (group.width, group.height),
@@ -499,6 +544,9 @@ class MainWindow(QtWidgets.QMainWindow):
             )
 
         return data
+
+    def save_data(self):
+        return self.get_scene_data(selected=False)
 
     def load_json(self, json_string):
         data = json.loads(json_string)
@@ -574,34 +622,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # TODO this function is almost identical to save_data
     @QtCore.Slot()
     def copy_selected(self):
-        data = {'nodes': [], 'edges': [], 'groups': []}
-        # selected_nodes =  sorted(self.scene.get_selected_nodes(), key=lambda n: n.pos().x())
-
-        for node in sorted(self.scene.get_selected_nodes(), key=lambda n: (n.pos().x(), n.pos().y())):
-            data['nodes'].append(node.to_dict())
-
-        all_ids = [n['id'] for n in data['nodes']]
-
-        # TODO: should do edges and groups like nodes with to_dict()
-
-        for edge in self.scene.get_all_edges():
-            source_id = str(edge.source_plug.parentItem().node_obj.obj_id)
-            target_id = str(edge.target_plug.parentItem().node_obj.obj_id)
-            if (source_id in all_ids) and (target_id in all_ids):
-                edge_info = (str(edge.source_plug.parentItem().node_obj.obj_id) + '.' + edge.source_plug.type_,
-                             str(edge.target_plug.parentItem().node_obj.obj_id) + '.' + edge.target_plug.type_)
-                data['edges'].append(edge_info)
-
-        # for group in self.scene.get_selected_groups():
-        for group in sorted(self.scene.get_selected_groups(), key=lambda g: (g.pos().x(), g.pos().y())):
-            data['groups'].append(
-                {'position': (group.pos().x(), group.pos().y()),
-                 'size': (group.width, group.height),
-                 'name': group.name
-                 }
-            )
-
-        self.saved_data = data
+        self.saved_data = self.get_scene_data(selected=True)
 
     # TODO this function is almost identical to load_data
     @QtCore.Slot()
@@ -613,101 +634,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.saved_data:
             return
 
-        data = self.saved_data
-        node_map = {}  # map from copied node id to newly created node id
-        new_nodes = {}  # hold onto newly created nodes so that we can change the selection to them after paste
-
-        relative_pos = None
-        for node in data['nodes']:
-            type_ = node['node_obj'].split('.')[-1]
-            n = self.scene.create_node_of_type(type_)
-            n.node_obj.moveToThread(self.thread_)
-            n.node_obj.set_active(node.get('active', True))
-
-            if not relative_pos:
-                relative_pos = QtCore.QPointF(node['position'][0], node['position'][1])
-                n.setPos(pos.x(), pos.y())
-            else:
-                offset_x = node['position'][0] - relative_pos.x()
-                offset_y = node['position'][1] - relative_pos.y()
-
-                n.setPos(pos.x() + offset_x, pos.y() + offset_y)
-
-            # n.setPos(node['position'][0] + 20, node['position'][1] + 20)
-            n.setSize(*node.get('size', (100, 100)))
-            n.name.setPlainText(node.get('name', n.name_))
-            new_nodes[n] = node
-
-            # map the id of the copied node to the id of the newly created one.
-            # we'll need this to know how to reconnect the copied edges
-            node_map[node['id']] = n.node_obj.obj_id
-
-        # TODO: when saving files out, edges come in arbitrary order. so nodes with dynamic inputs need to be connected in the right order. sorting here is kind of hack to get the order right
-        for edge in sorted(data['edges'], key=lambda edge_pair: edge_pair[1]):
-            source, target = edge
-            s_obj_id, s_plug = source.split('.')
-            t_obj_id, t_plug = target.split('.')
-
-            # remap the source and target nodes to the newly created nodes
-            s_obj_id = node_map[s_obj_id]
-            t_obj_id = node_map[t_obj_id]
-
-            s_node = self.scene.get_node_by_id(s_obj_id)
-            for o in s_node.outputs:
-                if o.type_ == s_plug:
-                    source_plug = o
-                    break
-
-            t_node = self.scene.get_node_by_id(t_obj_id)
-            for o in t_node.inputs:
-                if o.type_ == t_plug:
-                    target_plug = o
-                    break
-
-            if source_plug and target_plug:
-                self.scene.create_edge(source_plug, target_plug)
-
-        for n, node in new_nodes.items():
-            for pluggable, params in node.get('params', {}).items():
-                pluggable = int(pluggable)
-                for param, value in params.items():
-                    if type(value) == list:
-                        p = n.node_obj.get_first_param(param, pluggable=pluggable)
-                        from eventnodes.params import StringParam
-                        s = []
-                        for item in value:
-                            s.append(StringParam(value=item))
-
-                        p.value.clear()
-                        p.value.extend(s)
-                        continue
-                    p = n.node_obj.get_first_param(param, pluggable=pluggable)
-                    from enum import Enum
-                    if not p:
-                        continue
-                    if issubclass(p.value.__class__, Enum):
-                        p._value = p.enum(value)
-                    else:
-                        p._value = value
-            n.node_obj.update()
-
-        for group in data['groups']:
-            g = self.scene.create_group()
-            # g.setPos(group['position'][0] + 20, group['position'][1] + 20)
-            # g.setPos(pos.x(), pos.y())
-            if not relative_pos:
-                relative_pos = QtCore.QPointF(group['position'][0], group['position'][1])
-                g.setPos(pos.x(), pos.y())
-            else:
-                offset_x = group['position'][0] - relative_pos.x()
-                offset_y = group['position'][1] - relative_pos.y()
-
-                g.setPos(pos.x() + offset_x, pos.y() + offset_y)
-
-            g.setSize(*group['size'])
-            g.name.setPlainText(group.get('name', g.name_))
-            new_nodes[g] = group
-
+        new_nodes = self.load_scene_data(self.saved_data, pos=pos)
         self.scene.clearSelection()
         for n in new_nodes.keys():
             n.setSelected(True)
