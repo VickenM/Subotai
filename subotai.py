@@ -16,6 +16,7 @@ from pywerlines import (
 from ui.parameters import Parameters
 from ui.toolbox import ToolBox, ToolItem
 
+import actions
 import config
 import register
 import appnode
@@ -236,11 +237,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Subotai')
         self.setWindowIcon(QtGui.QIcon(config.path + "/icons/waves.003.png"))
 
-        view = EventView()
-        scene = EventFlow()
-        scene.setSceneRect(0, 0, 100000, 100000)
-        scene.setItemIndexMethod(scene.NoIndex)
-        view.setScene(scene)
+        self.view = EventView()
+        self.scene = EventFlow()
+        self.scene.setSceneRect(0, 0, 100000, 100000)
+        self.scene.setItemIndexMethod(self.scene.NoIndex)
+        self.view.setScene(self.scene)
 
         self.filename = None
         self.unsaved = False
@@ -250,23 +251,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self._populate_toolbox()
         self.toolbox.itemDoubleClickedSignal.connect(self.new_node_selected)
 
-        scene.nodes_selected.connect(selected_nodes)
-        scene.nodes_deleted.connect(deleted_nodes)
-        scene.nodes_added.connect(added_nodes)
-        scene.plugs_connected.connect(connected_plugs)
-        scene.plugs_disconnected.connect(disconnected_plugs)
-        scene.nodes_selected.connect(self.selected_nodes)
-        scene.items_moved.connect(self.items_moved)
-
-        self.scene = scene
-        self.view = view
+        self.scene.nodes_selected.connect(selected_nodes)
+        self.scene.nodes_deleted.connect(deleted_nodes)
+        self.scene.nodes_added.connect(added_nodes)
+        self.scene.plugs_connected.connect(connected_plugs)
+        self.scene.plugs_disconnected.connect(disconnected_plugs)
+        self.scene.nodes_selected.connect(self.selected_nodes)
+        self.scene.items_moved.connect(self.items_moved)
 
         self.parameters = Parameters()
         self.parameters.parameter_changed.connect(self.parameter_changed)
 
         splitter = QtWidgets.QSplitter()
         splitter.addWidget(self.toolbox)
-        splitter.addWidget(view)
+        splitter.addWidget(self.view)
         splitter.addWidget(self.parameters)
         splitter.setSizes([100, 400, 100])
 
@@ -281,79 +279,44 @@ class MainWindow(QtWidgets.QMainWindow):
         self.view.node_dropped_signal.connect(self.new_node_selected)
         self.view.context_menu_signal.connect(self.context_menu)
 
+        self.actions_map = actions.ActionMap()
+        self._init_actions(config.action_shortcuts, self.actions_map)
+
         toolbar = self.addToolBar('Run')
-        action = toolbar.addAction('&Run')
-        action.setIcon(QtGui.QIcon(config.path + '/icons/run.jpg'))
-        action.setShortcut(QtGui.QKeySequence('Space'))
-        action.triggered.connect(lambda x: self.scene.eval())
+        toolbar.addAction(self.actions_map.get_action('run'))
 
         file_menu = self.menuBar().addMenu('&File')
-        action = file_menu.addAction('&New Scene')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+n'))
-        action.triggered.connect(self.new_scene)
-
-        action = file_menu.addAction('&Open Scene')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+o'))
-        action.triggered.connect(self.open_scene)
-
+        file_menu.addAction(self.actions_map.get_action('new_scene'))
+        file_menu.addAction(self.actions_map.get_action('open_scene'))
         file_menu.addSeparator()
-        action = file_menu.addAction('&Save Scene')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+s'))
-        action.triggered.connect(self.save_scene)
-
-        action = file_menu.addAction('&Save Scene As')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+Shift+s'))
-        action.triggered.connect(self.save_scene_as)
-
+        file_menu.addAction(self.actions_map.get_action('save_scene'))
+        file_menu.addAction(self.actions_map.get_action('save_scene_as'))
         file_menu.addSeparator()
-        action = file_menu.addAction('&Reload Nodes')
-        action.setShortcut(QtGui.QKeySequence('F3'))
-        action.triggered.connect(self.refresh_nodes)
-
+        file_menu.addAction(self.actions_map.get_action('reload'))
         file_menu.addSeparator()
-
-        action = file_menu.addAction('&Exit')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+q'))
-        action.triggered.connect(self.exit_app)
+        file_menu.addAction(self.actions_map.get_action('exit'))
 
         edit_menu = self.menuBar().addMenu('&Edit')
-
-        self._create_actions()
-
-        edit_menu.addAction(self.group_action)
-
-        edit_menu.addAction(self.empty_group_action)
-
+        edit_menu.addAction(self.actions_map.get_action('group'))
+        edit_menu.addAction(self.actions_map.get_action('empty_group'))
         edit_menu.addSeparator()
-        edit_menu.addAction(self.copy_action)
-        edit_menu.addAction(self.paste_action)
-        edit_menu.addAction(self.delete_action)
-
+        edit_menu.addAction(self.actions_map.get_action('copy'))
+        edit_menu.addAction(self.actions_map.get_action('paste'))
+        edit_menu.addAction(self.actions_map.get_action('delete'))
         edit_menu.addSeparator()
-        action = edit_menu.addAction('&Select All')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+a'))
-        action.triggered.connect(self.select_all)
+        edit_menu.addAction(self.actions_map.get_action('select_all'))
+        edit_menu.addAction(self.actions_map.get_action('toggle_names'))
 
         view_menu = self.menuBar().addMenu('&View')
-        action = view_menu.addAction('&Sow/Hide names')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+.'))
-        action.triggered.connect(lambda x: self.scene.toggle_names())
+        view_menu.addAction(self.actions_map.get_action('toggle_names'))
 
         self.menuBar().addSeparator()
-
         run_menu = self.menuBar().addMenu('Process')
-
-        action = run_menu.addAction('&Create new process')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+r'))
-        action.triggered.connect(lambda x: self.spawn(background=False))
-
-        action = run_menu.addAction('&Create new background process')
-        action.setShortcut(QtGui.QKeySequence('Ctrl+Shift+r'))
-        action.triggered.connect(lambda x: self.spawn(background=True))
+        run_menu.addAction(self.actions_map.get_action('new_process'))
+        run_menu.addAction(self.actions_map.get_action('new_background_process'))
 
         help_menu = self.menuBar().addMenu('Help')
-        action = help_menu.addAction('About')
-        action.triggered.connect(lambda x: show_splashscreen(animate=False))
+        help_menu.addAction(self.actions_map.get_action('about'))
 
         self.trayIcon = QtWidgets.QSystemTrayIcon(self)
         self.trayIcon.setIcon(QtGui.QIcon(config.path + '/icons/waves.003.png'))
@@ -361,9 +324,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.trayIcon.activated.connect(self.showNormal)
 
         self.trayIconMenu = QtWidgets.QMenu(self)
-        self.trayIconMenu.addAction('Show/Hide Window').triggered.connect(self.toggle_visible)
+        self.trayIconMenu.addAction(self.actions_map.get_action('toggle_window'))
         self.trayIconMenu.addSeparator()
-        self.trayIconMenu.addAction('Exit').triggered.connect(self.exit_app)
+        self.trayIconMenu.addAction(self.actions_map.get_action('exit'))
 
         self.trayIcon.setContextMenu(self.trayIconMenu)
 
@@ -386,29 +349,38 @@ class MainWindow(QtWidgets.QMainWindow):
         self.toolbox.addSections(config.node_categories)
         for node_name, event_node in register.node_registry.items():
             self.toolbox.addItem(
-                ToolItem(icon=QtGui.QIcon(config.path + '/icons/flow.png'), label=node_name, sections=event_node.categories,
+                ToolItem(icon=QtGui.QIcon(config.path + '/icons/flow.png'), label=node_name,
+                         sections=event_node.categories,
                          tooltip=event_node.description))
 
-    def _create_actions(self):
-        self.group_action = QtWidgets.QAction('&Group Selection')
-        self.group_action.setShortcut(QtGui.QKeySequence('Ctrl+G'))
-        self.group_action.triggered.connect(self.group_selected)
+    def _init_actions(self, action_shortcuts, action_map):
+        for action_name, shortcut in action_shortcuts.items():
+            action = action_map.get_action(action_name)
+            if action:
+                action.setShortcut(QtGui.QKeySequence(shortcut))
 
-        self.empty_group_action = QtWidgets.QAction('&Empty Group')
-        self.empty_group_action.setShortcut(QtGui.QKeySequence('Ctrl+Alt+G'))
-        self.empty_group_action.triggered.connect(self.new_group)
+        self.actions_map.get_action('run').setIcon(QtGui.QIcon(config.path + '/icons/run.jpg'))
 
-        self.copy_action = QtWidgets.QAction('&Copy')
-        self.copy_action.setShortcut(QtGui.QKeySequence('Ctrl+c'))
-        self.copy_action.triggered.connect(self.copy_selected)
+        self.actions_map.get_action('group').triggered.connect(self.group_selected)
+        self.actions_map.get_action('empty_group').triggered.connect(self.new_group)
+        self.actions_map.get_action('copy').triggered.connect(self.copy_selected)
+        self.actions_map.get_action('paste').triggered.connect(self.paste_selected)
+        self.actions_map.get_action('delete').triggered.connect(self.delete_selected)
+        self.actions_map.get_action('run').triggered.connect(lambda x: self.scene.eval())
+        self.actions_map.get_action('new_scene').triggered.connect(self.new_scene)
+        self.actions_map.get_action('open_scene').triggered.connect(self.open_scene)
+        self.actions_map.get_action('save_scene').triggered.connect(self.save_scene)
+        self.actions_map.get_action('save_scene_as').triggered.connect(self.save_scene_as)
+        self.actions_map.get_action('reload').triggered.connect(self.refresh_nodes)
+        self.actions_map.get_action('exit').triggered.connect(self.exit_app)
+        self.actions_map.get_action('select_all').triggered.connect(self.select_all)
+        self.actions_map.get_action('toggle_names').triggered.connect(lambda x: self.scene.toggle_names())
 
-        self.paste_action = QtWidgets.QAction('&Paste')
-        self.paste_action.setShortcut(QtGui.QKeySequence('Ctrl+v'))
-        self.paste_action.triggered.connect(self.paste_selected)
+        self.actions_map.get_action('new_process').triggered.connect(lambda x: self.spawn(background=False))
+        self.actions_map.get_action('new_background_process').triggered.connect(lambda x: self.spawn(background=True))
+        self.actions_map.get_action('about').triggered.connect(lambda x: show_splashscreen(animate=False))
 
-        self.delete_action = QtWidgets.QAction('&Delete')
-        self.delete_action.setShortcut(QtGui.QKeySequence('Delete'))
-        self.delete_action.triggered.connect(self.delete_selected)
+        self.actions_map.get_action('toggle_window').triggered.connect(self.toggle_visible)
 
     # @QtCore.Slot()
     def start_thread(self):
@@ -787,10 +759,10 @@ class MainWindow(QtWidgets.QMainWindow):
                                                                                          y))  # TODO: if I dont add 1 here, the app will crash when setPos is called in the slot function
 
             menu.addSeparator()
-            menu.addAction(self.group_action)
-            menu.addAction(self.copy_action)
-            menu.addAction(self.paste_action)
-            menu.addAction(self.delete_action)
+            menu.addAction(self.actions_map.get_action('group'))
+            menu.addAction(self.actions_map.get_action('copy'))
+            menu.addAction(self.actions_map.get_action('paste'))
+            menu.addAction(self.actions_map.get_action('delete'))
             menu.exec_(self.view.mapToGlobal(QtCore.QPoint(x, y)))
 
         node = self.view.get_node_at(QtCore.QPoint(x, y))
