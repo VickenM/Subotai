@@ -154,3 +154,12 @@ def delete_selected(scene):
 
 def select_all(scene):
     scene.select_all()
+
+
+def select(scene, items=None):
+    if items is None:
+        items = []
+
+    scene.clearSelection()
+    for item in items:
+        item.setSelected(True)

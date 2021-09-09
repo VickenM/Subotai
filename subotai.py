@@ -474,12 +474,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def select_all(self):
         scenetools.select_all(self.scene)
 
-    # TODO this function is almost identical to save_data
     @QtCore.Slot()
     def copy_selected(self):
         self.saved_data = scenetools.get_scene_data(self.scene, selected=True)
 
-    # TODO this function is almost identical to load_data
     @QtCore.Slot()
     def paste_selected(self):
         if not self.saved_data:
@@ -489,11 +487,13 @@ class MainWindow(QtWidgets.QMainWindow):
         pos = self.view.mapToScene(pos)
 
         new_items = scenetools.load_scene_data(self.scene, self.saved_data, pos=pos)
-        self.scene.clearSelection()
-        for n in new_items.keys():
-            n.setSelected(True)
-            if isinstance(n, pyweritems.PywerNode):
-                n.node_obj.moveToThread(self.thread_)
+        new_items = new_items.keys()
+
+        new_nodes = [n for n in new_items if isinstance(n, pyweritems.PywerNode)]
+        for n in new_nodes:
+            n.node_obj.moveToThread(self.thread_)
+
+        scenetools.select(self.scene, items=new_items)
         self.copy_selected()
 
     @QtCore.Slot(str, int, int)
@@ -502,7 +502,8 @@ class MainWindow(QtWidgets.QMainWindow):
         node.node_obj.moveToThread(self.thread_)
         position = self.view.mapToScene(x, y)
         node.setPos(position)
-        self.scene.select_node(node)
+
+        scenetools.select(self.scene, items=[node])
 
         self.unsaved = True
         self._update_window_title()
