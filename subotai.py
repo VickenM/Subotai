@@ -436,14 +436,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def keyPressEvent(self, event):
         pass
 
-    def stop_timers(self):
+    def deactivate_event_nodes(self):
         scene_nodes = self.scene.list_nodes()
         for node in scene_nodes:
             node.stop_spinner()
             if node.node_obj.is_computable():
                 node.node_obj.unset_ui_node()
 
-        timers = [item for item in scene_nodes if isinstance(item.node_obj, eventnodes.timer.TimerNode)]
+        timers = [item for item in scene_nodes if isinstance(item.node_obj, eventnodes.base.EventNode)]
         for timer in timers:
             timer.node_obj.deactivate()
 
@@ -601,8 +601,8 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def new_scene(self):
         if self.save_changes_dialog():
+            self.deactivate_event_nodes()
             self.stop_thread()
-            self.stop_timers()
             self.start_thread()  # TODO: do i need this? test removing it.
             self.scene.clear()
 
@@ -618,8 +618,8 @@ class MainWindow(QtWidgets.QMainWindow):
             filename, filter_ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(),
                                                                       'Scene Files (*.json)')
             if filename:
+                self.deactivate_event_nodes()
                 self.stop_thread()
-                self.stop_timers()
                 self.scene.clear()
                 self.start_thread()  # TODO: do i need this? test removing it.
                 self.load_file(filename)
