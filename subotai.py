@@ -7,19 +7,18 @@ from PySide2 import QtCore
 from PySide2 import QtGui
 from PySide2 import QtWidgets
 
-from pywerlines import (
-    pyweritems,
-    pywerscene,
-    pywerview
-)
+from pywerlines import pyweritems
 
 from ui.parameters import Parameters
 from ui.toolbox import ToolBox, ToolItem
+from ui.splashscreen import SplashScreen
+
+from appscene import AppScene
+from appview import AppView
 
 import actions
 import config
 import register
-import appnode
 import eventnodes
 import scenetools
 
@@ -77,147 +76,6 @@ def disconnected_plugs(plug1, plug2):
         output.disconnect_()
 
 
-class SplashScreen(QtWidgets.QSplashScreen):
-    def __init__(self, pixmap, flags):
-        super().__init__(pixmap, flags)
-
-        # TODO I dont get it, implementing the mousePressEvent(...) function doesn't work. this lambda assignment is hack
-        self.mousePressEvent = lambda x: self.close()
-
-
-class EventFlow(pywerscene.PywerScene):
-    def new_node(self, type_):
-        if type_ not in register.node_registry:
-            return None
-        event_node = register.node_registry[type_]
-        node = appnode.EventNode.from_event_node(event_node())
-        return node
-
-    def can_connect(self, source_plug, target_plug):
-        if not super().can_connect(source_plug, target_plug):
-            return False
-
-        import eventnodes.signal
-        source_signal = isinstance(source_plug.plug_obj, eventnodes.signal.Signal)
-        target_signal = isinstance(target_plug.plug_obj, eventnodes.signal.Signal)
-        if source_signal and target_signal:
-            return True
-
-        # if any is a signal but all are not, then only one of them is
-        if any([source_signal, target_signal]) and not all([source_signal, target_signal]):
-            return False
-
-        # only one connection allowed to param plugs
-        import eventnodes.params
-        if (source_plug.plug_obj.get_pluggable() & eventnodes.params.INPUT_PLUG):
-            input_plug = source_plug
-        else:
-            input_plug = target_plug
-
-        if len(input_plug.edges):
-            drag_edge = [e for e in input_plug.edges if not all([e.source_plug, e.target_plug])]
-            if not drag_edge:
-                return False
-
-        return source_plug.plug_obj.type == target_plug.plug_obj.type
-
-    def create_node_of_type(self, type_):
-        node = self.new_node(type_)
-        if node:
-            self.add_node(node)
-        return node
-
-    def create_edge(self, source_plug, target_plug):
-        super(EventFlow, self).create_edge(source_plug, target_plug)
-
-    def get_node_by_id(self, obj_id):
-        nodes = self.get_all_nodes()
-        for node in nodes:
-            if node.node_obj.obj_id == obj_id:
-                return node
-
-    def get_all_edges(self):
-        return [item for item in self.items() if isinstance(item, pyweritems.PywerEdge)]
-
-    def get_all_nodes(self):
-        return [item for item in self.items() if isinstance(item, pyweritems.PywerNode)]
-
-    def get_all_groups(self):
-        return [item for item in self.items() if isinstance(item, pyweritems.PywerGroup)]
-
-    def remove_selected_nodes(self):
-        nodes = self.get_selected_nodes()
-        for node in nodes:
-            node.node_obj.terminate()
-        return super().remove_selected_nodes()
-
-    def clear(self):
-        for node in self.get_all_nodes():
-            node.node_obj.terminate()
-        return super().clear()
-
-    def eval(self):
-        selected_nodes = self.get_selected_nodes()
-        if not selected_nodes:
-            print('No nodes selected')
-            return
-
-        selected_node = selected_nodes[0]
-
-        mnode = selected_node.node_obj
-        if mnode.computable:
-            mnode.calculate.emit()
-
-
-class EventView(pywerview.PywerView):
-    node_dropped_signal = QtCore.Signal(str, int, int)
-    context_menu_signal = QtCore.Signal(int, int)
-
-    def __init__(self):
-        super().__init__()
-        self.setAcceptDrops(True)
-
-    def dragMoveEvent(self, event):
-        # needed to include this function for the drops to work
-        pass
-
-    def dragLeaveEvent(self, event):
-        event.ignore()
-
-    def dragEnterEvent(self, event):
-        if event.mimeData().data('application/x-node'):
-            if event.source():
-                event.setDropAction(QtCore.Qt.MoveAction)
-                event.accept()
-            else:
-                event.acceptProposedAction()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event):
-        node = event.mimeData().data('application/x-node')
-        position = event.pos()
-
-        if node:
-            self.node_dropped_signal.emit(bytes(node).decode(), position.x(), position.y())
-            event.accept()
-        else:
-            event.ignore()
-
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.RightButton:
-            self.setDragMode(self.NoDrag)
-            return
-        return super().mousePressEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        self.setDragMode(self.RubberBandDrag)
-        if event.button() == QtCore.Qt.RightButton:
-            self.context_menu_signal.emit(event.pos().x(), event.pos().y())
-
-        return super().mouseReleaseEvent(event)
-
-
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -225,8 +83,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Subotai')
         self.setWindowIcon(QtGui.QIcon(config.path + "/icons/icon.png"))
 
-        self.view = EventView()
-        self.scene = EventFlow()
+        self.view = AppView()
+        self.scene = AppScene()
         self.scene.setSceneRect(0, 0, 100000, 100000)
         self.scene.setItemIndexMethod(self.scene.NoIndex)
         self.view.setScene(self.scene)
