@@ -16,6 +16,7 @@ from ui.splashscreen import SplashScreen
 from appscene import AppScene
 from appview import AppView
 
+import commands
 import actions
 import config
 import register
@@ -89,6 +90,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.scene.setItemIndexMethod(self.scene.NoIndex)
         self.view.setScene(self.scene)
 
+        self.undo_stack = QtWidgets.QUndoStack()
+
         self.filename = None
         self.unsaved = False
         self.saved_data = None
@@ -142,6 +145,9 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(self.actions_map.get_action('exit'))
 
         edit_menu = self.menuBar().addMenu('&Edit')
+        edit_menu.addAction(self.actions_map.get_action('undo'))
+        edit_menu.addAction(self.actions_map.get_action('redo'))
+        edit_menu.addSeparator()
         edit_menu.addAction(self.actions_map.get_action('group'))
         edit_menu.addAction(self.actions_map.get_action('empty_group'))
         edit_menu.addSeparator()
@@ -197,13 +203,17 @@ class MainWindow(QtWidgets.QMainWindow):
                          tooltip=event_node.description))
 
     def _init_actions(self, action_shortcuts, action_map):
+
+        # set action shortcuts
         for action_name, shortcut in action_shortcuts.items():
             action = action_map.get_action(action_name)
             if action:
                 action.setShortcut(QtGui.QKeySequence(shortcut))
 
+        # set action icons
         self.actions_map.get_action('run').setIcon(QtGui.QIcon(config.path + '/icons/run.jpg'))
 
+        # set action slots
         self.actions_map.get_action('group').triggered.connect(self.group_selected)
         self.actions_map.get_action('empty_group').triggered.connect(self.new_group)
         self.actions_map.get_action('copy').triggered.connect(self.copy_selected)
@@ -215,14 +225,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions_map.get_action('save_scene').triggered.connect(self.save_scene)
         self.actions_map.get_action('save_scene_as').triggered.connect(self.save_scene_as)
         self.actions_map.get_action('reload').triggered.connect(self.refresh_nodes)
+        self.actions_map.get_action('undo').triggered.connect(self.undo)
+        self.actions_map.get_action('redo').triggered.connect(self.redo)
+
         self.actions_map.get_action('exit').triggered.connect(self.exit_app)
         self.actions_map.get_action('select_all').triggered.connect(self.select_all)
         self.actions_map.get_action('toggle_names').triggered.connect(lambda x: self.scene.toggle_names())
-
         self.actions_map.get_action('new_process').triggered.connect(lambda x: self.spawn(background=False))
         self.actions_map.get_action('new_background_process').triggered.connect(lambda x: self.spawn(background=True))
         self.actions_map.get_action('about').triggered.connect(lambda x: show_splashscreen(animate=False))
-
         self.actions_map.get_action('toggle_window').triggered.connect(self.toggle_visible)
 
     # @QtCore.Slot()
@@ -410,16 +421,35 @@ class MainWindow(QtWidgets.QMainWindow):
         show_new_nodes_menu()
 
     @QtCore.Slot(list)
-    def selected_nodes(self, nodes):
+    def selected_nodes(self, items):
+        # self.undo_stack.beginMacro('selection changed')
+        # for item in items:
+        #     self.undo_stack.push(commands.SelectionChanged(item))
+        # self.undo_stack.endMacro()
+
+        nodes = self.scene.get_selected_nodes()
         if nodes:
             self.parameters.set_node_obj(nodes[0].node_obj)
         else:
             self.parameters.set_node_obj(None)
 
-    @QtCore.Slot()
-    def items_moved(self):
+    @QtCore.Slot(list)
+    def items_moved(self, items, ):
+        self.undo_stack.beginMacro('items moved')
+        for item in items:
+            self.undo_stack.push(commands.ItemMoved(item))
+        self.undo_stack.endMacro()
+
         self.unsaved = True
         self._update_window_title()
+
+    @QtCore.Slot()
+    def undo(self):
+        self.undo_stack.undo()
+
+    @QtCore.Slot()
+    def redo(self):
+        self.undo_stack.redo()
 
     @QtCore.Slot()
     def parameter_changed(self):

@@ -295,6 +295,8 @@ class PywerNode(PywerItem):
         self.plug_spacing = 8
         self.header_height = 20
 
+        self.old_position = None
+
         self.active_text_color = QtCore.Qt.white
         self.inactive_text_color = QtCore.Qt.gray
         self.base_color = (25, 25, 25, 200)
@@ -325,6 +327,12 @@ class PywerNode(PywerItem):
         self.resizer.setConstrainY(True)
         self.resizer.resize_signal.connect(self.resize)
         self.adjust()
+
+    def set_old_position(self, position):
+        self.old_position = position
+
+    def get_old_position(self):
+        return self.old_position
 
     @Slot()
     def start_spinner(self):
@@ -497,9 +505,15 @@ class PywerNode(PywerItem):
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
             self.updateEdges()
-            self.scene().itemMoved()
 
         return super(PywerNode, self).itemChange(change, value)
+
+    def mousePressEvent(self, event):
+        self.old_position = self.pos()
+        return super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        return super().mouseReleaseEvent(event)
 
     def hoverMoveEvent(self, event):
         return super().hoverMoveEvent(event)
@@ -571,7 +585,7 @@ class Resizer(QtWidgets.QGraphicsObject):
                 if value.y() < self._min_size.y() - height:
                     value.setY(self._min_size.y() - height)
                 self.resize_signal.emit(value - self.pos())
-                self.scene().itemMoved()
+                # self.scene().itemMoved()
         return value
 
     def hoverEnterEvent(self, event):
@@ -594,9 +608,10 @@ class PywerGroup(PywerItem):
         self.height = 100
         self.header_height = 20
         self.header_color = (200, 200, 200, 155)
-
         self.base_color = (75, 75, 75, 100)
         self.selected_color = (255, 165, 0, 255)
+
+        self.old_position = None
 
         self.setFlag(self.ItemIsMovable)
 
@@ -618,6 +633,12 @@ class PywerGroup(PywerItem):
         self.contained_nodes = []
 
         self.move_children = True
+
+    def set_old_position(self, position):
+        self.old_position = position
+
+    def get_old_position(self):
+        return self.old_position
 
     @Slot(QtCore.QPointF)
     def resize(self, change):
@@ -681,7 +702,7 @@ class PywerGroup(PywerItem):
             for node in self.contained_nodes:
                 diff = pos - self.pos()
                 node.moveBy(diff.x(), diff.y())
-            self.scene().itemMoved()
+            # self.scene().itemMoved(self)
             return value
 
         return super(PywerGroup, self).itemChange(change, value)

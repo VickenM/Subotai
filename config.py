@@ -23,6 +23,8 @@ action_shortcuts = {
     'save_scene': 'Ctrl+s',
     'save_scene_as': 'Ctrl+Shift+s',
     'exit': 'Ctrl+q',
+    'undo': 'Ctrl+z',
+    'redo': 'Ctrl+y',
     'reload': 'F3',
     'new_process': 'Ctrl+r',
     'new_background_process': 'Ctrl+Shift+r',

@@ -24,6 +24,8 @@ class ActionMap:
             'about': QtWidgets.QAction('About'),
             'help': QtWidgets.QAction('Help'),
             'toggle_window': QtWidgets.QAction('Show/Hide Window'),
+            'undo': QtWidgets.QAction('Undo'),
+            'redo': QtWidgets.QAction('Redo'),
         }
 
     def get_action(self, action):

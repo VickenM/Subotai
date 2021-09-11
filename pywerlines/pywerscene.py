@@ -7,9 +7,12 @@ class PywerScene(QGraphicsScene):
     nodes_selected = QtCore.Signal(list)
     nodes_added = QtCore.Signal(list)
     nodes_deleted = QtCore.Signal(list)
-    items_moved = QtCore.Signal()
+    items_moved = QtCore.Signal(list)
     plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
     plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
+    group_nodes = QtCore.Signal(list)
+    group_added = QtCore.Signal(list)
+
 
     def __init_(self, **kwargs):
         super(PywerScene, self).__init__(**kwargs)
@@ -83,6 +86,9 @@ class PywerScene(QGraphicsScene):
     def get_selected_groups(self):
         return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerGroup)]
 
+    def get_selected_items(self):
+        return self.get_selected_nodes() + self.get_selected_groups()
+
     def remove_node(self, node):
         self._remove_node(node)
         self.emit_deleted_nodes([node])
@@ -146,8 +152,8 @@ class PywerScene(QGraphicsScene):
     def create_node_of_type(self, type_):
         pass
 
-    def itemMoved(self):
-        self.items_moved.emit()  # TODO: Emit the items that have moved
+    def itemsMoved(self, items):
+        self.items_moved.emit(items)
 
     def list_node_types(self):
         return []
