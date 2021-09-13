@@ -103,6 +103,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.scene.nodes_selected.connect(selected_nodes)
         self.scene.nodes_deleted.connect(deleted_nodes)
         self.scene.nodes_added.connect(added_nodes)
+        self.scene.nodes_added.connect(self.added_nodes)
+        self.scene.nodes_deleted.connect(self.removed_nodes)
         self.scene.plugs_connected.connect(connected_plugs)
         self.scene.plugs_disconnected.connect(disconnected_plugs)
         self.scene.nodes_selected.connect(self.selected_nodes)
@@ -421,8 +423,21 @@ class MainWindow(QtWidgets.QMainWindow):
         show_new_nodes_menu()
 
     @QtCore.Slot(list)
+    def added_nodes(self, items):
+        self.undo_stack.beginMacro('nodes added')
+        for item in items:
+            self.undo_stack.push(commands.ItemAdded(item))
+        self.undo_stack.endMacro()
+
+    @QtCore.Slot(list)
+    def removed_nodes(self, items):
+        self.undo_stack.beginMacro('nodes removed')
+        for item in items:
+            self.undo_stack.push(commands.ItemRemoved(item, self.scene))
+        self.undo_stack.endMacro()
+
+    @QtCore.Slot(list)
     def selected_nodes(self, items):
-        print(items)
         self.undo_stack.beginMacro('selection changed')
         for item in items:
             self.undo_stack.push(commands.SelectionChanged(item))

@@ -196,7 +196,6 @@ class PywerView(QtWidgets.QGraphicsView):
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-
         if self._is_drop_event(event):
             self._drop_edge(drag_edge=self.drag_edge, position=event.pos())
             self.drag_edge = None

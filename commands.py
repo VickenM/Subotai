@@ -10,6 +10,7 @@ class SelectionChanged(QtWidgets.QUndoCommand):
 
     def redo(self):
         self.item.setSelected(self.new_selection)
+        self.item.set_old_selection(self.old_selection)
 
     def undo(self):
         self.item.setSelected(self.old_selection)
@@ -33,24 +34,29 @@ class ItemAdded(QtWidgets.QUndoCommand):
     def __init__(self, item):
         super().__init__()
         self.item = item
+        self.scene = self.item.scene()
 
     def redo(self):
-        pass
+        if self.item not in self.scene.get_all_nodes():
+            self.scene.addItem(self.item)
 
     def undo(self):
-        pass
+        if self.item.scene():
+            self.scene.removeItem(self.item)
 
 
 class ItemRemoved(QtWidgets.QUndoCommand):
-    def __init__(self, item):
+    def __init__(self, item, scene):
         super().__init__()
         self.item = item
+        self.scene = scene
 
     def redo(self):
-        pass
+        if self.item in self.scene.get_all_nodes():
+            self.scene.removeItem(self.item)
 
     def undo(self):
-        pass
+        self.scene.addItem(self.item)
 
 
 class Connect(QtWidgets.QUndoCommand):

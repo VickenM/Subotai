@@ -24,6 +24,9 @@ class PywerScene(QGraphicsScene):
     def emit_deleted_nodes(self, nodes):
         self.nodes_deleted.emit(nodes)
 
+    def emit_added_nodes(self, nodes):
+        self.nodes_added.emit(nodes)
+
     def emit_connected_plugs(self, plug1, plug2):
         self.plugs_connected.emit(plug1, plug2)
 
@@ -166,7 +169,6 @@ class PywerScene(QGraphicsScene):
         self.items_moved.emit(items)
 
     def itemsSelected(self, items):
-        print(items)
         self.nodes_selected.emit(items)
 
     def list_node_types(self):
