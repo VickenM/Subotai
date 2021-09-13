@@ -296,6 +296,7 @@ class PywerNode(PywerItem):
         self.header_height = 20
 
         self.old_position = None
+        self.old_selection = None
 
         self.active_text_color = QtCore.Qt.white
         self.inactive_text_color = QtCore.Qt.gray
@@ -333,6 +334,12 @@ class PywerNode(PywerItem):
 
     def get_old_position(self):
         return self.old_position
+
+    def set_old_selection(self, selection):
+        self.old_selection = selection
+
+    def get_old_selection(self):
+        return self.old_selection
 
     @Slot()
     def start_spinner(self):
@@ -612,6 +619,7 @@ class PywerGroup(PywerItem):
         self.selected_color = (255, 165, 0, 255)
 
         self.old_position = None
+        self.old_selection = None
 
         self.setFlag(self.ItemIsMovable)
 
@@ -639,6 +647,12 @@ class PywerGroup(PywerItem):
 
     def get_old_position(self):
         return self.old_position
+
+    def set_old_selection(self, selection):
+        self.old_selection = selection
+
+    def get_old_selection(self):
+        return self.old_selection
 
     @Slot(QtCore.QPointF)
     def resize(self, change):

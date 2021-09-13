@@ -71,16 +71,27 @@ class PywerView(QtWidgets.QGraphicsView):
     def _is_selection_event(self, event):
         return event.button() == QtCore.Qt.LeftButton
 
-    def _is_move_event(self, event):
+    def _is_change_event(self, event):
         return event.button() == QtCore.Qt.LeftButton
 
+    def _begin_select_items(self, event):
+        for item in self.scene().get_all_items():
+            item.set_old_selection(item.isSelected())
+
+    def _end_select_items(self, event):
+        select_changed_items = [item for item in self.scene().get_all_items() if
+                                item.get_old_selection() != item.isSelected()]
+        if select_changed_items:
+            self.scene().itemsSelected(select_changed_items)
+
     def _begin_move_items(self, event):
-        for item in self.scene().get_selected_items():
+        for item in self.scene().get_all_items():
             item.set_old_position(item.pos())
 
     def _end_move_items(self, event):
-        items = self.scene().get_selected_items()
-        self.scene().itemsMoved(items)
+        moved_items = [item for item in self.scene().get_all_items() if item.get_old_position() != item.pos()]
+        if moved_items:
+            self.scene().itemsMoved(moved_items)
 
     def _is_drag_event(self, event):
         return event.button() == QtCore.Qt.LeftButton
@@ -173,23 +184,25 @@ class PywerView(QtWidgets.QGraphicsView):
             self.drag_edge.adjust()
 
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
 
         if self._is_drag_event(event):
             self.drag_edge = self._drag_edge(event.pos())
 
-        if self._is_move_event(event):
+        if self._is_change_event(event):
+            self.changing_items = self.scene().get_selected_items()
             self._begin_move_items(event)
+            self._begin_select_items(event)
+
+        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
 
         if self._is_drop_event(event):
             self._drop_edge(drag_edge=self.drag_edge, position=event.pos())
             self.drag_edge = None
 
-        if self._is_move_event(event):
+        if self._is_change_event(event):
             self._end_move_items(event)
+            self._end_select_items(event)
 
-        # if self._is_selection_event(event):
-        #     self.scene().emit_selected_nodes()
+        super().mouseReleaseEvent(event)

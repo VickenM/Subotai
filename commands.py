@@ -5,20 +5,21 @@ class SelectionChanged(QtWidgets.QUndoCommand):
     def __init__(self, item):
         super().__init__()
         self.item = item
-        self.selection = item.isSelected()
+        self.old_selection = item.get_old_selection()
+        self.new_selection = item.isSelected()
 
     def redo(self):
-        self.item.setSelected(self.selection)
+        self.item.setSelected(self.new_selection)
 
     def undo(self):
-        self.item.setSelected(not self.selection)
+        self.item.setSelected(self.old_selection)
 
 
 class ItemMoved(QtWidgets.QUndoCommand):
     def __init__(self, item):
         super().__init__()
         self.item = item
-        self.old_posiiton = item.old_position
+        self.old_posiiton = item.get_old_position()
         self.new_posiiton = item.pos()
 
     def redo(self):

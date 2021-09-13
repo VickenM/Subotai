@@ -422,10 +422,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.Slot(list)
     def selected_nodes(self, items):
-        # self.undo_stack.beginMacro('selection changed')
-        # for item in items:
-        #     self.undo_stack.push(commands.SelectionChanged(item))
-        # self.undo_stack.endMacro()
+        print(items)
+        self.undo_stack.beginMacro('selection changed')
+        for item in items:
+            self.undo_stack.push(commands.SelectionChanged(item))
+        self.undo_stack.endMacro()
 
         nodes = self.scene.get_selected_nodes()
         if nodes:
