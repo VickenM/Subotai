@@ -2,18 +2,30 @@ from PySide2 import QtWidgets
 
 
 class SelectionChanged(QtWidgets.QUndoCommand):
-    def __init__(self, item):
+    def __init__(self, item, parameters_panel):
         super().__init__()
         self.item = item
         self.old_selection = item.get_old_selection()
         self.new_selection = item.isSelected()
 
+        self.parameters_panel = parameters_panel
+
+    def update_paramteters_panel(self):
+
+        nodes = self.item.scene().get_selected_nodes()
+        if nodes:
+            self.parameters_panel.set_node_obj(nodes[0].node_obj)
+        else:
+            self.parameters_panel.set_node_obj(None)
+
     def redo(self):
         self.item.setSelected(self.new_selection)
         self.item.set_old_selection(self.old_selection)
+        self.update_paramteters_panel()
 
     def undo(self):
         self.item.setSelected(self.old_selection)
+        self.update_paramteters_panel()
 
 
 class ItemMoved(QtWidgets.QUndoCommand):
@@ -31,32 +43,52 @@ class ItemMoved(QtWidgets.QUndoCommand):
 
 
 class ItemAdded(QtWidgets.QUndoCommand):
-    def __init__(self, item):
+    def __init__(self, item, parameters_panel):
         super().__init__()
         self.item = item
         self.scene = self.item.scene()
+        self.parameters_panel = parameters_panel
+
+    def update_paramteters_panel(self):
+        nodes = self.scene.get_selected_nodes()
+        if nodes:
+            self.parameters_panel.set_node_obj(nodes[0].node_obj)
+        else:
+            self.parameters_panel.set_node_obj(None)
 
     def redo(self):
         if self.item not in self.scene.items():
             self.scene.addItem(self.item)
+        self.update_paramteters_panel()
 
     def undo(self):
         if self.item.scene():
             self.scene.removeItem(self.item)
+        self.update_paramteters_panel()
 
 
 class ItemRemoved(QtWidgets.QUndoCommand):
-    def __init__(self, item, scene):
+    def __init__(self, item, scene, parameters_panel):
         super().__init__()
         self.item = item
         self.scene = scene
+        self.parameters_panel = parameters_panel
+
+    def update_paramteters_panel(self):
+        nodes = self.scene.get_selected_nodes()
+        if nodes:
+            self.parameters_panel.set_node_obj(nodes[0].node_obj)
+        else:
+            self.parameters_panel.set_node_obj(None)
 
     def redo(self):
         if self.item in self.scene.items():
             self.scene.removeItem(self.item)
+        self.update_paramteters_panel()
 
     def undo(self):
         self.scene.addItem(self.item)
+        self.update_paramteters_panel()
 
 
 class Connect(QtWidgets.QUndoCommand):

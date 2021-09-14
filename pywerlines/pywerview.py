@@ -191,13 +191,14 @@ class PywerView(QtWidgets.QGraphicsView):
             self.drag_edge = self._drag_edge(event.pos())
 
         if self._is_change_event(event):
-            self.changing_items = self.scene().get_selected_items()
             self._begin_move_items(event)
             self._begin_select_items(event)
 
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+
         if self._is_drop_event(event):
             self._drop_edge(drag_edge=self.drag_edge, position=event.pos())
             self.drag_edge = None
@@ -205,5 +206,3 @@ class PywerView(QtWidgets.QGraphicsView):
         if self._is_change_event(event):
             self._end_move_items(event)
             self._end_select_items(event)
-
-        super().mouseReleaseEvent(event)

@@ -410,27 +410,22 @@ class MainWindow(QtWidgets.QMainWindow):
     def added_nodes(self, items):
         self.undo_stack.beginMacro('nodes added')
         for item in items:
-            self.undo_stack.push(commands.ItemAdded(item))
+            item.setSelected(True)
+            self.undo_stack.push(commands.ItemAdded(item, self.parameters))
         self.undo_stack.endMacro()
-
-        nodes = self.scene.get_selected_nodes()
-        if nodes:
-            self.parameters.set_node_obj(nodes[0].node_obj)
-        else:
-            self.parameters.set_node_obj(None)
 
     @QtCore.Slot(list)
     def removed_nodes(self, items):
         self.undo_stack.beginMacro('nodes removed')
         for item in items:
-            self.undo_stack.push(commands.ItemRemoved(item, self.scene))
+            self.undo_stack.push(commands.ItemRemoved(item, self.scene, self.parameters))
         self.undo_stack.endMacro()
 
     @QtCore.Slot(list)
     def selected_nodes(self, items):
         self.undo_stack.beginMacro('selection changed')
         for item in items:
-            self.undo_stack.push(commands.SelectionChanged(item))
+            self.undo_stack.push(commands.SelectionChanged(item, self.parameters))
         self.undo_stack.endMacro()
 
         nodes = self.scene.get_selected_nodes()
