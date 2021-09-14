@@ -413,6 +413,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.undo_stack.push(commands.ItemAdded(item))
         self.undo_stack.endMacro()
 
+        nodes = self.scene.get_selected_nodes()
+        if nodes:
+            self.parameters.set_node_obj(nodes[0].node_obj)
+        else:
+            self.parameters.set_node_obj(None)
+
     @QtCore.Slot(list)
     def removed_nodes(self, items):
         self.undo_stack.beginMacro('nodes removed')
@@ -457,6 +463,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.unsaved = True
         self._update_window_title()
 
+    @QtCore.Slot(object)
+    def parameter_changed(self, param):
+        self.undo_stack.push(commands.ParamChanged(param))
+
+        self.unsaved = True
+        self._update_window_title()
+
+
     @QtCore.Slot()
     def undo(self):
         self.undo_stack.undo()
@@ -464,11 +478,6 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def redo(self):
         self.undo_stack.redo()
-
-    @QtCore.Slot()
-    def parameter_changed(self):
-        self.unsaved = True
-        self._update_window_title()
 
     def save_changes_dialog(self):
         """

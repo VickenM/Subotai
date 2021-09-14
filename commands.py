@@ -184,14 +184,14 @@ class Disconnect(QtWidgets.QUndoCommand):
 
 
 class ParamChanged(QtWidgets.QUndoCommand):
-    def __init__(self, item, param, value):
+    def __init__(self, param):
         super().__init__()
-        self.item = item
         self.param = param
-        self.value = value
+        self.value = self.param.value
+        self.old_value = self.param._old_value
 
     def redo(self):
-        pass
+        self.param.value = self.value
 
     def undo(self):
-        pass
+        self.param.value = self.old_value

@@ -22,6 +22,8 @@ class Param(object):
         self.connection = None
         self.node = node
 
+        self._old_value = None
+
     @abstractmethod
     def valid_value(self, value):
         return True
@@ -43,7 +45,9 @@ class Param(object):
     @value.setter
     def value(self, new_value):
         if self.valid_value(new_value):
+            self._old_value = self._value
             self._value = new_value
+        print(self._old_value, self._value)
 
     # Casts the given argument to this Param's type. Default implementation is to use the 'type'
     # ie, if type is int, cast(...) will return int(arg)
