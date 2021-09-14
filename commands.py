@@ -60,29 +60,127 @@ class ItemRemoved(QtWidgets.QUndoCommand):
 
 
 class Connect(QtWidgets.QUndoCommand):
-    def __init__(self, source_plug, target_plug):
+    def __init__(self, source_plug, target_plug, edge, scene):
         super().__init__()
         self.source_plug = source_plug
         self.target_plug = target_plug
+        self.edge = edge
+        self.scene = scene
 
     def redo(self):
-        pass
+        if self.edge not in self.scene.items():
+            self.scene.addItem(self.edge)
+
+        plug1 = self.source_plug
+        plug2 = self.target_plug
+
+        source = plug1.parentItem().node_obj
+        target = plug2.parentItem().node_obj
+
+        from eventnodes import signal
+        source_signal = isinstance(plug1.plug_obj, signal.Signal)
+        target_signal = isinstance(plug2.plug_obj, signal.Signal)
+
+        if all([source_signal, target_signal]):
+            signal_obj = plug1.plug_obj
+            target.connect_from(signal_obj.computed, trigger=plug2.type_)
+        else:
+            input = plug1.plug_obj
+            output = plug2.plug_obj
+
+            output.connect_(input)
+
+        plug1.add_edge(self.edge)
+        plug2.add_edge(self.edge)
 
     def undo(self):
-        pass
+        if self.edge in self.scene.items():
+            self.scene.removeItem(self.edge)
+
+        plug1 = self.source_plug
+        plug2 = self.target_plug
+
+        source = plug1.parentItem().node_obj
+        target = plug2.parentItem().node_obj
+
+        from eventnodes import signal
+        source_signal = isinstance(plug1.plug_obj, signal.Signal)
+        target_signal = isinstance(plug2.plug_obj, signal.Signal)
+
+        if all([source_signal, target_signal]):
+            signal_obj = plug1.plug_obj
+            target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
+        else:
+            input = plug1.plug_obj
+            output = plug2.plug_obj
+
+            output.disconnect_()
+
+        plug1.remove_edge(self.edge)
+        plug2.remove_edge(self.edge)
 
 
-class Disonnect(QtWidgets.QUndoCommand):
-    def __init__(self, source_plug, target_plug):
+class Disconnect(QtWidgets.QUndoCommand):
+    def __init__(self, source_plug, target_plug, edge, scene):
         super().__init__()
         self.source_plug = source_plug
         self.target_plug = target_plug
+        self.edge = edge
+        self.scene = scene
 
     def redo(self):
-        pass
+        if self.edge in self.scene.items():
+            self.scene.removeItem(self.edge)
+
+        plug1 = self.source_plug
+        plug2 = self.target_plug
+
+        source = plug1.parentItem().node_obj
+        target = plug2.parentItem().node_obj
+
+        from eventnodes import signal
+        source_signal = isinstance(plug1.plug_obj, signal.Signal)
+        target_signal = isinstance(plug2.plug_obj, signal.Signal)
+
+        if all([source_signal, target_signal]):
+            signal_obj = plug1.plug_obj
+            target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
+        else:
+            input = plug1.plug_obj
+            output = plug2.plug_obj
+
+            output.disconnect_()
+
+        plug1.remove_edge(self.edge)
+        plug2.remove_edge(self.edge)
 
     def undo(self):
-        pass
+        if self.edge not in self.scene.items():
+            self.scene.addItem(self.edge)
+
+        plug1 = self.source_plug
+        plug2 = self.target_plug
+
+        source = plug1.parentItem().node_obj
+        target = plug2.parentItem().node_obj
+
+        from eventnodes import signal
+        source_signal = isinstance(plug1.plug_obj, signal.Signal)
+        target_signal = isinstance(plug2.plug_obj, signal.Signal)
+
+        if all([source_signal, target_signal]):
+            signal_obj = plug1.plug_obj
+            target.connect_from(signal_obj.computed, trigger=plug2.type_)
+        else:
+            input = plug1.plug_obj
+            output = plug2.plug_obj
+
+            output.connect_(input)
+
+        self.edge.connect_plugs(plug1, plug2)
+
+        plug1.add_edge(self.edge)
+        plug2.add_edge(self.edge)
 
 
 class ParamChanged(QtWidgets.QUndoCommand):

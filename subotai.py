@@ -41,40 +41,42 @@ def deleted_nodes(data):
 
 @QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def connected_plugs(plug1, plug2):
-    source = plug1.parentItem().node_obj
-    target = plug2.parentItem().node_obj
-
-    from eventnodes import signal
-    source_signal = isinstance(plug1.plug_obj, signal.Signal)
-    target_signal = isinstance(plug2.plug_obj, signal.Signal)
-
-    if all([source_signal, target_signal]):
-        signal_obj = plug1.plug_obj
-        target.connect_from(signal_obj.computed, trigger=plug2.type_)
-    else:
-        input = plug1.plug_obj
-        output = plug2.plug_obj
-
-        output.connect_(input)
+    pass
+    # source = plug1.parentItem().node_obj
+    # target = plug2.parentItem().node_obj
+    #
+    # from eventnodes import signal
+    # source_signal = isinstance(plug1.plug_obj, signal.Signal)
+    # target_signal = isinstance(plug2.plug_obj, signal.Signal)
+    #
+    # if all([source_signal, target_signal]):
+    #     signal_obj = plug1.plug_obj
+    #     target.connect_from(signal_obj.computed, trigger=plug2.type_)
+    # else:
+    #     input = plug1.plug_obj
+    #     output = plug2.plug_obj
+    #
+    #     output.connect_(input)
 
 
 @QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def disconnected_plugs(plug1, plug2):
-    source = plug1.parentItem().node_obj
-    target = plug2.parentItem().node_obj
-
-    from eventnodes import signal
-    source_signal = isinstance(plug1.plug_obj, signal.Signal)
-    target_signal = isinstance(plug2.plug_obj, signal.Signal)
-
-    if all([source_signal, target_signal]):
-        signal_obj = plug1.plug_obj
-        target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
-    else:
-        input = plug1.plug_obj
-        output = plug2.plug_obj
-
-        output.disconnect_()
+    pass
+    # source = plug1.parentItem().node_obj
+    # target = plug2.parentItem().node_obj
+    #
+    # from eventnodes import signal
+    # source_signal = isinstance(plug1.plug_obj, signal.Signal)
+    # target_signal = isinstance(plug2.plug_obj, signal.Signal)
+    #
+    # if all([source_signal, target_signal]):
+    #     signal_obj = plug1.plug_obj
+    #     target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
+    # else:
+    #     input = plug1.plug_obj
+    #     output = plug2.plug_obj
+    #
+    #     output.disconnect_()
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -105,8 +107,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.scene.nodes_added.connect(added_nodes)
         self.scene.nodes_added.connect(self.added_nodes)
         self.scene.nodes_deleted.connect(self.removed_nodes)
-        self.scene.plugs_connected.connect(connected_plugs)
-        self.scene.plugs_disconnected.connect(disconnected_plugs)
+        self.scene.plugs_connected.connect(self.connected_plugs)
+        self.scene.plugs_disconnected.connect(self.disconnected_plugs)
         self.scene.nodes_selected.connect(self.selected_nodes)
         self.scene.items_moved.connect(self.items_moved)
 
@@ -450,11 +452,25 @@ class MainWindow(QtWidgets.QMainWindow):
             self.parameters.set_node_obj(None)
 
     @QtCore.Slot(list)
-    def items_moved(self, items, ):
+    def items_moved(self, items):
         self.undo_stack.beginMacro('items moved')
         for item in items:
             self.undo_stack.push(commands.ItemMoved(item))
         self.undo_stack.endMacro()
+
+        self.unsaved = True
+        self._update_window_title()
+
+    @QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug, pyweritems.PywerEdge)
+    def connected_plugs(self, plug1, plug2, edge):
+        self.undo_stack.push(commands.Connect(plug1, plug2, edge, self.scene))
+
+        self.unsaved = True
+        self._update_window_title()
+
+    @QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug, pyweritems.PywerEdge)
+    def disconnected_plugs(self, plug1, plug2, edge):
+        self.undo_stack.push(commands.Disconnect(plug1, plug2, edge, self.scene))
 
         self.unsaved = True
         self._update_window_title()

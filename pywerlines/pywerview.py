@@ -134,13 +134,13 @@ class PywerView(QtWidgets.QGraphicsView):
                 else:
                     source_plug = mouse_over_plug
                     target_plug = dragged_from_plug
-                self.scene().emit_connected_plugs(source_plug, target_plug)
+                self.scene().emit_connected_plugs(source_plug, target_plug, drag_edge)
         else:
             dragged_from_plug.remove_edge(drag_edge)
             self.scene().removeItem(drag_edge)
 
         if self.disconnected_plug and (mouse_over_plug != self.disconnected_plug):
-            self.scene().emit_disconnected_plugs(dragged_from_plug, self.disconnected_plug)
+            self.scene().emit_disconnected_plugs(dragged_from_plug, self.disconnected_plug, drag_edge)
         self.disconnected_plug = None
 
     def _is_zoom_event(self, event):

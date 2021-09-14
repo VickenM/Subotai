@@ -8,8 +8,8 @@ class PywerScene(QGraphicsScene):
     nodes_added = QtCore.Signal(list)
     nodes_deleted = QtCore.Signal(list)
     items_moved = QtCore.Signal(list)
-    plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
-    plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
+    plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug, pyweritems.PywerEdge)
+    plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug, pyweritems.PywerEdge)
     group_nodes = QtCore.Signal(list)
     group_added = QtCore.Signal(list)
 
@@ -27,11 +27,11 @@ class PywerScene(QGraphicsScene):
     def emit_added_nodes(self, nodes):
         self.nodes_added.emit(nodes)
 
-    def emit_connected_plugs(self, plug1, plug2):
-        self.plugs_connected.emit(plug1, plug2)
+    def emit_connected_plugs(self, plug1, plug2, edge):
+        self.plugs_connected.emit(plug1, plug2, edge)
 
-    def emit_disconnected_plugs(self, plug1, plug2):
-        self.plugs_disconnected.emit(plug1, plug2)
+    def emit_disconnected_plugs(self, plug1, plug2, edge):
+        self.plugs_disconnected.emit(plug1, plug2, edge)
 
     def addItem(self, item):
         super(PywerScene, self).addItem(item)
@@ -73,14 +73,14 @@ class PywerScene(QGraphicsScene):
         target_plug.add_edge(edge)
         self.addItem(edge)
         edge.adjust()
-        self.emit_connected_plugs(source_plug, target_plug)
+        self.emit_connected_plugs(source_plug, target_plug, edge)
         return edge
 
     def remove_edge(self, edge):
         edge.source_plug.edges.remove(edge)
         edge.target_plug.edges.remove(edge)
         self.removeItem(edge)
-        self.emit_disconnected_plugs(edge.source_plug, edge.target_plug)
+        self.emit_disconnected_plugs(edge.source_plug, edge.target_plug, edge)
 
     def get_selected_nodes(self):
         return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerNode)]
