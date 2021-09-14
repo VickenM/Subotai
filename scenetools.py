@@ -148,8 +148,9 @@ def group_selected_nodes(scene):
 
 
 def delete_selected(scene):
-    scene.remove_selected_nodes()
-    scene.remove_selected_groups()
+    scene.remove_selected_items()
+    # scene.remove_selected_nodes()
+    # scene.remove_selected_groups()
 
 
 def select_all(scene):

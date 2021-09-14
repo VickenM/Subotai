@@ -26,6 +26,8 @@ class PywerView(QtWidgets.QGraphicsView):
         self.drag_edge = None
         self.disconnected_plug = None
 
+        self.mouse_position = None
+
     def setScene(self, scene):
         super().setScene(scene)
 
@@ -178,9 +180,9 @@ class PywerView(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
 
-        mouse_position = event.pos()
+        self.mouse_position = event.pos()
         if self.drag_edge:
-            self.drag_edge.target_position = self.mapToScene(mouse_position)
+            self.drag_edge.target_position = self.mapToScene(self.mouse_position)
             self.drag_edge.adjust()
 
     def mousePressEvent(self, event):

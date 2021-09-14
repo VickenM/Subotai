@@ -119,9 +119,17 @@ class PywerScene(QGraphicsScene):
         for group in self.get_selected_groups():
             self.removeItem(group)
 
+    def remove_selected_items(self):
+        items = self.get_selected_nodes() + self.get_selected_groups()
+        for item in items:
+            self.removeItem(item)
+
+        self.emit_deleted_nodes(items)
+
     def create_group(self):
         group = pyweritems.PywerGroup()
         self.addItem(group)
+        self.nodes_added.emit([group])
         return group
 
     def group_selected_nodes(self):
@@ -154,6 +162,7 @@ class PywerScene(QGraphicsScene):
         group.adjust()
         group.setPos(position)
         self.addItem(group)
+        self.nodes_added.emit([group])
         return group
 
     def add_node(self, node):

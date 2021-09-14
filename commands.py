@@ -37,7 +37,7 @@ class ItemAdded(QtWidgets.QUndoCommand):
         self.scene = self.item.scene()
 
     def redo(self):
-        if self.item not in self.scene.get_all_nodes():
+        if self.item not in self.scene.items():
             self.scene.addItem(self.item)
 
     def undo(self):
@@ -52,7 +52,7 @@ class ItemRemoved(QtWidgets.QUndoCommand):
         self.scene = scene
 
     def redo(self):
-        if self.item in self.scene.get_all_nodes():
+        if self.item in self.scene.items():
             self.scene.removeItem(self.item)
 
     def undo(self):

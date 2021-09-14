@@ -24,21 +24,6 @@ import eventnodes
 import scenetools
 
 
-@QtCore.Slot(list)
-def selected_nodes(data):
-    pass
-
-
-@QtCore.Slot(list)
-def added_nodes(data):
-    pass
-
-
-@QtCore.Slot(list)
-def deleted_nodes(data):
-    pass
-
-
 @QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
 def connected_plugs(plug1, plug2):
     pass
@@ -102,9 +87,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._populate_toolbox()
         self.toolbox.itemDoubleClickedSignal.connect(self.new_node_selected)
 
-        self.scene.nodes_selected.connect(selected_nodes)
-        self.scene.nodes_deleted.connect(deleted_nodes)
-        self.scene.nodes_added.connect(added_nodes)
         self.scene.nodes_added.connect(self.added_nodes)
         self.scene.nodes_deleted.connect(self.removed_nodes)
         self.scene.plugs_connected.connect(self.connected_plugs)
