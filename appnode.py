@@ -5,6 +5,8 @@ import register
 
 import uuid
 
+from PySide2 import QtCore
+
 
 class Plug(pywerlines.pyweritems.PywerPlug):
     @classmethod
@@ -86,13 +88,15 @@ def new_group(position=None):
     return group
 
 
-def new_node(type_, position=None):
+def new_node(type_, position: QtCore.QPoint = None, size: QtCore.QSize = None):
     if type_ not in register.node_registry:
         return None
     event_node = register.node_registry[type_]()
     node = AppNode.from_event_node(event_node)
     if position:
         node.setPos(position)
+    if size:
+        node.setSize(size.width(), size.height())
     return node
 
 

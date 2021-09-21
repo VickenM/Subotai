@@ -54,12 +54,12 @@ class ItemMoved(QtWidgets.QUndoCommand):
 
 
 class AddNode(QtWidgets.QUndoCommand):
-    def __init__(self, context, item, position):
+    def __init__(self, context, item, position=None, size=None):
         super().__init__()
         self.scene = context.get('scene')
         self.worker = context.get('worker')
         self.prev_selection = self.scene.get_selected_items()
-        self.node = appnode.new_node(item, position=position)
+        self.node = appnode.new_node(item, position=position, size=size)
 
         self.node.node_obj.moveToThread(self.worker)
 
@@ -107,7 +107,6 @@ class RemoveItem(QtWidgets.QUndoCommand):
             return edges
 
         for plug in self.item.inputs + self.item.outputs:
-            # edges.extend(plug.edges)
             for e in plug.edges:
                 edges.append((e, e.source_plug, e.target_plug))
 
@@ -141,7 +140,7 @@ class ConnectPlugs(QtWidgets.QUndoCommand):
         self.target_plug = target_plug
         self.scene = context.get('scene')
         self.edge = pyweritems.PywerEdge()
-        self.prev_selection = context.get('current_selection')  # self.scene.get_selected_items()
+        self.prev_selection = context.get('current_selection')
 
     def redo(self):
         self.scene.addItem(self.edge)
@@ -184,8 +183,8 @@ class Disconnect(QtWidgets.QUndoCommand):
         appnode.connect_plugs(self.source_plug, self.target_plug)
 
 
-class ParamChanged(QtWidgets.QUndoCommand):
-    def __init__(self, param):
+class ParamValue(QtWidgets.QUndoCommand):
+    def __init__(self, context, param):
         super().__init__()
         self.param = param
         self.value = self.param.value

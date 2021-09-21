@@ -172,7 +172,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions_map.get_action('redo').triggered.connect(self.redo)
 
         self.actions_map.get_action('exit').triggered.connect(self.exit_app)
-        self.actions_map.get_action('select_all').triggered.connect(self.select_all)
+        self.actions_map.get_action('select_all').triggered.connect(
+            lambda x: self.selection_changed(self.scene.get_all_items()))
         self.actions_map.get_action('toggle_names').triggered.connect(lambda x: self.scene.toggle_names())
         self.actions_map.get_action('new_process').triggered.connect(lambda x: self.spawn(background=False))
         self.actions_map.get_action('new_background_process').triggered.connect(lambda x: self.spawn(background=True))
@@ -320,11 +321,6 @@ class MainWindow(QtWidgets.QMainWindow):
             timer.node_obj.deactivate()
 
     @QtCore.Slot()
-    def select_all(self):
-        scenetools.select_all(self.scene)
-        self.update_parameters_panel()
-
-    @QtCore.Slot()
     def copy_selected(self):
         selection = self.scene.get_selected_items()
         self.copy_buffer = scenetools.get_scene_data(self.scene, selection=selection)
@@ -337,14 +333,13 @@ class MainWindow(QtWidgets.QMainWindow):
         pos = self.view.mapFromGlobal(QtGui.QCursor.pos())
         pos = self.view.mapToScene(pos)
 
-        new_items = scenetools.load_scene_data(self.scene, self.copy_buffer, pos=pos)
-        new_items = new_items.keys()
+        self.undo_stack.beginMacro('paste')
+        new_items = scenetools.load_macro(self.context, self.undo_stack, self.copy_buffer, pos=pos)
+        self.undo_stack.push(commands.SelectItems(self.context, new_items))
+        self.undo_stack.endMacro()
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
 
-        new_nodes = [n for n in new_items if isinstance(n, pyweritems.PywerNode)]
-        for n in new_nodes:
-            n.node_obj.moveToThread(self.worker_thread)
-
-        scenetools.select(self.scene, items=new_items)
         self.copy_selected()
 
     @QtCore.Slot(str, int, int)
@@ -455,7 +450,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.Slot(object)
     def parameter_changed(self, param):
-        self.undo_stack.push(commands.ParamChanged(param))
+        self.undo_stack.push(commands.ParamValue(self.context, param))
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
 
         self.unsaved = True
         self.update_window_title()
