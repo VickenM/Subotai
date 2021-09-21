@@ -37,6 +37,13 @@ class AppGroup(pywerlines.pyweritems.PywerGroup):
         node.node_obj.obj_id = uuid.uuid4()
         return node
 
+    def to_dict(self):
+        return {'position': (self.pos().x(), self.pos().y()),
+                'size': (self.width, self.height),
+                'name': self.name.toPlainText(),
+                'id': str(self.node_obj.obj_id),
+                }
+
 
 class AppNode(pywerlines.pyweritems.PywerNode):
     @classmethod

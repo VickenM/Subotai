@@ -135,6 +135,7 @@ def load_macro(context, undo_stack, data, pos=None):
 
         undo_stack.push(commands.AddNode(context, type_, position=position, size=size))
         n = scene.get_selected_nodes()[0]
+        n.name.setPlainText(node.get('name', n.name_))
 
         new_nodes[n] = node
 
@@ -209,7 +210,7 @@ def load_macro(context, undo_stack, data, pos=None):
         size = QtCore.QSize(*group['size'])
 
         undo_stack.push(commands.AddGroup(context, position, size))
-        g = scene.get_all_groups()[0]
+        g = scene.get_selected_groups()[0]
         g.name.setPlainText(group.get('name', g.name_))
 
         new_nodes[g] = group
@@ -245,12 +246,7 @@ def get_scene_data(scene, selection=None):
             data['edges'].append(edge_info)
 
     for group in groups:
-        data['groups'].append(
-            {'position': (group.pos().x(), group.pos().y()),
-             'size': (group.width, group.height),
-             'name': group.name.toPlainText()
-             }
-        )
+        data['groups'].append(group.to_dict())
 
     return data
 

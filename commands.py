@@ -80,6 +80,7 @@ class AddGroup(QtWidgets.QUndoCommand):
         super().__init__()
         self.scene = context.get('scene')
         self.worker = context.get('worker')
+        self.prev_selection = self.scene.get_selected_items()
         self.group = appnode.new_group(position=position)
         self.group.width = size.width()
         self.group.height = size.height()
@@ -87,10 +88,14 @@ class AddGroup(QtWidgets.QUndoCommand):
 
     def redo(self):
         self.scene.add_group(self.group)
+        self.scene.clearSelection()
+        self.group.setSelected(True)
 
     def undo(self):
         self.scene.remove_item(self.group)
-
+        self.scene.clearSelection()
+        for item in self.prev_selection:
+            item.setSelected(True)
 
 class RemoveItem(QtWidgets.QUndoCommand):
     def __init__(self, context, item):
