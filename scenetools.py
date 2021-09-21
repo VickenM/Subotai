@@ -2,7 +2,7 @@ from PySide2 import QtCore
 
 from pywerlines import pyweritems
 
-from appnode import new_node
+from appnode import new_node, new_group
 import commands
 
 
@@ -90,7 +90,8 @@ def load_scene_data(scene, data, pos=None):
         n.node_obj.update()
 
     for group in data['groups']:
-        g = scene.create_group()
+        # g = scene.create_group()
+        g = new_group()
         if pos:
             if not relative_pos:
                 relative_pos = QtCore.QPointF(group['position'][0], group['position'][1])
@@ -105,6 +106,7 @@ def load_scene_data(scene, data, pos=None):
 
         g.setSize(*group['size'])
         g.name.setPlainText(group.get('name', g.name_))
+        scene.add_group(g)
         new_nodes[g] = group
 
     return new_nodes

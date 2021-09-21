@@ -507,7 +507,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.context = {
                 'scene': self.scene,
-                'current_selection': self.current_selection,
+                'current_selection': [],
                 'worker': self.worker_thread,
                 'scene_data': scenetools.get_scene_data(self.scene)
             }
@@ -532,7 +532,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 self.context = {
                     'scene': self.scene,
-                    'current_selection': self.current_selection,
+                    'current_selection': [],
                     'worker': self.worker_thread,
                     'scene_data': scenetools.get_scene_data(self.scene)
                 }

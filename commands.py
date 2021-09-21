@@ -1,6 +1,5 @@
 from PySide2 import QtWidgets
 from pywerlines import pyweritems
-import scenetools
 import appnode
 
 
@@ -96,6 +95,7 @@ class AddGroup(QtWidgets.QUndoCommand):
         self.scene.clearSelection()
         for item in self.prev_selection:
             item.setSelected(True)
+
 
 class RemoveItem(QtWidgets.QUndoCommand):
     def __init__(self, context, item):
