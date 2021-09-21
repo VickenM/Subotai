@@ -1,6 +1,7 @@
 import pywerlines.pyweritems
 import eventnodes.params
 import eventnodes.signal
+import register
 
 import uuid
 
@@ -21,7 +22,21 @@ class Signal(pywerlines.pyweritems.PywerPlug):
         return plug
 
 
-class EventNode(pywerlines.pyweritems.PywerNode):
+class Group:
+    pass
+
+
+class AppGroup(pywerlines.pyweritems.PywerGroup):
+    @classmethod
+    def from_event_node(cls, group_obj):
+        node = cls()
+        node.node_obj = group_obj
+        node.node_obj.set_ui_node = node
+        node.node_obj.obj_id = uuid.uuid4()
+        return node
+
+
+class AppNode(pywerlines.pyweritems.PywerNode):
     @classmethod
     def from_event_node(cls, node_obj):
         node = cls(type=node_obj.type, color=node_obj.color)
@@ -61,3 +76,55 @@ class EventNode(pywerlines.pyweritems.PywerNode):
             pluggable[param.name] = param.to_dict()
 
         return dict_
+
+
+def new_group(position=None):
+    group_obj = Group()
+    group = AppGroup.from_event_node(group_obj=group_obj)
+    if position:
+        group.setPos(position)
+    return group
+
+
+def new_node(type_, position=None):
+    if type_ not in register.node_registry:
+        return None
+    event_node = register.node_registry[type_]()
+    node = AppNode.from_event_node(event_node)
+    if position:
+        node.setPos(position)
+    return node
+
+
+def connect_plugs(plug1, plug2):
+    source = plug1.parentItem().node_obj
+    target = plug2.parentItem().node_obj
+
+    source_signal = isinstance(plug1.plug_obj, eventnodes.signal.Signal)
+    target_signal = isinstance(plug2.plug_obj, eventnodes.signal.Signal)
+
+    if all([source_signal, target_signal]):
+        signal_obj = plug1.plug_obj
+        target.connect_from(signal_obj.computed, trigger=plug2.type_)
+    else:
+        input = plug1.plug_obj
+        output = plug2.plug_obj
+
+        output.connect_(input)
+
+
+def disconnect_plugs(plug1, plug2):
+    source = plug1.parentItem().node_obj
+    target = plug2.parentItem().node_obj
+
+    source_signal = isinstance(plug1.plug_obj, eventnodes.signal.Signal)
+    target_signal = isinstance(plug2.plug_obj, eventnodes.signal.Signal)
+
+    if all([source_signal, target_signal]):
+        signal_obj = plug1.plug_obj
+        target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
+    else:
+        input = plug1.plug_obj
+        output = plug2.plug_obj
+
+        output.disconnect_()

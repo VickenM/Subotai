@@ -1,5 +1,9 @@
 from PySide2 import QtCore
 
+from pywerlines import pyweritems
+
+from appnode import new_node
+
 
 def load_scene_data(scene, data, pos=None):
     node_map = {}  # map from copied node id to newly created node id
@@ -8,7 +12,9 @@ def load_scene_data(scene, data, pos=None):
     relative_pos = None
     for node in data['nodes']:
         type_ = node['node_obj'].split('.')[-1]
-        n = scene.create_node_of_type(type_)
+        n = new_node(type_)
+        scene.add_node(n)
+
         n.node_obj.set_active(node.get('active', True))
 
         if pos:
@@ -102,12 +108,14 @@ def load_scene_data(scene, data, pos=None):
     return new_nodes
 
 
-def get_scene_data(scene, selected=False):
+def get_scene_data(scene, selection=None):
     data = {'nodes': [], 'edges': [], 'groups': []}
 
-    if selected:
-        nodes = sorted(scene.get_selected_nodes(), key=lambda n: (n.pos().x(), n.pos().y()))
-        groups = sorted(scene.get_selected_groups(), key=lambda g: (g.pos().x(), g.pos().y()))
+    if selection:
+        nodes = sorted([n for n in selection if isinstance(n, pyweritems.PywerNode)],
+                       key=lambda n: (n.pos().x(), n.pos().y()))
+        groups = sorted([g for g in selection if isinstance(g, pyweritems.PywerGroup)],
+                        key=lambda g: (g.pos().x(), g.pos().y()))
     else:
         nodes = scene.get_all_nodes()
         groups = scene.get_all_groups()
@@ -149,8 +157,6 @@ def group_selected_nodes(scene):
 
 def delete_selected(scene):
     scene.remove_selected_items()
-    # scene.remove_selected_nodes()
-    # scene.remove_selected_groups()
 
 
 def select_all(scene):

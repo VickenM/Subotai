@@ -1,10 +1,11 @@
 from PySide2 import QtGui, QtCore, QtWidgets
 from . import pyweritems
 
-
 class PywerView(QtWidgets.QGraphicsView):
     nodes_selected = QtCore.Signal(list)
     nodes_deleted = QtCore.Signal(list)
+    plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
+    plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
 
     def __init__(self):
         super().__init__()
@@ -77,14 +78,11 @@ class PywerView(QtWidgets.QGraphicsView):
         return event.button() == QtCore.Qt.LeftButton
 
     def _begin_select_items(self, event):
-        for item in self.scene().get_all_items():
-            item.set_old_selection(item.isSelected())
+        pass
 
     def _end_select_items(self, event):
-        select_changed_items = [item for item in self.scene().get_all_items() if
-                                item.get_old_selection() != item.isSelected()]
-        if select_changed_items:
-            self.scene().itemsSelected(select_changed_items)
+        selected_items = self.scene().get_selected_items()
+        self.scene().emit_selected_items(selected_items)
 
     def _begin_move_items(self, event):
         for item in self.scene().get_all_items():
@@ -127,8 +125,11 @@ class PywerView(QtWidgets.QGraphicsView):
 
         dragged_from_plug = drag_edge.source_plug or drag_edge.target_plug
         mouse_over_plug = self.get_plug_at(position=position)
+
+        connection = None
+        disconnection = None
+
         if self.scene().can_connect(dragged_from_plug, mouse_over_plug):
-            drag_edge.connect_plugs(dragged_from_plug, mouse_over_plug)
             if mouse_over_plug != self.disconnected_plug:
                 if dragged_from_plug in dragged_from_plug.parentItem().outputs:
                     source_plug = dragged_from_plug
@@ -136,14 +137,27 @@ class PywerView(QtWidgets.QGraphicsView):
                 else:
                     source_plug = mouse_over_plug
                     target_plug = dragged_from_plug
-                self.scene().emit_connected_plugs(source_plug, target_plug, drag_edge)
-        else:
-            dragged_from_plug.remove_edge(drag_edge)
-            self.scene().removeItem(drag_edge)
+
+                connection = (source_plug, target_plug)
 
         if self.disconnected_plug and (mouse_over_plug != self.disconnected_plug):
-            self.scene().emit_disconnected_plugs(dragged_from_plug, self.disconnected_plug, drag_edge)
+            disconnection = (dragged_from_plug, self.disconnected_plug)
+
+
+        if disconnection:
+            if not drag_edge.source_plug:
+                drag_edge.source_plug = self.disconnected_plug
+            else:
+                drag_edge.target_plug = self.disconnected_plug
+            self.plugs_disconnected.emit(dragged_from_plug, self.disconnected_plug)
+            return
+
         self.disconnected_plug = None
+        dragged_from_plug.remove_edge(drag_edge)
+        self.scene().removeItem(drag_edge)
+        if connection:
+            self.plugs_connected.emit(*connection)
+
 
     def _is_zoom_event(self, event):
         return event.modifiers() & QtCore.Qt.ControlModifier

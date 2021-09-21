@@ -16,11 +16,6 @@ class PywerItem(QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents(True)
         self.setZValue(1)
 
-    def setSelected(self, state):
-        self.selected = state
-        super().setSelected(self.selected)
-        self.update()
-
     def adjust(self):
         return
 
@@ -80,6 +75,10 @@ class PywerEdge(PywerItem):
         self.source_plug.add_edge(self)
         self.target_plug.add_edge(self)
         self.adjust()
+
+    def disconnect(self):
+        self.source_plug.remove_edge(self)
+        self.target_plug.remove_edge(self)
 
     def adjust(self):
         if self.target_position:

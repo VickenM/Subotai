@@ -1,218 +1,187 @@
 from PySide2 import QtWidgets
+from pywerlines import pyweritems
+import scenetools
+import appnode
 
 
-class SelectionChanged(QtWidgets.QUndoCommand):
-    def __init__(self, item, parameters_panel):
+class SelectItems(QtWidgets.QUndoCommand):
+    def __init__(self, context, items):
         super().__init__()
-        self.item = item
-        self.old_selection = item.get_old_selection()
-        self.new_selection = item.isSelected()
-
-        self.parameters_panel = parameters_panel
-
-    def update_paramteters_panel(self):
-
-        nodes = self.item.scene().get_selected_nodes()
-        if nodes:
-            self.parameters_panel.set_node_obj(nodes[0].node_obj)
-        else:
-            self.parameters_panel.set_node_obj(None)
+        self.items = items
+        self.scene = context.get('scene')
+        self.prev_items = context.get('current_selection')
 
     def redo(self):
-        self.item.setSelected(self.new_selection)
-        self.item.set_old_selection(self.old_selection)
-        self.update_paramteters_panel()
+        self.scene.clearSelection()
+        for item in self.items:
+            item.setSelected(True)
 
     def undo(self):
-        self.item.setSelected(self.old_selection)
-        self.update_paramteters_panel()
+        self.scene.clearSelection()
+        for item in self.prev_items:
+            item.setSelected(True)
 
 
 class ItemMoved(QtWidgets.QUndoCommand):
-    def __init__(self, item):
+    def __init__(self, context, item):
         super().__init__()
         self.item = item
-        self.old_posiiton = item.get_old_position()
         self.new_posiiton = item.pos()
+        self.prev_scene_data = context.get('scene_data')
+        self.old_position = self.get_old_position()
+
+    def find_item(self):
+
+        if isinstance(self.item, pyweritems.PywerNode):
+            items = self.prev_scene_data['nodes']
+        else:
+            items = self.prev_scene_data['groups']
+
+        for item in items:
+            if str(self.item.node_obj.obj_id) == item['id']:
+                return item
+
+    def get_old_position(self):
+        item = self.find_item()
+        return item['position']
 
     def redo(self):
         self.item.setPos(self.new_posiiton)
 
     def undo(self):
-        self.item.setPos(self.old_posiiton)
+        old_position = self.get_old_position()
+        self.item.setPos(*old_position)
 
 
-class ItemAdded(QtWidgets.QUndoCommand):
-    def __init__(self, item, parameters_panel):
+class AddNode(QtWidgets.QUndoCommand):
+    def __init__(self, context, item, position):
         super().__init__()
-        self.item = item
-        self.scene = self.item.scene()
-        self.parameters_panel = parameters_panel
+        self.scene = context.get('scene')
+        self.worker = context.get('worker')
+        self.prev_selection = self.scene.get_selected_items()
+        self.node = appnode.new_node(item, position=position)
 
-    def update_paramteters_panel(self):
-        nodes = self.scene.get_selected_nodes()
-        if nodes:
-            self.parameters_panel.set_node_obj(nodes[0].node_obj)
-        else:
-            self.parameters_panel.set_node_obj(None)
+        self.node.node_obj.moveToThread(self.worker)
 
     def redo(self):
-        if self.item not in self.scene.items():
-            self.scene.addItem(self.item)
-        self.update_paramteters_panel()
+        self.scene.add_node(self.node)
+        self.scene.clearSelection()
+        self.node.setSelected(True)
 
     def undo(self):
-        if self.item.scene():
-            self.scene.removeItem(self.item)
-        self.update_paramteters_panel()
+        self.scene.remove_node(self.node)
+        self.scene.clearSelection()
+        for item in self.prev_selection:
+            item.setSelected(True)
 
 
-class ItemRemoved(QtWidgets.QUndoCommand):
-    def __init__(self, item, scene, parameters_panel):
+class AddGroup(QtWidgets.QUndoCommand):
+    def __init__(self, context, position, size):
         super().__init__()
-        self.item = item
-        self.scene = scene
-        self.parameters_panel = parameters_panel
-
-    def update_paramteters_panel(self):
-        nodes = self.scene.get_selected_nodes()
-        if nodes:
-            self.parameters_panel.set_node_obj(nodes[0].node_obj)
-        else:
-            self.parameters_panel.set_node_obj(None)
+        self.scene = context.get('scene')
+        self.worker = context.get('worker')
+        self.group = appnode.new_group(position=position)
+        self.group.width = size.width()
+        self.group.height = size.height()
+        self.group.adjust()
 
     def redo(self):
-        if self.item in self.scene.items():
-            self.scene.removeItem(self.item)
-        self.update_paramteters_panel()
+        self.scene.add_group(self.group)
+
+    def undo(self):
+        self.scene.remove_item(self.group)
+
+
+class RemoveItem(QtWidgets.QUndoCommand):
+    def __init__(self, context, item):
+        super().__init__()
+        self.item = item
+        self.scene = context.get('scene')
+        self.prev_selection = self.scene.get_selected_items()
+        self.prev_scene_data = context.get('scene_data')
+        self.prev_edges = self.get_edges()
+
+    def get_edges(self):
+        edges = []
+        if not isinstance(self.item, pyweritems.PywerNode):
+            return edges
+
+        for plug in self.item.inputs + self.item.outputs:
+            # edges.extend(plug.edges)
+            for e in plug.edges:
+                edges.append((e, e.source_plug, e.target_plug))
+
+        return edges
+
+    def redo(self):
+        self.scene.remove_item(self.item)
+        self.scene.clearSelection()
+
+        for edge in self.prev_edges:
+            e, source_plug, target_plug = edge
+            appnode.disconnect_plugs(source_plug, target_plug)
 
     def undo(self):
         self.scene.addItem(self.item)
-        self.update_paramteters_panel()
+        self.scene.clearSelection()
+        for item in self.prev_selection:
+            item.setSelected(True)
+
+        for edge in self.prev_edges:
+            e, source_plug, target_plug = edge
+            e.connect_plugs(source_plug, target_plug)
+            self.scene.addItem(e)
+            appnode.connect_plugs(source_plug, target_plug)
 
 
-class Connect(QtWidgets.QUndoCommand):
-    def __init__(self, source_plug, target_plug, edge, scene):
+class ConnectPlugs(QtWidgets.QUndoCommand):
+    def __init__(self, context, source_plug, target_plug):
         super().__init__()
         self.source_plug = source_plug
         self.target_plug = target_plug
-        self.edge = edge
-        self.scene = scene
+        self.scene = context.get('scene')
+        self.edge = pyweritems.PywerEdge()
+        self.prev_selection = context.get('current_selection')  # self.scene.get_selected_items()
 
     def redo(self):
-        if self.edge not in self.scene.items():
-            self.scene.addItem(self.edge)
+        self.scene.addItem(self.edge)
+        self.edge.connect_plugs(self.source_plug, self.target_plug)
+        appnode.connect_plugs(self.source_plug, self.target_plug)
 
-        plug1 = self.source_plug
-        plug2 = self.target_plug
-
-        source = plug1.parentItem().node_obj
-        target = plug2.parentItem().node_obj
-
-        from eventnodes import signal
-        source_signal = isinstance(plug1.plug_obj, signal.Signal)
-        target_signal = isinstance(plug2.plug_obj, signal.Signal)
-
-        if all([source_signal, target_signal]):
-            signal_obj = plug1.plug_obj
-            target.connect_from(signal_obj.computed, trigger=plug2.type_)
-        else:
-            input = plug1.plug_obj
-            output = plug2.plug_obj
-
-            output.connect_(input)
-
-        plug1.add_edge(self.edge)
-        plug2.add_edge(self.edge)
+        self.scene.clearSelection()
 
     def undo(self):
-        if self.edge in self.scene.items():
-            self.scene.removeItem(self.edge)
+        self.scene.remove_item(self.edge)
+        self.edge.disconnect()
+        appnode.disconnect_plugs(self.source_plug, self.target_plug)
 
-        plug1 = self.source_plug
-        plug2 = self.target_plug
-
-        source = plug1.parentItem().node_obj
-        target = plug2.parentItem().node_obj
-
-        from eventnodes import signal
-        source_signal = isinstance(plug1.plug_obj, signal.Signal)
-        target_signal = isinstance(plug2.plug_obj, signal.Signal)
-
-        if all([source_signal, target_signal]):
-            signal_obj = plug1.plug_obj
-            target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
-        else:
-            input = plug1.plug_obj
-            output = plug2.plug_obj
-
-            output.disconnect_()
-
-        plug1.remove_edge(self.edge)
-        plug2.remove_edge(self.edge)
+        self.scene.clearSelection()
+        for item in self.prev_selection:
+            item.setSelected(True)
 
 
 class Disconnect(QtWidgets.QUndoCommand):
-    def __init__(self, source_plug, target_plug, edge, scene):
+    def __init__(self, context, source_plug, target_plug):
         super().__init__()
         self.source_plug = source_plug
         self.target_plug = target_plug
-        self.edge = edge
-        self.scene = scene
+        self.scene = context.get('scene')
+        self.edge = self._find_edge(self.source_plug)
+
+    def _find_edge(self, plug):
+        for edge in plug.edges:
+            if edge.target_plug == self.target_plug:
+                return edge
 
     def redo(self):
-        if self.edge in self.scene.items():
-            self.scene.removeItem(self.edge)
-
-        plug1 = self.source_plug
-        plug2 = self.target_plug
-
-        source = plug1.parentItem().node_obj
-        target = plug2.parentItem().node_obj
-
-        from eventnodes import signal
-        source_signal = isinstance(plug1.plug_obj, signal.Signal)
-        target_signal = isinstance(plug2.plug_obj, signal.Signal)
-
-        if all([source_signal, target_signal]):
-            signal_obj = plug1.plug_obj
-            target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
-        else:
-            input = plug1.plug_obj
-            output = plug2.plug_obj
-
-            output.disconnect_()
-
-        plug1.remove_edge(self.edge)
-        plug2.remove_edge(self.edge)
+        self.scene.removeItem(self.edge)
+        self.edge.disconnect()
+        appnode.disconnect_plugs(self.source_plug, self.target_plug)
 
     def undo(self):
-        if self.edge not in self.scene.items():
-            self.scene.addItem(self.edge)
-
-        plug1 = self.source_plug
-        plug2 = self.target_plug
-
-        source = plug1.parentItem().node_obj
-        target = plug2.parentItem().node_obj
-
-        from eventnodes import signal
-        source_signal = isinstance(plug1.plug_obj, signal.Signal)
-        target_signal = isinstance(plug2.plug_obj, signal.Signal)
-
-        if all([source_signal, target_signal]):
-            signal_obj = plug1.plug_obj
-            target.connect_from(signal_obj.computed, trigger=plug2.type_)
-        else:
-            input = plug1.plug_obj
-            output = plug2.plug_obj
-
-            output.connect_(input)
-
-        self.edge.connect_plugs(plug1, plug2)
-
-        plug1.add_edge(self.edge)
-        plug2.add_edge(self.edge)
+        self.scene.addItem(self.edge)
+        self.edge.connect_plugs(self.source_plug, self.target_plug)
+        appnode.connect_plugs(self.source_plug, self.target_plug)
 
 
 class ParamChanged(QtWidgets.QUndoCommand):
