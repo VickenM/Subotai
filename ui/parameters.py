@@ -154,7 +154,6 @@ class Parameters(QtWidgets.QWidget):
             self.flayout.removeRow(0)
 
         if node_obj:
-
             header = QtWidgets.QLabel(self.node_obj.type)
             self.flayout.addRow('', header)
 
@@ -219,7 +218,6 @@ class Parameters(QtWidgets.QWidget):
                 else:
                     print('parameters.py: unknown param.type', param.type)
                     continue
-                    # widget = QtWidgets.QLineEdit(str(param.value))
                 self.flayout.addRow(param.name, widget)
 
             for control_ in self.node_obj.get_controls():

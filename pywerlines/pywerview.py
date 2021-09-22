@@ -1,6 +1,7 @@
 from PySide2 import QtGui, QtCore, QtWidgets
 from . import pyweritems
 
+
 class PywerView(QtWidgets.QGraphicsView):
     nodes_selected = QtCore.Signal(list)
     nodes_deleted = QtCore.Signal(list)
@@ -126,6 +127,11 @@ class PywerView(QtWidgets.QGraphicsView):
         dragged_from_plug = drag_edge.source_plug or drag_edge.target_plug
         mouse_over_plug = self.get_plug_at(position=position)
 
+        if self.disconnected_plug and (self.disconnected_plug == mouse_over_plug):
+            drag_edge.connect_plugs(drag_edge.source_plug, self.disconnected_plug)
+            self.disconnected_plug = None
+            return
+
         connection = None
         disconnection = None
 
@@ -143,7 +149,6 @@ class PywerView(QtWidgets.QGraphicsView):
         if self.disconnected_plug and (mouse_over_plug != self.disconnected_plug):
             disconnection = (dragged_from_plug, self.disconnected_plug)
 
-
         if disconnection:
             if not drag_edge.source_plug:
                 drag_edge.source_plug = self.disconnected_plug
@@ -157,7 +162,6 @@ class PywerView(QtWidgets.QGraphicsView):
         self.scene().removeItem(drag_edge)
         if connection:
             self.plugs_connected.emit(*connection)
-
 
     def _is_zoom_event(self, event):
         return event.modifiers() & QtCore.Qt.ControlModifier

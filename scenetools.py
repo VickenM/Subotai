@@ -30,7 +30,7 @@ def load_scene_data(scene, data, pos=None):
         n.setSize(*node.get('size', (100, 100)))
         n.name.setPlainText(node.get('name', n.name_))
 
-        scene.add_node(n)  # commands.AddNode(context, type_, position)
+        scene.add_node(n)
 
         new_nodes[n] = node
 
@@ -90,7 +90,6 @@ def load_scene_data(scene, data, pos=None):
         n.node_obj.update()
 
     for group in data['groups']:
-        # g = scene.create_group()
         g = new_group()
         if pos:
             if not relative_pos:
@@ -137,6 +136,7 @@ def load_macro(context, undo_stack, data, pos=None):
 
         undo_stack.push(commands.AddNode(context, type_, position=position, size=size))
         n = scene.get_selected_nodes()[0]
+        n.node_obj.set_active(node.get('active', True))
         n.name.setPlainText(node.get('name', n.name_))
 
         new_nodes[n] = node

@@ -47,7 +47,7 @@ class Param(object):
         if self.valid_value(new_value):
             self._old_value = self._value
             self._value = new_value
-        print(self._old_value, self._value)
+        # print(self._old_value, self._value)
 
     # Casts the given argument to this Param's type. Default implementation is to use the 'type'
     # ie, if type is int, cast(...) will return int(arg)

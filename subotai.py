@@ -32,7 +32,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle('Subotai')
         self.setWindowIcon(QtGui.QIcon(config.path + "/icons/icon.png"))
-        self.session_start_thread()
 
         self.view = AppView()
         self.scene = AppScene()
@@ -45,6 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.filename = None
         self.unsaved = False
         self.copy_buffer = None
+        self.worker_thread = None
 
         self.context = {
             'scene': self.scene,
@@ -52,6 +52,8 @@ class MainWindow(QtWidgets.QMainWindow):
             'worker': self.worker_thread,
             'scene_data': scenetools.get_scene_data(self.scene)
         }
+
+        self.session_start_thread()
 
         self.toolbox = ToolBox()
         self._populate_toolbox()
@@ -202,6 +204,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.worker_thread = worker.Worker(parent=self)
         self.worker_thread.start()
 
+        self.context['worker'] = self.worker_thread
+
     def session_stop_thread(self):
         self.worker_thread.exit()
         self.worker_thread.wait(QtCore.QDeadlineTimer(10000))  # wait 10sec if the thread is still running
@@ -266,14 +270,16 @@ class MainWindow(QtWidgets.QMainWindow):
             menu.addAction(self.actions_map.get_action('delete'))
             menu.exec_(self.view.mapToGlobal(QtCore.QPoint(x, y)))
 
-        # node = self.view.get_node_at(QtCore.QPoint(x, y))
         show_new_nodes_menu()
 
     def load_data(self, data):
-        new_items = scenetools.load_scene_data(self.scene, data, pos=None)
-        for n in new_items.keys():
-            if isinstance(n, pyweritems.PywerNode):
-                n.node_obj.moveToThread(self.worker_thread)
+        junk_stack = QtWidgets.QUndoStack()
+        scenetools.load_macro(self.context, junk_stack, data, pos=None)
+
+        # new_items = scenetools.load_scene_data(self.scene, data, pos=None)
+        # for n in new_items.keys():
+        #     if isinstance(n, pyweritems.PywerNode):
+        #         n.node_obj.moveToThread(self.worker_thread)
 
     def save_data(self):
         return scenetools.get_scene_data(self.scene)
@@ -500,6 +506,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def new_scene(self):
         if self.save_changes_dialog():
+            self.undo_stack.clear()
             self.deactivate_event_nodes()
             self.session_stop_thread()
             self.session_start_thread()  # TODO: do i need this? test removing it.
@@ -524,6 +531,7 @@ class MainWindow(QtWidgets.QMainWindow):
             filename, filter_ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(),
                                                                       'Scene Files (*.json)')
             if filename:
+                self.undo_stack.clear()
                 self.deactivate_event_nodes()
                 self.session_stop_thread()
                 self.scene.clear()
