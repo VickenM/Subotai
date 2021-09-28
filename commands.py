@@ -21,11 +21,11 @@ class SelectItems(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class ItemMoved(QtWidgets.QUndoCommand):
+class MoveItem(QtWidgets.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
         self.item = item
-        self.new_posiiton = item.pos()
+        self.new_position = item.pos()
         self.prev_scene_data = context.get('scene_data')
         self.old_position = self.get_old_position()
 
@@ -45,11 +45,26 @@ class ItemMoved(QtWidgets.QUndoCommand):
         return item['position']
 
     def redo(self):
-        self.item.setPos(self.new_posiiton)
+        self.item.setPos(self.new_position)
 
     def undo(self):
         old_position = self.get_old_position()
         self.item.setPos(*old_position)
+
+
+class ResizeItem(QtWidgets.QUndoCommand):
+    def __init__(self, context, item):
+        super().__init__()
+        self.item = item
+        self.prev_scene_data = context.get('scene_data')
+        self.new_size = item.size()
+        self.old_size = item.get_old_size()
+
+    def redo(self):
+        self.item.setSize(*self.new_size)
+
+    def undo(self):
+        self.item.setSize(*self.old_size)
 
 
 class AddNode(QtWidgets.QUndoCommand):

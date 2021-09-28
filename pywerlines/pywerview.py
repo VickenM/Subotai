@@ -94,6 +94,15 @@ class PywerView(QtWidgets.QGraphicsView):
         if moved_items:
             self.scene().itemsMoved(moved_items)
 
+    def _begin_resize_items(self, event):
+        for item in self.scene().get_all_items():
+            item.set_old_size(item.size())
+
+    def _end_resize_items(self, event):
+        resized_items = [item for item in self.scene().get_all_items() if item.get_old_size() != item.size()]
+        if resized_items:
+            self.scene().itemsResized(resized_items)
+
     def _is_drag_event(self, event):
         return event.button() == QtCore.Qt.LeftButton
 
@@ -211,6 +220,7 @@ class PywerView(QtWidgets.QGraphicsView):
         if self._is_change_event(event):
             self._begin_move_items(event)
             self._begin_select_items(event)
+            self._begin_resize_items(event)
 
         super().mousePressEvent(event)
 
@@ -224,3 +234,4 @@ class PywerView(QtWidgets.QGraphicsView):
         if self._is_change_event(event):
             self._end_move_items(event)
             self._end_select_items(event)
+            self._end_resize_items(event)

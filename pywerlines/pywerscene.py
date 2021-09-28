@@ -10,6 +10,7 @@ class PywerScene(QGraphicsScene):
     nodes_added = QtCore.Signal(list)
     nodes_deleted = QtCore.Signal(list)
     items_moved = QtCore.Signal(list)
+    items_resized = QtCore.Signal(list)
     group_nodes = QtCore.Signal(list)
     group_added = QtCore.Signal(list)
 
@@ -160,8 +161,10 @@ class PywerScene(QGraphicsScene):
     def itemsMoved(self, items):
         self.items_moved.emit(items)
 
-    def itemsSelected(self, items):
+    def itemsResized(self, items):
+        self.items_resized.emit(items)
 
+    def itemsSelected(self, items):
         self.nodes_selected.emit(items)
 
     def list_node_types(self):
