@@ -29,11 +29,21 @@ class MoveItem(QtWidgets.QUndoCommand):
         self.prev_scene_data = context.get('scene_data')
         self.old_position = self.item.get_old_position()
 
+    # TODO: the isinstance stuff for move_children is really gross
+
     def redo(self):
+        if isinstance(self.item, pyweritems.PywerGroup):
+            self.item.move_children = False
         self.item.setPos(self.new_position)
+        if isinstance(self.item, pyweritems.PywerGroup):
+            self.item.move_children = True
 
     def undo(self):
+        if isinstance(self.item, pyweritems.PywerGroup):
+            self.item.move_children = False
         self.item.setPos(self.old_position)
+        if isinstance(self.item, pyweritems.PywerGroup):
+            self.item.move_children = True
 
 
 class ResizeItem(QtWidgets.QUndoCommand):
@@ -101,7 +111,7 @@ class AddGroup(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class RemoveRtem(QtWidgets.QUndoCommand):
+class RemoveItem(QtWidgets.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
         self.item = item
