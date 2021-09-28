@@ -84,6 +84,7 @@ class PywerView(QtWidgets.QGraphicsView):
     def _end_select_items(self, event):
         selected_items = self.scene().get_selected_items()
         self.scene().emit_selected_items(selected_items)
+        return selected_items
 
     def _begin_move_items(self, event):
         for item in self.scene().get_all_items():
@@ -93,6 +94,7 @@ class PywerView(QtWidgets.QGraphicsView):
         moved_items = [item for item in self.scene().get_all_items() if item.get_old_position() != item.pos()]
         if moved_items:
             self.scene().itemsMoved(moved_items)
+        return moved_items
 
     def _begin_resize_items(self, event):
         for item in self.scene().get_all_items():
@@ -102,6 +104,7 @@ class PywerView(QtWidgets.QGraphicsView):
         resized_items = [item for item in self.scene().get_all_items() if item.get_old_size() != item.size()]
         if resized_items:
             self.scene().itemsResized(resized_items)
+        return resized_items
 
     def _is_drag_event(self, event):
         return event.button() == QtCore.Qt.LeftButton
@@ -213,7 +216,6 @@ class PywerView(QtWidgets.QGraphicsView):
             self.drag_edge.adjust()
 
     def mousePressEvent(self, event):
-
         if self._is_drag_event(event):
             self.drag_edge = self._drag_edge(event.pos())
 
@@ -233,5 +235,6 @@ class PywerView(QtWidgets.QGraphicsView):
 
         if self._is_change_event(event):
             self._end_move_items(event)
-            self._end_select_items(event)
-            self._end_resize_items(event)
+            resized = self._end_resize_items(event)
+            if not resized:
+                self._end_select_items(event)

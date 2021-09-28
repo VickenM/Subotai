@@ -439,10 +439,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.Slot(list)
     def items_resized(self, items):
-
         self.undo_stack.beginMacro('items resized')
         for item in items:
-
             self.undo_stack.push(commands.ResizeItem(self.context, item))
         self.undo_stack.endMacro()
         self.context['current_selection'] = self.scene.get_selected_items()

@@ -332,6 +332,7 @@ class PywerNode(PywerItem):
 
     def setResizing(self, resizing):
         self.resizing = resizing
+        self.update()
 
     def isResizing(self):
         return self.resizing
@@ -624,12 +625,10 @@ class Resizer(QtWidgets.QGraphicsObject):
     def mousePressEvent(self, event):
         self.old_position = event.scenePos()
         self.parentItem().setResizing(True)
-        self.parentItem().setSelected(False)
         return super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
         self.parentItem().setResizing(False)
-        self.parentItem().setSelected(True)
         return super().mouseReleaseEvent(event)
 
 
@@ -676,6 +675,7 @@ class PywerGroup(PywerItem):
 
     def setResizing(self, resizing):
         self.resizing = resizing
+        self.update()
 
     def isResizing(self):
         return self.resizing

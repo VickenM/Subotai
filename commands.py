@@ -40,16 +40,21 @@ class ResizeItem(QtWidgets.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
         self.item = item
+        self.scene = context.get('scene')
         self.prev_scene_data = context.get('scene_data')
         self.new_size = item.size()
         self.old_size = item.get_old_size()
+        self.prev_items = context.get('current_selection')
 
     def redo(self):
         self.item.setSize(*self.new_size)
+        self.item.setSelected(True)
 
     def undo(self):
         self.item.setSize(*self.old_size)
-
+        self.item.setSelected(False)
+        for item in self.prev_items:
+            item.setSelected(True)
 
 class AddNode(QtWidgets.QUndoCommand):
     def __init__(self, context, item, position=None, size=None):
@@ -96,7 +101,7 @@ class AddGroup(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class RemoveItem(QtWidgets.QUndoCommand):
+class RemoveRtem(QtWidgets.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
         self.item = item
