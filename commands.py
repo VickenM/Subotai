@@ -27,29 +27,13 @@ class MoveItem(QtWidgets.QUndoCommand):
         self.item = item
         self.new_position = item.pos()
         self.prev_scene_data = context.get('scene_data')
-        self.old_position = self.get_old_position()
-
-    def find_item(self):
-
-        if isinstance(self.item, pyweritems.PywerNode):
-            items = self.prev_scene_data['nodes']
-        else:
-            items = self.prev_scene_data['groups']
-
-        for item in items:
-            if str(self.item.node_obj.obj_id) == item['id']:
-                return item
-
-    def get_old_position(self):
-        item = self.find_item()
-        return item['position']
+        self.old_position = self.item.get_old_position()
 
     def redo(self):
         self.item.setPos(self.new_position)
 
     def undo(self):
-        old_position = self.get_old_position()
-        self.item.setPos(*old_position)
+        self.item.setPos(self.old_position)
 
 
 class ResizeItem(QtWidgets.QUndoCommand):
