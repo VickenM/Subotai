@@ -65,6 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.scene.nodes_selected.connect(self.selection_changed)
         self.scene.items_moved.connect(self.items_moved)
         self.scene.items_resized.connect(self.items_resized)
+        self.scene.rename_item.connect(self.items_renamed)
         self.view.plugs_connected.connect(self.connected_plugs)
         self.view.plugs_disconnected.connect(self.disconnected_plugs)
 
@@ -430,6 +431,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.undo_stack.beginMacro('items moved')
         for item in items:
             self.undo_stack.push(commands.MoveItem(self.context, item))
+        self.undo_stack.endMacro()
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot(list)
+    def items_renamed(self, items):
+        self.undo_stack.beginMacro('items renamed')
+        for item in items:
+            self.undo_stack.push(commands.RenameItem(self.context, item))
         self.undo_stack.endMacro()
         self.context['current_selection'] = self.scene.get_selected_items()
         self.context['scene_data'] = scenetools.get_scene_data(self.scene)

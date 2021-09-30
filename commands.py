@@ -46,6 +46,31 @@ class MoveItem(QtWidgets.QUndoCommand):
             self.item.move_children = True
 
 
+class RenameItem(QtWidgets.QUndoCommand):
+    def __init__(self, context, item):
+        super().__init__()
+        self.item = item
+        self.new_name = item.name.toPlainText()
+        self.scene = context.get('scene')
+        self.prev_scene_data = context.get('scene_data')
+
+        if isinstance(self.item, pyweritems.PywerNode):
+            for node in self.prev_scene_data['nodes']:
+                if str(node['id']) == str(self.item.node_obj.obj_id):
+                    self.prev_name = node['name']
+
+        elif isinstance(self.item, pyweritems.PywerGroup):
+            for group in self.prev_scene_data['groups']:
+                if str(group['id']) == str(self.item.node_obj.obj_id):
+                    self.prev_name = group['name']
+
+    def redo(self):
+        self.item.name.setPlainText(self.new_name)
+
+    def undo(self):
+        self.item.name.setPlainText(self.prev_name)
+
+
 class ResizeItem(QtWidgets.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
@@ -65,6 +90,7 @@ class ResizeItem(QtWidgets.QUndoCommand):
         self.item.setSelected(False)
         for item in self.prev_items:
             item.setSelected(True)
+
 
 class AddNode(QtWidgets.QUndoCommand):
     def __init__(self, context, item, position=None, size=None):

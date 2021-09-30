@@ -286,6 +286,19 @@ class Glow(QtWidgets.QGraphicsDropShadowEffect):
         self.setBlurRadius(frame * 100)
 
 
+class NameText(QtWidgets.QGraphicsTextItem):
+    rename_signal = QtCore.Signal(str)
+
+    def focusInEvent(self, event):
+        self.current_text = self.toPlainText()
+        return super().focusOutEvent(event)
+
+    def focusOutEvent(self, event):
+        if self.current_text != self.toPlainText():
+            self.rename_signal.emit(self.toPlainText())
+            return super().focusOutEvent(event)
+
+
 class PywerNode(PywerItem):
     name_ = 'name'
 
@@ -317,14 +330,17 @@ class PywerNode(PywerItem):
         self.active = True
         self.resizing = False
 
-        self.name = QtWidgets.QGraphicsTextItem(parent=self)
+        # self.name = QtWidgets.QGraphicsTextItem(parent=self)
+        self.name = NameText(parent=self)
         font = self.name.font()
         font.setPointSize(8)
         self.name.setFont(font)
-        self.name.setTextInteractionFlags(QtCore.Qt.TextEditable)
+        self.name.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
         self.name.setPlainText(self.name_)
         self.name.setDefaultTextColor(QtCore.Qt.white)
         self.name.setPos(self.pos().x(), self.pos().y() - 20)
+
+        self.name.rename_signal.connect(self.set_name)
 
         self.spinner = PywerSpinner(parent=self)
         self.spinner.hide()
@@ -360,6 +376,10 @@ class PywerNode(PywerItem):
 
     def get_old_selection(self):
         return self.old_selection
+
+    @Slot(str)
+    def set_name(self, name):
+        self.scene().emit_rename_item(self)
 
     @Slot()
     def start_spinner(self):
@@ -658,7 +678,7 @@ class PywerGroup(PywerItem):
 
         self.setFlag(self.ItemIsMovable)
 
-        self.name = QtWidgets.QGraphicsTextItem(parent=self)
+        self.name = NameText(parent=self)
         font = self.name.font()
         font.setPointSize(8)
         self.name.setFont(font)
@@ -666,6 +686,8 @@ class PywerGroup(PywerItem):
         self.name.setPlainText(self.name_)
         self.name.setDefaultTextColor(QtCore.Qt.white)
         self.name.setPos(self.pos().x(), self.pos().y() - 20)
+
+        self.name.rename_signal.connect(self.set_name)
 
         self.resizing = False
 
@@ -703,6 +725,10 @@ class PywerGroup(PywerItem):
 
     def get_old_selection(self):
         return self.old_selection
+
+    @Slot(str)
+    def set_name(self, name):
+        self.scene().emit_rename_item(self)
 
     @Slot(QtCore.QPointF)
     def resize(self, change):

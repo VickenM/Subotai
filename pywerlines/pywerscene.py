@@ -6,6 +6,7 @@ from . import pyweritems
 class PywerScene(QGraphicsScene):
     plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug, pyweritems.PywerEdge)
     plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug, pyweritems.PywerEdge)
+    rename_item = QtCore.Signal(list)
     nodes_selected = QtCore.Signal(list)
     nodes_added = QtCore.Signal(list)
     nodes_deleted = QtCore.Signal(list)
@@ -31,6 +32,9 @@ class PywerScene(QGraphicsScene):
 
     def emit_disconnected_plugs(self, plug1, plug2, edge):
         self.plugs_disconnected.emit(plug1, plug2, edge)
+
+    def emit_rename_item(self, item):
+        self.rename_item.emit([item])
 
     def addItem(self, item):
         super(PywerScene, self).addItem(item)
