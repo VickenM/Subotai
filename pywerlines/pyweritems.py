@@ -79,6 +79,12 @@ class PywerEdge(PywerItem):
     def disconnect(self):
         self.source_plug.remove_edge(self)
         self.target_plug.remove_edge(self)
+        self.source_plug = None
+        self.target = None
+        self.target_position = None
+        self.start = QtCore.QPoint()
+        self.end = QtCore.QPoint()
+        self.adjust()
 
     def adjust(self):
         if self.target_position:
