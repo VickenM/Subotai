@@ -480,9 +480,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.unsaved = True
         self.update_window_title()
 
-    @QtCore.Slot(object)
-    def parameter_changed(self, param):
-        self.undo_stack.push(commands.ParamValue(self.context, param))
+    @QtCore.Slot(object, object)
+    def parameter_changed(self, node, param):
+        self.undo_stack.push(commands.ParamValue(self.context, node, param))
         self.context['current_selection'] = self.scene.get_selected_items()
         self.context['scene_data'] = scenetools.get_scene_data(self.scene)
 

@@ -229,14 +229,17 @@ class Disconnect(QtWidgets.QUndoCommand):
 
 
 class ParamValue(QtWidgets.QUndoCommand):
-    def __init__(self, context, param):
+    def __init__(self, context, node, param):
         super().__init__()
+        self.node = node
         self.param = param
         self.value = self.param.value
         self.old_value = self.param._old_value
 
     def redo(self):
         self.param.value = self.value
+        self.node.update()
 
     def undo(self):
         self.param.value = self.old_value
+        self.node.update()
