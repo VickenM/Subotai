@@ -138,6 +138,7 @@ def load_macro(context, undo_stack, data, pos=None):
         n = scene.get_selected_nodes()[0]
         n.node_obj.set_active(node.get('active', True))
         n.name.setPlainText(node.get('name', n.name_))
+        n.node_obj.obj_id = node['id']
 
         new_nodes[n] = node
 
@@ -214,6 +215,7 @@ def load_macro(context, undo_stack, data, pos=None):
         undo_stack.push(commands.AddGroup(context, position, size))
         g = scene.get_selected_groups()[0]
         g.name.setPlainText(group.get('name', g.name_))
+        g.node_obj.obj_id = group['id']
 
         new_nodes[g] = group
 

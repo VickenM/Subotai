@@ -594,6 +594,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def exit_app(self):
         self.session_stop_thread()
+        self.scene.clear()
         self.worker_thread.deleteLater()
         qapp = QtWidgets.QApplication.instance()
         qapp.exit()

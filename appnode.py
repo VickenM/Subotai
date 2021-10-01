@@ -82,7 +82,9 @@ class AppNode(pywerlines.pyweritems.PywerNode):
 
         for param in self.node_obj.params:
             pluggable = dict_['params'].setdefault(param.pluggable, {})
-            pluggable[param.name] = param.to_dict()
+            param_dict = param.to_dict()
+            if param_dict is not None:
+                pluggable[param.name] = param_dict
 
         return dict_
 
