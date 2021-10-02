@@ -342,7 +342,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pos = self.view.mapToScene(pos)
 
         self.undo_stack.beginMacro('paste')
-        new_items = scenetools.load_macro(self.context, self.undo_stack, self.copy_buffer, pos=pos)
+        new_items = scenetools.paste_macro(self.context, self.undo_stack, self.copy_buffer, pos=pos)
         self.undo_stack.push(commands.SelectItems(self.context, new_items))
         self.undo_stack.endMacro()
         self.context['current_selection'] = self.scene.get_selected_items()
