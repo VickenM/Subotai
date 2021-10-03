@@ -4,29 +4,37 @@ from . import pyweritems
 
 
 class PywerScene(QGraphicsScene):
+    plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug, pyweritems.PywerEdge)
+    plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug, pyweritems.PywerEdge)
+    rename_item = QtCore.Signal(list)
     nodes_selected = QtCore.Signal(list)
     nodes_added = QtCore.Signal(list)
     nodes_deleted = QtCore.Signal(list)
-    items_moved = QtCore.Signal()
-    plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
-    plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
+    items_moved = QtCore.Signal(list)
+    items_resized = QtCore.Signal(list)
+    group_nodes = QtCore.Signal(list)
+    group_added = QtCore.Signal(list)
 
     def __init_(self, **kwargs):
         super(PywerScene, self).__init__(**kwargs)
 
-    def emit_selected_nodes(self):
-        selected_nodes = self.get_selected_nodes()
-        # if selected_nodes:
-        self.nodes_selected.emit(selected_nodes)
+    def emit_selected_items(self, items):
+        self.nodes_selected.emit(items)
 
     def emit_deleted_nodes(self, nodes):
         self.nodes_deleted.emit(nodes)
 
-    def emit_connected_plugs(self, plug1, plug2):
-        self.plugs_connected.emit(plug1, plug2)
+    # def emit_added_nodes(self, nodes):
+    #     self.nodes_added.emit(nodes)
 
-    def emit_disconnected_plugs(self, plug1, plug2):
-        self.plugs_disconnected.emit(plug1, plug2)
+    def emit_connected_plugs(self, plug1, plug2, edge):
+        self.plugs_connected.emit(plug1, plug2, edge)
+
+    def emit_disconnected_plugs(self, plug1, plug2, edge):
+        self.plugs_disconnected.emit(plug1, plug2, edge)
+
+    def emit_rename_item(self, item):
+        self.rename_item.emit([item])
 
     def addItem(self, item):
         super(PywerScene, self).addItem(item)
@@ -68,20 +76,34 @@ class PywerScene(QGraphicsScene):
         target_plug.add_edge(edge)
         self.addItem(edge)
         edge.adjust()
-        self.emit_connected_plugs(source_plug, target_plug)
+        self.emit_connected_plugs(source_plug, target_plug, edge)
         return edge
 
     def remove_edge(self, edge):
         edge.source_plug.edges.remove(edge)
         edge.target_plug.edges.remove(edge)
         self.removeItem(edge)
-        self.emit_disconnected_plugs(edge.source_plug, edge.target_plug)
+        # self.emit_disconnected_plugs(edge.source_plug, edge.target_plug, edge)
 
     def get_selected_nodes(self):
         return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerNode)]
 
     def get_selected_groups(self):
         return [item for item in self.selectedItems() if isinstance(item, pyweritems.PywerGroup)]
+
+    def get_selected_items(self):
+        return self.get_selected_nodes() + self.get_selected_groups()
+
+    def get_all_nodes(self):
+        return [item for item in self.items() if isinstance(item, pyweritems.PywerNode)]
+
+    def get_all_groups(self):
+        return [item for item in self.items() if isinstance(item, pyweritems.PywerGroup)]
+
+    def get_all_items(self):
+        return [item for item in self.items() if
+                isinstance(item, pyweritems.PywerNode) or
+                isinstance(item, pyweritems.PywerGroup)]
 
     def remove_node(self, node):
         self._remove_node(node)
@@ -92,49 +114,47 @@ class PywerScene(QGraphicsScene):
             self._remove_node(node)
         self.emit_deleted_nodes(nodes)
 
+    def remove_items(self, items):
+        for item in items:
+            if isinstance(item, pyweritems.PywerNode):
+                self._remove_node(item)
+            else:
+                self.removeItem(item)
+        self.emit_deleted_nodes(items)
+
+    def remove_item(self, item):
+        if isinstance(item, pyweritems.PywerNode):
+            self._remove_node(item)
+        else:
+            self.removeItem(item)
+        self.emit_deleted_nodes([item])
+
     def remove_selected_nodes(self):
         nodes = self.get_selected_nodes()
-        self.remove_nodes(nodes)
+        self._remove_nodes(nodes)
+        self.emit_deleted_nodes(nodes)
 
     def remove_selected_groups(self):
-        for group in self.get_selected_groups():
+        groups = self.get_selected_groups()
+        for group in groups:
             self.removeItem(group)
+        self.emit_deleted_nodes(groups)
+
+    def remove_selected_items(self):
+        items = self.get_selected_nodes() + self.get_selected_groups()
+        for item in items:
+            self.removeItem(item)
+        self.emit_deleted_nodes(items)
 
     def create_group(self):
+
         group = pyweritems.PywerGroup()
         self.addItem(group)
         return group
 
-    def group_selected_nodes(self):
-        nodes = self.get_selected_nodes()
-        if not nodes:
-            return
-
-        top = left = float("inf")
-        bottom = right = 0
-        for node in nodes:
-            pos = node.pos()
-            if pos.y() < top:
-                top = pos.y()
-            if pos.y() + node.height > bottom:
-                bottom = pos.y() + node.height
-            if pos.x() < left:
-                left = pos.x()
-            if pos.x() + node.width > right:
-                right = pos.x() + node.width
-
-        group = pyweritems.PywerGroup()
-        top -= group.header_height
-        left -= 10
-        bottom += 10
-        right += 10
-
-        position = QtCore.QPointF(left, top)
-        group.width = right - left
-        group.height = abs(bottom - top)
-        group.adjust()
-        group.setPos(position)
+    def add_group(self, group):
         self.addItem(group)
+        self.nodes_added.emit([group])
         return group
 
     def add_node(self, node):
@@ -142,12 +162,14 @@ class PywerScene(QGraphicsScene):
         self.nodes_added.emit([node])
         return node
 
-    # abstract
-    def create_node_of_type(self, type_):
-        pass
+    def itemsMoved(self, items):
+        self.items_moved.emit(items)
 
-    def itemMoved(self):
-        self.items_moved.emit()  # TODO: Emit the items that have moved
+    def itemsResized(self, items):
+        self.items_resized.emit(items)
+
+    def itemsSelected(self, items):
+        self.nodes_selected.emit(items)
 
     def list_node_types(self):
         return []

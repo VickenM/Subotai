@@ -38,16 +38,21 @@ class MathParam(IntParam):
         first = self.first_param
         second = self.second_param
 
-        if op.value == op.Operations.add:
-            return first.value + second.value
-        elif op.value == op.Operations.subtract:
-            return first.value - second.value
-        elif op.value == op.Operations.multiply:
-            return first.value * second.value
-        elif op.value == op.Operations.divide:
-            return first.value / second.value
-        elif op.value == op.Operations.modulo:
-            return first.value % second.value
+        try:
+            if op.value == op.Operations.add:
+                return first.value + second.value
+            elif op.value == op.Operations.subtract:
+                return first.value - second.value
+            elif op.value == op.Operations.multiply:
+                return first.value * second.value
+            elif op.value == op.Operations.divide:
+                return first.value / second.value
+            elif op.value == op.Operations.modulo:
+                return first.value % second.value
+        except ZeroDivisionError as e:
+            print('Exception occured in math.py:')
+            print(e)
+            return
 
         signal = self.get_first_signal('event', pluggable=OUTPUT_PLUG)
         signal.emit_event()

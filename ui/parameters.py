@@ -94,7 +94,7 @@ class Parameters(QtWidgets.QWidget):
     # todo: self.controls_info is a cache for the control parameters from the node.
     # I need this cache so that I can connect/disconnect the signal and slots.
 
-    parameter_changed = QtCore.Signal()
+    parameter_changed = QtCore.Signal(object, object)
 
     def __init__(self, parent=None):
         super(Parameters, self).__init__(parent=parent)
@@ -154,7 +154,6 @@ class Parameters(QtWidgets.QWidget):
             self.flayout.removeRow(0)
 
         if node_obj:
-
             header = QtWidgets.QLabel(self.node_obj.type)
             self.flayout.addRow('', header)
 
@@ -206,7 +205,7 @@ class Parameters(QtWidgets.QWidget):
                     widget.valueChanged.connect(partial(self.set_param_value, node_obj, param))
                 elif param.type == list:
                     widget = ListWidget(node_obj=node_obj, param=param)
-                    widget.changed.connect(lambda: self.parameter_changed.emit())
+                    widget.changed.connect(lambda: self.parameter_changed.emit(node_obj, param))
                 elif param.type == Enum:
                     widget = QtWidgets.QComboBox()
                     widget.addItems(list(param.Operations.__members__))
@@ -219,7 +218,6 @@ class Parameters(QtWidgets.QWidget):
                 else:
                     print('parameters.py: unknown param.type', param.type)
                     continue
-                    # widget = QtWidgets.QLineEdit(str(param.value))
                 self.flayout.addRow(param.name, widget)
 
             for control_ in self.node_obj.get_controls():
@@ -238,12 +236,12 @@ class Parameters(QtWidgets.QWidget):
     def set_enum_param_value(self, node_obj, param, value):
         param.value = param.Operations.__members__[value]
         node_obj.update()
-        self.parameter_changed.emit()
+        self.parameter_changed.emit(node_obj, param)
 
     def set_param_value(self, node_obj, param, value):
         param.value = value
         node_obj.update()
-        self.parameter_changed.emit()
+        self.parameter_changed.emit(node_obj, param)
 
     def set_bool_param_value(self, node_obj, param, value):
         if value == QtCore.Qt.Checked:
@@ -251,4 +249,4 @@ class Parameters(QtWidgets.QWidget):
         elif value == QtCore.Qt.Unchecked:
             param.value = False
         node_obj.update()
-        self.parameter_changed.emit()
+        self.parameter_changed.emit(node_obj, param)

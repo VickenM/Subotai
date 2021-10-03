@@ -15,65 +15,15 @@ from ui.splashscreen import SplashScreen
 
 from appscene import AppScene
 from appview import AppView
+# from appnode import new_node
 
+import commands
 import actions
 import config
 import register
 import eventnodes
 import scenetools
-
-
-@QtCore.Slot(list)
-def selected_nodes(data):
-    pass
-
-
-@QtCore.Slot(list)
-def added_nodes(data):
-    pass
-
-
-@QtCore.Slot(list)
-def deleted_nodes(data):
-    pass
-
-
-@QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
-def connected_plugs(plug1, plug2):
-    source = plug1.parentItem().node_obj
-    target = plug2.parentItem().node_obj
-
-    from eventnodes import signal
-    source_signal = isinstance(plug1.plug_obj, signal.Signal)
-    target_signal = isinstance(plug2.plug_obj, signal.Signal)
-
-    if all([source_signal, target_signal]):
-        signal_obj = plug1.plug_obj
-        target.connect_from(signal_obj.computed, trigger=plug2.type_)
-    else:
-        input = plug1.plug_obj
-        output = plug2.plug_obj
-
-        output.connect_(input)
-
-
-@QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
-def disconnected_plugs(plug1, plug2):
-    source = plug1.parentItem().node_obj
-    target = plug2.parentItem().node_obj
-
-    from eventnodes import signal
-    source_signal = isinstance(plug1.plug_obj, signal.Signal)
-    target_signal = isinstance(plug2.plug_obj, signal.Signal)
-
-    if all([source_signal, target_signal]):
-        signal_obj = plug1.plug_obj
-        target.disconnect_from(signal_obj.computed, trigger=plug2.type_)
-    else:
-        input = plug1.plug_obj
-        output = plug2.plug_obj
-
-        output.disconnect_()
+import worker
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -89,21 +39,35 @@ class MainWindow(QtWidgets.QMainWindow):
         self.scene.setItemIndexMethod(self.scene.NoIndex)
         self.view.setScene(self.scene)
 
+        self.undo_stack = QtWidgets.QUndoStack()
+
         self.filename = None
         self.unsaved = False
-        self.saved_data = None
+        self.copy_buffer = None
+        self.worker_thread = None
+
+        self.context = {
+            'scene': self.scene,
+            'current_selection': [],
+            'worker': self.worker_thread,
+            'scene_data': scenetools.get_scene_data(self.scene)
+        }
+
+        self.session_start_thread()
 
         self.toolbox = ToolBox()
         self._populate_toolbox()
-        self.toolbox.itemDoubleClickedSignal.connect(self.new_node_selected)
+        self.toolbox.itemDoubleClickedSignal.connect(self.create_new_node)
+        self.view.node_dropped_signal.connect(self.create_new_node)
+        self.view.context_menu_signal.connect(self.context_menu)
 
-        self.scene.nodes_selected.connect(selected_nodes)
-        self.scene.nodes_deleted.connect(deleted_nodes)
-        self.scene.nodes_added.connect(added_nodes)
-        self.scene.plugs_connected.connect(connected_plugs)
-        self.scene.plugs_disconnected.connect(disconnected_plugs)
-        self.scene.nodes_selected.connect(self.selected_nodes)
+        self.scene.nodes_added.connect(lambda nodes: self.session_add_nodes(nodes))
+        self.scene.nodes_selected.connect(self.selection_changed)
         self.scene.items_moved.connect(self.items_moved)
+        self.scene.items_resized.connect(self.items_resized)
+        self.scene.rename_item.connect(self.items_renamed)
+        self.view.plugs_connected.connect(self.connected_plugs)
+        self.view.plugs_disconnected.connect(self.disconnected_plugs)
 
         self.parameters = Parameters()
         self.parameters.parameter_changed.connect(self.parameter_changed)
@@ -120,9 +84,6 @@ class MainWindow(QtWidgets.QMainWindow):
         central_widget = QtWidgets.QWidget(parent=self)
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
-
-        self.view.node_dropped_signal.connect(self.new_node_selected)
-        self.view.context_menu_signal.connect(self.context_menu)
 
         self.actions_map = actions.ActionMap()
         self._init_actions(config.action_shortcuts, self.actions_map)
@@ -142,6 +103,9 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(self.actions_map.get_action('exit'))
 
         edit_menu = self.menuBar().addMenu('&Edit')
+        edit_menu.addAction(self.actions_map.get_action('undo'))
+        edit_menu.addAction(self.actions_map.get_action('redo'))
+        edit_menu.addSeparator()
         edit_menu.addAction(self.actions_map.get_action('group'))
         edit_menu.addAction(self.actions_map.get_action('empty_group'))
         edit_menu.addSeparator()
@@ -176,17 +140,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         QtWidgets.QApplication.instance().trayIcon = self.trayIcon
 
-    def _update_window_title(self):
-        title = 'Subotai'
-
-        if self.filename:
-            title += ' - {}'.format(self.filename)
-
-        if self.unsaved:
-            title += '*'
-
-        self.setWindowTitle(title)
-
     def _populate_toolbox(self):
         self.toolbox.clear()
         self.toolbox.addSections(config.node_categories)
@@ -197,15 +150,19 @@ class MainWindow(QtWidgets.QMainWindow):
                          tooltip=event_node.description))
 
     def _init_actions(self, action_shortcuts, action_map):
+
+        # set action shortcuts
         for action_name, shortcut in action_shortcuts.items():
             action = action_map.get_action(action_name)
             if action:
                 action.setShortcut(QtGui.QKeySequence(shortcut))
 
+        # set action icons
         self.actions_map.get_action('run').setIcon(QtGui.QIcon(config.path + '/icons/run.jpg'))
 
-        self.actions_map.get_action('group').triggered.connect(self.group_selected)
-        self.actions_map.get_action('empty_group').triggered.connect(self.new_group)
+        # set action slots
+        self.actions_map.get_action('group').triggered.connect(self.create_new_group_selected)
+        self.actions_map.get_action('empty_group').triggered.connect(self.create_new_group)
         self.actions_map.get_action('copy').triggered.connect(self.copy_selected)
         self.actions_map.get_action('paste').triggered.connect(self.paste_selected)
         self.actions_map.get_action('delete').triggered.connect(self.delete_selected)
@@ -215,26 +172,50 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions_map.get_action('save_scene').triggered.connect(self.save_scene)
         self.actions_map.get_action('save_scene_as').triggered.connect(self.save_scene_as)
         self.actions_map.get_action('reload').triggered.connect(self.refresh_nodes)
-        self.actions_map.get_action('exit').triggered.connect(self.exit_app)
-        self.actions_map.get_action('select_all').triggered.connect(self.select_all)
-        self.actions_map.get_action('toggle_names').triggered.connect(lambda x: self.scene.toggle_names())
+        self.actions_map.get_action('undo').triggered.connect(self.undo)
+        self.actions_map.get_action('redo').triggered.connect(self.redo)
 
+        self.actions_map.get_action('exit').triggered.connect(self.exit_app)
+        self.actions_map.get_action('select_all').triggered.connect(
+            lambda x: self.selection_changed(self.scene.get_all_items()))
+        self.actions_map.get_action('toggle_names').triggered.connect(lambda x: self.scene.toggle_names())
         self.actions_map.get_action('new_process').triggered.connect(lambda x: self.spawn(background=False))
         self.actions_map.get_action('new_background_process').triggered.connect(lambda x: self.spawn(background=True))
         self.actions_map.get_action('about').triggered.connect(lambda x: show_splashscreen(animate=False))
-
         self.actions_map.get_action('toggle_window').triggered.connect(self.toggle_visible)
 
-    # @QtCore.Slot()
-    def start_thread(self):
-        self.thread_ = eventnodes.base.Worker(parent=self)
-        self.thread_.start()
+    def update_window_title(self):
+        title = 'Subotai'
 
-    # @QtCore.Slot()
-    def stop_thread(self):
-        self.scene.clear()
-        self.thread_.exit()
-        self.thread_.wait(QtCore.QDeadlineTimer(10000))  # wait 10sec if the thread is still running
+        if self.filename:
+            title += ' - {}'.format(self.filename)
+
+        if self.unsaved:
+            title += '*'
+
+        self.setWindowTitle(title)
+
+    def update_parameters_panel(self):
+        nodes = self.scene.get_selected_nodes()
+        if nodes:
+            self.parameters.set_node_obj(nodes[0].node_obj)
+        else:
+            self.parameters.set_node_obj(None)
+
+    def session_start_thread(self):
+        self.worker_thread = worker.Worker(parent=self)
+        self.worker_thread.start()
+
+        self.context['worker'] = self.worker_thread
+
+    def session_stop_thread(self):
+        self.worker_thread.exit()
+        self.worker_thread.wait(QtCore.QDeadlineTimer(10000))  # wait 10sec if the thread is still running
+
+    def session_add_nodes(self, nodes):
+        pass
+        # for node in nodes:
+        #     node.node_obj.moveToThread(self.worker_thread)
 
     def spawn(self, background=True):
         import subprocess
@@ -253,118 +234,6 @@ class MainWindow(QtWidgets.QMainWindow):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
                                  shell=False)
-
-    def load_data(self, data):
-        new_items = scenetools.load_scene_data(self.scene, data, pos=None)
-        for n in new_items.keys():
-            if isinstance(n, pyweritems.PywerNode):
-                n.node_obj.moveToThread(self.thread_)
-
-    def save_data(self):
-        return scenetools.get_scene_data(self.scene, selected=False)
-
-    def load_json(self, json_string):
-        data = json.loads(json_string)
-        self.load_data(data)
-
-    def dump_json(self):
-        return json.dumps(self.save_data())
-
-    def load_file(self, file_name):
-        with open(file_name, 'r') as fp:
-            data = json.load(fp)
-        self.load_data(data)
-
-        self.unsaved = False
-        self.filename = file_name
-        self.saved_data = {}
-
-        self._update_window_title()
-
-    def save_file(self, file_name):
-        data = self.save_data()
-        with open(file_name, 'w') as fp:
-            json.dump(data, fp, indent=4)
-
-        self.unsaved = False
-        self.filename = file_name
-
-        self._update_window_title()
-
-    def keyPressEvent(self, event):
-        pass
-
-    def deactivate_event_nodes(self):
-        scene_nodes = self.scene.list_nodes()
-        for node in scene_nodes:
-            node.stop_spinner()
-            if node.node_obj.is_computable():
-                node.node_obj.unset_ui_node()
-
-        timers = [item for item in scene_nodes if isinstance(item.node_obj, eventnodes.base.EventNode)]
-        for timer in timers:
-            timer.node_obj.deactivate()
-
-    @QtCore.Slot()
-    def new_group(self):
-        position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
-        scenetools.create_group(self.scene, position)
-
-        self.unsaved = True
-        self._update_window_title()
-
-    @QtCore.Slot()
-    def group_selected(self):
-        scenetools.group_selected_nodes(self.scene)
-
-        self.unsaved = True
-        self._update_window_title()
-
-    @QtCore.Slot()
-    def delete_selected(self):
-        scenetools.delete_selected(self.scene)
-
-        self.unsaved = True
-        self.parameters.set_node_obj(None)
-        self._update_window_title()
-
-    @QtCore.Slot()
-    def select_all(self):
-        scenetools.select_all(self.scene)
-
-    @QtCore.Slot()
-    def copy_selected(self):
-        self.saved_data = scenetools.get_scene_data(self.scene, selected=True)
-
-    @QtCore.Slot()
-    def paste_selected(self):
-        if not self.saved_data:
-            return
-
-        pos = self.view.mapFromGlobal(QtGui.QCursor.pos())
-        pos = self.view.mapToScene(pos)
-
-        new_items = scenetools.load_scene_data(self.scene, self.saved_data, pos=pos)
-        new_items = new_items.keys()
-
-        new_nodes = [n for n in new_items if isinstance(n, pyweritems.PywerNode)]
-        for n in new_nodes:
-            n.node_obj.moveToThread(self.thread_)
-
-        scenetools.select(self.scene, items=new_items)
-        self.copy_selected()
-
-    @QtCore.Slot(str, int, int)
-    def new_node_selected(self, item, x=100, y=100):
-        node = self.scene.create_node_of_type(item)
-        node.node_obj.moveToThread(self.thread_)
-        position = self.view.mapToScene(x, y)
-        node.setPos(position)
-
-        scenetools.select(self.scene, items=[node])
-
-        self.unsaved = True
-        self._update_window_title()
 
     @QtCore.Slot(int, int)
     def context_menu(self, x, y):
@@ -393,8 +262,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 submenu = new_node_menu.addMenu(category)
                 for node_name in node_names:
                     submenu.addAction(node_name,
-                                      lambda node_name=node_name: self.new_node_selected(node_name, x + 1,
-                                                                                         y))  # TODO: if I dont add 1 here, the app will crash when setPos is called in the slot function
+                                      lambda node_name=node_name: self.create_new_node(node_name, x + 1,
+                                                                                       y))  # TODO: if I dont add 1 here, the app will crash when setPos is called in the slot function
 
             menu.addSeparator()
             menu.addAction(self.actions_map.get_action('group'))
@@ -403,28 +272,232 @@ class MainWindow(QtWidgets.QMainWindow):
             menu.addAction(self.actions_map.get_action('delete'))
             menu.exec_(self.view.mapToGlobal(QtCore.QPoint(x, y)))
 
-        node = self.view.get_node_at(QtCore.QPoint(x, y))
-        # if node:
-        #     show_options_menu()
-        # else:
         show_new_nodes_menu()
 
+    def load_data(self, data):
+        junk_stack = QtWidgets.QUndoStack()
+        scenetools.load_macro(self.context, junk_stack, data, pos=None)
+
+        # new_items = scenetools.load_scene_data(self.scene, data, pos=None)
+        # for n in new_items.keys():
+        #     if isinstance(n, pyweritems.PywerNode):
+        #         n.node_obj.moveToThread(self.worker_thread)
+
+    def save_data(self):
+        return scenetools.get_scene_data(self.scene)
+
+    def load_json(self, json_string):
+        data = json.loads(json_string)
+        self.load_data(data)
+
+    def dump_json(self):
+        return json.dumps(self.save_data())
+
+    def load_file(self, file_name):
+        with open(file_name, 'r') as fp:
+            data = json.load(fp)
+        self.load_data(data)
+
+        self.unsaved = False
+        self.filename = file_name
+        self.copy_buffer = {}
+
+        self.update_window_title()
+
+    def save_file(self, file_name):
+        data = self.save_data()
+        with open(file_name, 'w') as fp:
+            json.dump(data, fp, indent=4)
+
+        self.unsaved = False
+        self.filename = file_name
+
+        self.update_window_title()
+
+    def keyPressEvent(self, event):
+        pass
+
+    def deactivate_event_nodes(self):
+        scene_nodes = self.scene.list_nodes()
+        for node in scene_nodes:
+            node.stop_spinner()
+            if node.node_obj.is_computable():
+                node.node_obj.unset_ui_node()
+
+        timers = [item for item in scene_nodes if isinstance(item.node_obj, eventnodes.base.EventNode)]
+        for timer in timers:
+            timer.node_obj.deactivate()
+
+    @QtCore.Slot()
+    def copy_selected(self):
+        selection = self.scene.get_selected_items()
+        self.copy_buffer = scenetools.get_scene_data(self.scene, selection=selection)
+
+    @QtCore.Slot()
+    def paste_selected(self):
+        if not self.copy_buffer:
+            return
+
+        pos = self.view.mapFromGlobal(QtGui.QCursor.pos())
+        pos = self.view.mapToScene(pos)
+
+        self.undo_stack.beginMacro('paste')
+        new_items = scenetools.paste_macro(self.context, self.undo_stack, self.copy_buffer, pos=pos)
+        self.undo_stack.push(commands.SelectItems(self.context, new_items))
+        self.undo_stack.endMacro()
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.copy_selected()
+
+    @QtCore.Slot(str, int, int)
+    def create_new_node(self, item, x=100, y=100):
+        position = self.view.mapToScene(x, y)
+
+        self.undo_stack.push(commands.AddNode(self.context, item, position))
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.update_parameters_panel()
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot()
+    def create_new_group(self):
+        position = QtCore.QPointF(self.view.mapToScene(self.view.mouse_position))
+        size = QtCore.QSize(100, 100)
+
+        self.undo_stack.push(commands.AddGroup(self.context, position, size))
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot()
+    def create_new_group_selected(self):
+        top = left = float("inf")
+        bottom = right = 0
+        for node in self.scene.get_selected_nodes():
+            pos = node.pos()
+            if pos.y() < top:
+                top = pos.y()
+            if pos.y() + node.height > bottom:
+                bottom = pos.y() + node.height
+            if pos.x() < left:
+                left = pos.x()
+            if pos.x() + node.width > right:
+                right = pos.x() + node.width
+
+        top -= 10
+        left -= 10
+        bottom += 10
+        right += 10
+
+        position = QtCore.QPointF(left, top)
+        size = QtCore.QSize(right - left, abs(bottom - top))
+
+        self.undo_stack.push(commands.AddGroup(self.context, position, size))
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot()
+    def delete_selected(self):
+        items = self.scene.get_selected_items()
+        self.undo_stack.beginMacro('delete selected')
+        for item in items:
+            self.undo_stack.push(commands.RemoveItem(self.context, item))
+        self.undo_stack.endMacro()
+        self.context['current_selection'] = self.scene.get_selected_items()
+
+        self.unsaved = True
+        self.update_parameters_panel()
+        self.update_window_title()
+
     @QtCore.Slot(list)
-    def selected_nodes(self, nodes):
-        if nodes:
-            self.parameters.set_node_obj(nodes[0].node_obj)
-        else:
-            self.parameters.set_node_obj(None)
+    def selection_changed(self, items):
+        if set(items) != set(self.context.get('current_selection')):
+            self.undo_stack.push(commands.SelectItems(self.context, items))
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.update_parameters_panel()
+
+    @QtCore.Slot(list)
+    def items_moved(self, items):
+        self.undo_stack.beginMacro('items moved')
+        for item in items:
+            self.undo_stack.push(commands.MoveItem(self.context, item))
+        self.undo_stack.endMacro()
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot(list)
+    def items_renamed(self, items):
+        self.undo_stack.beginMacro('items renamed')
+        for item in items:
+            self.undo_stack.push(commands.RenameItem(self.context, item))
+        self.undo_stack.endMacro()
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot(list)
+    def items_resized(self, items):
+        self.undo_stack.beginMacro('items resized')
+        for item in items:
+            self.undo_stack.push(commands.ResizeItem(self.context, item))
+        self.undo_stack.endMacro()
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
+    def connected_plugs(self, plug1, plug2):
+        self.undo_stack.push(commands.ConnectPlugs(self.context, plug1, plug2))
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
+    def disconnected_plugs(self, plug1, plug2):
+        self.undo_stack.push(commands.Disconnect(self.context, plug1, plug2))
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot(object, object)
+    def parameter_changed(self, node, param):
+        self.undo_stack.push(commands.ParamValue(self.context, node, param))
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
 
     @QtCore.Slot()
-    def items_moved(self):
-        self.unsaved = True
-        self._update_window_title()
+    def undo(self):
+        self.undo_stack.undo()
+        self.update_parameters_panel()
 
     @QtCore.Slot()
-    def parameter_changed(self):
-        self.unsaved = True
-        self._update_window_title()
+    def redo(self):
+        self.undo_stack.redo()
+        self.update_parameters_panel()
 
     def save_changes_dialog(self):
         """
@@ -459,16 +532,24 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.Slot()
     def new_scene(self):
         if self.save_changes_dialog():
+            self.undo_stack.clear()
             self.deactivate_event_nodes()
-            self.stop_thread()
-            self.start_thread()  # TODO: do i need this? test removing it.
+            self.session_stop_thread()
+            self.session_start_thread()  # TODO: do i need this? test removing it.
             self.scene.clear()
+
+            self.context = {
+                'scene': self.scene,
+                'current_selection': [],
+                'worker': self.worker_thread,
+                'scene_data': scenetools.get_scene_data(self.scene)
+            }
 
             self.filename = None
             self.unsaved = False
-            self.saved_data = {}
+            self.copy_buffer = {}
 
-            self._update_window_title()
+            self.update_window_title()
 
     @QtCore.Slot()
     def open_scene(self):
@@ -476,13 +557,21 @@ class MainWindow(QtWidgets.QMainWindow):
             filename, filter_ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(),
                                                                       'Scene Files (*.json)')
             if filename:
+                self.undo_stack.clear()
                 self.deactivate_event_nodes()
-                self.stop_thread()
+                self.session_stop_thread()
                 self.scene.clear()
-                self.start_thread()  # TODO: do i need this? test removing it.
+                self.session_start_thread()  # TODO: do i need this? test removing it.
                 self.load_file(filename)
 
-                self._update_window_title()
+                self.context = {
+                    'scene': self.scene,
+                    'current_selection': [],
+                    'worker': self.worker_thread,
+                    'scene_data': scenetools.get_scene_data(self.scene)
+                }
+
+                self.update_window_title()
 
     @QtCore.Slot()
     def save_scene_as(self):
@@ -497,15 +586,16 @@ class MainWindow(QtWidgets.QMainWindow):
             self.save_file(self.filename)
         else:
             self.save_scene_as()
-        self._update_window_title()
+        self.update_window_title()
 
     def toggle_visible(self):
         self.setVisible(not self.isVisible())
 
     @QtCore.Slot()
     def exit_app(self):
-        self.stop_thread()
-        self.thread_.deleteLater()
+        self.session_stop_thread()
+        self.scene.clear()
+        self.worker_thread.deleteLater()
         qapp = QtWidgets.QApplication.instance()
         qapp.exit()
 
@@ -606,8 +696,7 @@ def main(splashscreen=True, background=False, scene_file=None, json_string=None,
     app.setWindowIcon(QtGui.QIcon(config.path + "/icons/icon.png"))
 
     main_window = MainWindow()
-    main_window.start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
-    # QtCore.QTimer(app).singleShot(0, self.start_thread)
+    # main_window.session_start_thread()  # TODO: I seem to need this, otherwise moveToThread of Worker thread doesnt work in all situations. Somethign to do with when signals are created and emitted
 
     if scene_file:
         main_window.load_file(scene_file)

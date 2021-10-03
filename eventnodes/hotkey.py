@@ -94,12 +94,18 @@ class HotkeyNode(EventNode):
         # self.expression_indicator = ValidExpressionIndicator()
         # self.controls.append((self.expression_indicator, self.toggle_viewer, self.show_viewer_button.clicked))
 
+        self.current_hotkey = ''
         self.t = InputListener(node=self)
 
         self.deactivate()
 
     def update(self):
         hk = self.get_first_param('hotkey').value
+        if hk == self.current_hotkey:
+            return
+
+        self.current_hotkey = hk
+
         self.terminate()
 
         # If there's no exception, it means we can parse the hotkey string, so Pass it on to the Listener thread.
