@@ -21,6 +21,9 @@ class QueueParam(Param):
         self._type = queue.Queue
         self._value = value
 
+    def to_dict(self):
+        return None
+
 
 class LoopThread(threading.Thread):
     def __init__(self, node):

@@ -1,22 +1,13 @@
-import appnode
-import register
-
 from pywerlines import (pywerscene, pyweritems)
+import eventnodes.signal
+import eventnodes.params
 
 
 class AppScene(pywerscene.PywerScene):
-    def new_node(self, type_):
-        if type_ not in register.node_registry:
-            return None
-        event_node = register.node_registry[type_]
-        node = appnode.EventNode.from_event_node(event_node())
-        return node
-
     def can_connect(self, source_plug, target_plug):
         if not super().can_connect(source_plug, target_plug):
             return False
 
-        import eventnodes.signal
         source_signal = isinstance(source_plug.plug_obj, eventnodes.signal.Signal)
         target_signal = isinstance(target_plug.plug_obj, eventnodes.signal.Signal)
         if source_signal and target_signal:
@@ -27,7 +18,6 @@ class AppScene(pywerscene.PywerScene):
             return False
 
         # only one connection allowed to param plugs
-        import eventnodes.params
         if (source_plug.plug_obj.get_pluggable() & eventnodes.params.INPUT_PLUG):
             input_plug = source_plug
         else:
@@ -39,15 +29,6 @@ class AppScene(pywerscene.PywerScene):
                 return False
 
         return source_plug.plug_obj.type == target_plug.plug_obj.type
-
-    def create_node_of_type(self, type_):
-        node = self.new_node(type_)
-        if node:
-            self.add_node(node)
-        return node
-
-    def create_edge(self, source_plug, target_plug):
-        super().create_edge(source_plug, target_plug)
 
     def get_node_by_id(self, obj_id):
         nodes = self.get_all_nodes()

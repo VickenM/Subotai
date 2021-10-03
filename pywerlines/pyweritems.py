@@ -16,11 +16,6 @@ class PywerItem(QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents(True)
         self.setZValue(1)
 
-    def setSelected(self, state):
-        self.selected = state
-        super().setSelected(self.selected)
-        self.update()
-
     def adjust(self):
         return
 
@@ -79,6 +74,16 @@ class PywerEdge(PywerItem):
         self.target_plug = target_plug
         self.source_plug.add_edge(self)
         self.target_plug.add_edge(self)
+        self.adjust()
+
+    def disconnect(self):
+        self.source_plug.remove_edge(self)
+        self.target_plug.remove_edge(self)
+        self.source_plug = None
+        self.target = None
+        self.target_position = None
+        self.start = QtCore.QPoint()
+        self.end = QtCore.QPoint()
         self.adjust()
 
     def adjust(self):
@@ -281,6 +286,19 @@ class Glow(QtWidgets.QGraphicsDropShadowEffect):
         self.setBlurRadius(frame * 100)
 
 
+class NameText(QtWidgets.QGraphicsTextItem):
+    rename_signal = QtCore.Signal(str)
+
+    def focusInEvent(self, event):
+        self.current_text = self.toPlainText()
+        return super().focusOutEvent(event)
+
+    def focusOutEvent(self, event):
+        if self.current_text != self.toPlainText():
+            self.rename_signal.emit(self.toPlainText())
+            return super().focusOutEvent(event)
+
+
 class PywerNode(PywerItem):
     name_ = 'name'
 
@@ -295,6 +313,10 @@ class PywerNode(PywerItem):
         self.plug_spacing = 8
         self.header_height = 20
 
+        self.old_position = None
+        self.old_selection = None
+        self.old_size = None
+
         self.active_text_color = QtCore.Qt.white
         self.inactive_text_color = QtCore.Qt.gray
         self.base_color = (25, 25, 25, 200)
@@ -306,15 +328,19 @@ class PywerNode(PywerItem):
         self.outputs = []
 
         self.active = True
+        self.resizing = False
 
-        self.name = QtWidgets.QGraphicsTextItem(parent=self)
+        # self.name = QtWidgets.QGraphicsTextItem(parent=self)
+        self.name = NameText(parent=self)
         font = self.name.font()
         font.setPointSize(8)
         self.name.setFont(font)
-        self.name.setTextInteractionFlags(QtCore.Qt.TextEditable)
+        self.name.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
         self.name.setPlainText(self.name_)
         self.name.setDefaultTextColor(QtCore.Qt.white)
         self.name.setPos(self.pos().x(), self.pos().y() - 20)
+
+        self.name.rename_signal.connect(self.set_name)
 
         self.spinner = PywerSpinner(parent=self)
         self.spinner.hide()
@@ -325,6 +351,35 @@ class PywerNode(PywerItem):
         self.resizer.setConstrainY(True)
         self.resizer.resize_signal.connect(self.resize)
         self.adjust()
+
+    def setResizing(self, resizing):
+        self.resizing = resizing
+        self.update()
+
+    def isResizing(self):
+        return self.resizing
+
+    def set_old_size(self, size):
+        self.old_size = size
+
+    def get_old_size(self):
+        return self.old_size
+
+    def set_old_position(self, position):
+        self.old_position = position
+
+    def get_old_position(self):
+        return self.old_position
+
+    def set_old_selection(self, selection):
+        self.old_selection = selection
+
+    def get_old_selection(self):
+        return self.old_selection
+
+    @Slot(str)
+    def set_name(self, name):
+        self.scene().emit_rename_item(self)
 
     @Slot()
     def start_spinner(self):
@@ -412,8 +467,6 @@ class PywerNode(PywerItem):
             self.height = max(
                 [plug.y() + plug.boundingRect().height() + self.plug_spacing for plug in self.inputs + self.outputs])
 
-        # self.height = max([self.height, self.resizer.pos().y() + self.resizer.rect.height()])
-
         resizer_width = self.resizer.rect.width()
         resizer_offset = QtCore.QPointF(resizer_width, resizer_width)
         rect = QtCore.QRectF(0, 0, self.width, self.height)
@@ -422,6 +475,9 @@ class PywerNode(PywerItem):
         self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, True)
 
         self.spinner.setPos(QtCore.QPointF(self.width - 20, 0))
+
+    def size(self):
+        return self.width, self.height
 
     def setSize(self, width, height):
         self.width, self.height = width, height
@@ -446,7 +502,7 @@ class PywerNode(PywerItem):
         gradient.setColorAt(0, color1)
         gradient.setColorAt(1, color2)
 
-        if self.isSelected():
+        if self.isSelected() or self.isResizing():
             pen = QtGui.QPen(QtGui.QColor(*self.selected_color), 1.5)
             painter.setPen(pen)
 
@@ -497,9 +553,15 @@ class PywerNode(PywerItem):
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
             self.updateEdges()
-            self.scene().itemMoved()
 
         return super(PywerNode, self).itemChange(change, value)
+
+    def mousePressEvent(self, event):
+        self.old_position = self.pos()
+        return super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        return super().mouseReleaseEvent(event)
 
     def hoverMoveEvent(self, event):
         return super().hoverMoveEvent(event)
@@ -527,6 +589,8 @@ class Resizer(QtWidgets.QGraphicsObject):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
         self.setAcceptHoverEvents(True)
+
+        self.old_position = None
 
     def setMinSize(self, size):
         self._min_size = size
@@ -571,7 +635,6 @@ class Resizer(QtWidgets.QGraphicsObject):
                 if value.y() < self._min_size.y() - height:
                     value.setY(self._min_size.y() - height)
                 self.resize_signal.emit(value - self.pos())
-                self.scene().itemMoved()
         return value
 
     def hoverEnterEvent(self, event):
@@ -581,6 +644,18 @@ class Resizer(QtWidgets.QGraphicsObject):
     def hoverLeaveEvent(self, event):
         QApplication.restoreOverrideCursor()
         return super(Resizer, self).hoverLeaveEvent(event)
+
+    def mouseMoveEvent(self, event):
+        return super().mouseMoveEvent(event)
+
+    def mousePressEvent(self, event):
+        self.old_position = event.scenePos()
+        self.parentItem().setResizing(True)
+        return super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self.parentItem().setResizing(False)
+        return super().mouseReleaseEvent(event)
 
 
 class PywerGroup(PywerItem):
@@ -594,13 +669,16 @@ class PywerGroup(PywerItem):
         self.height = 100
         self.header_height = 20
         self.header_color = (200, 200, 200, 155)
-
         self.base_color = (75, 75, 75, 100)
         self.selected_color = (255, 165, 0, 255)
 
+        self.old_position = None
+        self.old_selection = None
+        self.old_size = None
+
         self.setFlag(self.ItemIsMovable)
 
-        self.name = QtWidgets.QGraphicsTextItem(parent=self)
+        self.name = NameText(parent=self)
         font = self.name.font()
         font.setPointSize(8)
         self.name.setFont(font)
@@ -608,6 +686,10 @@ class PywerGroup(PywerItem):
         self.name.setPlainText(self.name_)
         self.name.setDefaultTextColor(QtCore.Qt.white)
         self.name.setPos(self.pos().x(), self.pos().y() - 20)
+
+        self.name.rename_signal.connect(self.set_name)
+
+        self.resizing = False
 
         self.resizer = Resizer(parent=self)
         self.resizer.resize_signal.connect(self.resize)
@@ -619,6 +701,35 @@ class PywerGroup(PywerItem):
 
         self.move_children = True
 
+    def setResizing(self, resizing):
+        self.resizing = resizing
+        self.update()
+
+    def isResizing(self):
+        return self.resizing
+
+    def set_old_size(self, size):
+        self.old_size = size
+
+    def get_old_size(self):
+        return self.old_size
+
+    def set_old_position(self, position):
+        self.old_position = position
+
+    def get_old_position(self):
+        return self.old_position
+
+    def set_old_selection(self, selection):
+        self.old_selection = selection
+
+    def get_old_selection(self):
+        return self.old_selection
+
+    @Slot(str)
+    def set_name(self, name):
+        self.scene().emit_rename_item(self)
+
     @Slot(QtCore.QPointF)
     def resize(self, change):
         rect = QtCore.QRectF(0, 0, self.width, self.height).adjusted(0, 0, change.x(), change.y())
@@ -628,10 +739,15 @@ class PywerGroup(PywerItem):
         self.update()
 
     def adjust(self):
-        resizer_width = self.resizer.rect.width() / 2
-        resizer_offset = QtCore.QPointF(resizer_width * 2, resizer_width * 2)
+        resizer_width = self.resizer.rect.width()
+        resizer_offset = QtCore.QPointF(resizer_width, resizer_width)
         rect = QtCore.QRectF(0, 0, self.width, self.height)
+        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, False)
         self.resizer.setPos(rect.bottomRight() - resizer_offset)
+        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, True)
+
+    def size(self):
+        return self.width, self.height
 
     def setSize(self, width, height):
         self.width, self.height = width, height
@@ -656,7 +772,7 @@ class PywerGroup(PywerItem):
         gradient.setColorAt(0, color1)
         gradient.setColorAt(1, color2)
 
-        if self.isSelected():
+        if self.isSelected() or self.isResizing():
             pen = QtGui.QPen(QtGui.QColor(*self.selected_color))
             painter.setPen(pen)
 
@@ -681,7 +797,6 @@ class PywerGroup(PywerItem):
             for node in self.contained_nodes:
                 diff = pos - self.pos()
                 node.moveBy(diff.x(), diff.y())
-            self.scene().itemMoved()
             return value
 
         return super(PywerGroup, self).itemChange(change, value)

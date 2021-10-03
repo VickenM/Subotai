@@ -84,10 +84,6 @@ class BaseNode(QtCore.QObject):
     def unset_ui_node(self):
         self.ui_node = None
 
-class Worker(QtCore.QThread):
-    def __init__(self, parent):
-        super().__init__(parent=parent)
-
 
 class ComputeNode(BaseNode):
     calculate = QtCore.Signal()
