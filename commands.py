@@ -204,7 +204,7 @@ class ConnectPlugs(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class Disconnect(QtWidgets.QUndoCommand):
+class DisconnectPlugs(QtWidgets.QUndoCommand):
     def __init__(self, context, source_plug, target_plug):
         super().__init__()
         self.source_plug = source_plug

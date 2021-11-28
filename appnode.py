@@ -127,6 +127,9 @@ def connect_plugs(plug1, plug2):
 
 
 def disconnect_plugs(plug1, plug2):
+    if not(plug1 and plug2):
+        return
+
     source = plug1.parentItem().node_obj
     target = plug2.parentItem().node_obj
 

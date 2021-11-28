@@ -7,6 +7,7 @@ class PywerView(QtWidgets.QGraphicsView):
     nodes_deleted = QtCore.Signal(list)
     plugs_connected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
     plugs_disconnected = QtCore.Signal(pyweritems.PywerPlug, pyweritems.PywerPlug)
+    edge_connections_changed = QtCore.Signal(pyweritems.PywerEdge, pyweritems.PywerPlug, pyweritems.PywerPlug)
 
     def __init__(self):
         super().__init__()
@@ -162,15 +163,18 @@ class PywerView(QtWidgets.QGraphicsView):
             disconnection = (dragged_from_plug, self.disconnected_plug)
 
         if disconnection:
+            if connection:
+                # self.plugs_connected.emit(drag_edge, *connection)
+                self.edge_connections_changed.emit(drag_edge, *connection)
+                self.disconnected_plug = None
+                return
+
             if not drag_edge.source_plug:
                 drag_edge.source_plug = self.disconnected_plug
             else:
                 drag_edge.target_plug = self.disconnected_plug
             self.plugs_disconnected.emit(dragged_from_plug, self.disconnected_plug)
             self.disconnected_plug = None
-            
-            if connection:
-                self.plugs_connected.emit(*connection)
             return
 
         self.disconnected_plug = None

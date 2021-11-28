@@ -68,6 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.scene.rename_item.connect(self.items_renamed)
         self.view.plugs_connected.connect(self.connected_plugs)
         self.view.plugs_disconnected.connect(self.disconnected_plugs)
+        self.view.edge_connections_changed.connect(self.connection_changed)
 
         self.parameters = Parameters()
         self.parameters.parameter_changed.connect(self.parameter_changed)
@@ -473,7 +474,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.Slot(pyweritems.PywerPlug, pyweritems.PywerPlug)
     def disconnected_plugs(self, plug1, plug2):
-        self.undo_stack.push(commands.Disconnect(self.context, plug1, plug2))
+        self.undo_stack.push(commands.DisconnectPlugs(self.context, plug1, plug2))
+        self.context['current_selection'] = self.scene.get_selected_items()
+        self.context['scene_data'] = scenetools.get_scene_data(self.scene)
+
+        self.unsaved = True
+        self.update_window_title()
+
+    @QtCore.Slot(pyweritems.PywerEdge, pyweritems.PywerPlug, pyweritems.PywerPlug)
+    def connection_changed(self, edge, plug1, plug2):
+        self.undo_stack.beginMacro('connection changed')
+        self.undo_stack.push(commands.ConnectPlugs(self.context, plug1, plug2))
+        self.undo_stack.push(commands.DisconnectPlugs(self.context, edge.source_plug, edge.target_plug))
+        self.undo_stack.endMacro()
+
         self.context['current_selection'] = self.scene.get_selected_items()
         self.context['scene_data'] = scenetools.get_scene_data(self.scene)
 

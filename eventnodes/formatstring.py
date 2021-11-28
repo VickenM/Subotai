@@ -75,6 +75,7 @@ class FormatString(BaseNode):
             self.string_params.remove(param_to_remove)
 
             for plug in self.ui_node.inputs:
+                print(plug)
                 if plug.plug_obj == param_to_remove:
                     self.ui_node.remove_input(plug)
                     break

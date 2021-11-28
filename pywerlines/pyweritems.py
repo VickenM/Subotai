@@ -77,8 +77,10 @@ class PywerEdge(PywerItem):
         self.adjust()
 
     def disconnect(self):
-        self.source_plug.remove_edge(self)
-        self.target_plug.remove_edge(self)
+        if self.source_plug:
+            self.source_plug.remove_edge(self)
+        if self.target_plug:
+            self.target_plug.remove_edge(self)
         self.source_plug = None
         self.target = None
         self.target_position = None
@@ -443,6 +445,11 @@ class PywerNode(PywerItem):
     def remove_input(self, plug):
         self.inputs.remove(plug)
         plug.setParentItem(None)
+        for edge in plug.edges:
+            print(edge)
+            edge.disconnect()
+        print('done')
+        self.scene().removeItem(plug)
         self.adjust()
         self.resizer.setMinSize(QtCore.QPointF(100, self.height))
 
