@@ -1,4 +1,4 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from pywerlines import pywerview
 
@@ -30,7 +30,7 @@ class AppView(pywerview.PywerView):
 
     def dropEvent(self, event):
         node = event.mimeData().data('application/x-node')
-        position = event.pos()
+        position = event.position().toPoint()
 
         if node:
             self.node_dropped_signal.emit(bytes(node).decode(), position.x(), position.y())
@@ -40,13 +40,13 @@ class AppView(pywerview.PywerView):
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
-            self.setDragMode(self.NoDrag)
+            self.setDragMode(self.DragMode.NoDrag)
             return
         return super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
-        self.setDragMode(self.RubberBandDrag)
+        self.setDragMode(self.DragMode.RubberBandDrag)
         if event.button() == QtCore.Qt.RightButton:
-            self.context_menu_signal.emit(event.pos().x(), event.pos().y())
+            self.context_menu_signal.emit(event.position().toPoint().x(), event.position().toPoint().y())
 
         return super().mouseReleaseEvent(event)

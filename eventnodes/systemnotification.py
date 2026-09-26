@@ -2,9 +2,9 @@ from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, IntParam, PARAM, SUBTYPE_FILEPATH
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
-from PySide2 import QtWidgets
-from PySide2 import QtGui
-from PySide2 import QtCore
+from PySide6 import QtWidgets
+from PySide6 import QtGui
+from PySide6 import QtCore
 
 from .image.imageparam import ImageParam
 from PIL import ImageQt

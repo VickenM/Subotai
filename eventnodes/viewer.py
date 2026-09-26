@@ -1,11 +1,11 @@
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from .base import ComputeNode
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 from .image.imageparam import ImageParam
 
-from PySide2.QtGui import QPixmap
-from PySide2 import QtWidgets
+from PySide6.QtGui import QPixmap
+from PySide6 import QtWidgets
 from PIL import ImageQt
 
 
@@ -22,7 +22,7 @@ class View(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addWidget(self.label)
-        layout.setSizeConstraint(layout.SetNoConstraint)
+        layout.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetNoConstraint)
         self.setLayout(layout)
 
         self.resize(1920 / 4, 1080 / 4)

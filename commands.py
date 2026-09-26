@@ -1,9 +1,9 @@
-from PySide2 import QtWidgets
+from PySide6 import QtGui
 from pywerlines import pyweritems
 import appnode
 
 
-class SelectItems(QtWidgets.QUndoCommand):
+class SelectItems(QtGui.QUndoCommand):
     def __init__(self, context, items):
         super().__init__()
         self.items = items
@@ -21,7 +21,7 @@ class SelectItems(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class MoveItem(QtWidgets.QUndoCommand):
+class MoveItem(QtGui.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
         self.item = item
@@ -46,7 +46,7 @@ class MoveItem(QtWidgets.QUndoCommand):
             self.item.move_children = True
 
 
-class RenameItem(QtWidgets.QUndoCommand):
+class RenameItem(QtGui.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
         self.item = item
@@ -71,7 +71,7 @@ class RenameItem(QtWidgets.QUndoCommand):
         self.item.name.setPlainText(self.prev_name)
 
 
-class ResizeItem(QtWidgets.QUndoCommand):
+class ResizeItem(QtGui.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
         self.item = item
@@ -92,7 +92,7 @@ class ResizeItem(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class AddNode(QtWidgets.QUndoCommand):
+class AddNode(QtGui.QUndoCommand):
     def __init__(self, context, item, position=None, size=None):
         super().__init__()
         self.scene = context.get('scene')
@@ -114,7 +114,7 @@ class AddNode(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class AddGroup(QtWidgets.QUndoCommand):
+class AddGroup(QtGui.QUndoCommand):
     def __init__(self, context, position, size):
         super().__init__()
         self.scene = context.get('scene')
@@ -137,7 +137,7 @@ class AddGroup(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class RemoveItem(QtWidgets.QUndoCommand):
+class RemoveItem(QtGui.QUndoCommand):
     def __init__(self, context, item):
         super().__init__()
         self.item = item
@@ -178,7 +178,7 @@ class RemoveItem(QtWidgets.QUndoCommand):
             appnode.connect_plugs(source_plug, target_plug)
 
 
-class ConnectPlugs(QtWidgets.QUndoCommand):
+class ConnectPlugs(QtGui.QUndoCommand):
     def __init__(self, context, source_plug, target_plug):
         super().__init__()
         self.source_plug = source_plug
@@ -204,7 +204,7 @@ class ConnectPlugs(QtWidgets.QUndoCommand):
             item.setSelected(True)
 
 
-class Disconnect(QtWidgets.QUndoCommand):
+class Disconnect(QtGui.QUndoCommand):
     def __init__(self, context, source_plug, target_plug):
         super().__init__()
         self.source_plug = source_plug
@@ -228,7 +228,7 @@ class Disconnect(QtWidgets.QUndoCommand):
         appnode.connect_plugs(self.source_plug, self.target_plug)
 
 
-class ParamValue(QtWidgets.QUndoCommand):
+class ParamValue(QtGui.QUndoCommand):
     def __init__(self, context, node, param):
         super().__init__()
         self.node = node

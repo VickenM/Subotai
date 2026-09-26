@@ -1,6 +1,6 @@
-from PySide2 import QtWidgets
-from PySide2 import QtCore
-from PySide2.QtCore import Slot
+from PySide6 import QtWidgets
+from PySide6 import QtCore
+from PySide6.QtCore import Slot
 
 from .base import EventNode, ComputeNode
 from .params import StringParam, PARAM
@@ -12,7 +12,7 @@ import sys
 
 from pynput import keyboard
 
-from PySide2.QtCore import QThread
+from PySide6.QtCore import QThread
 
 
 class InputListener(QThread):
@@ -67,7 +67,6 @@ class ValidExpressionIndicator(QtWidgets.QWidget):
 
         layout = QtWidgets.QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setMargin(0)
         layout.addWidget(self.label)
 
         self.setLayout(layout)

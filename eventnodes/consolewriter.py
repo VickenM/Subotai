@@ -2,7 +2,7 @@ from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
-from PySide2.QtCore import Slot
+from PySide6.QtCore import Slot
 
 
 class ConsoleWriter(ComputeNode):

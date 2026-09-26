@@ -3,3 +3,5 @@ build/
 dist/
 app.spec
 __pycache__/
+
+.venv/

@@ -1,5 +1,5 @@
-from PySide2 import QtCore
-from PySide2.QtCore import Slot
+from PySide6 import QtCore
+from PySide6.QtCore import Slot
 
 from .base import ComputeNode
 from .params import StringParam, ListParam, IntParam, PARAM

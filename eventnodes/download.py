@@ -2,9 +2,9 @@ from eventnodes.base import ComputeNode
 from eventnodes.params import StringParam, PARAM
 from eventnodes.signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
-from PySide2 import QtWidgets
-from PySide2 import QtGui
-from PySide2 import QtCore
+from PySide6 import QtWidgets
+from PySide6 import QtGui
+from PySide6 import QtCore
 
 import asyncio
 import threading
@@ -109,10 +109,10 @@ async def download(url, filename, progress_id, progress_fn, callback_fn):
 class LoopThread(threading.Thread):
     def __init__(self, node):
         self.node = node
+        self.loop = asyncio.new_event_loop()
         super().__init__()
 
     def run(self):
-        self.loop = asyncio.new_event_loop()
         self.loop.run_forever()
 
 

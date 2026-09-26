@@ -1,6 +1,6 @@
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2 import QtGui
-from PySide2.QtCore import Slot
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtGui
+from PySide6.QtCore import Slot
 
 from functools import partial
 
@@ -137,9 +137,9 @@ class Parameters(QtWidgets.QWidget):
         while self.flayout.rowCount():
             # I want to keep controls from the previous node around without destroying them
             # Have to do extra work of removing items because removeRow(...) destroys the widget
-            # and PySide2 doesnt have takeAt(...) implemented for QForLayout
-            label_item = self.flayout.itemAt(0, self.flayout.LabelRole)
-            field_item = self.flayout.itemAt(0, self.flayout.FieldRole)
+            # Detach reusable controls before removing the form row.
+            label_item = self.flayout.itemAt(0, QtWidgets.QFormLayout.ItemRole.LabelRole)
+            field_item = self.flayout.itemAt(0, QtWidgets.QFormLayout.ItemRole.FieldRole)
             if not label_item:
                 field = field_item.layout() or field_item.widget()
                 if not isinstance(field, DescriptionWidget):
@@ -165,7 +165,7 @@ class Parameters(QtWidgets.QWidget):
                     widget = QtWidgets.QLineEdit(param.value)
                     widget.textChanged.connect(partial(self.set_param_value, node_obj, param))
                     if param.subtype == SUBTYPE_PASSWORD:
-                        widget.setEchoMode(widget.Password)
+                        widget.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
                     elif (param.subtype == SUBTYPE_FILEPATH) or (param.subtype == SUBTYPE_DIRPATH):
                         if param.subtype == SUBTYPE_FILEPATH:
                             button = QtWidgets.QToolButton(self)
@@ -214,7 +214,7 @@ class Parameters(QtWidgets.QWidget):
                 elif param.type == bool:
                     widget = QtWidgets.QCheckBox()
                     widget.setChecked(param.value)
-                    widget.stateChanged.connect(partial(self.set_bool_param_value, node_obj, param))
+                    widget.checkStateChanged.connect(partial(self.set_bool_param_value, node_obj, param))
                 else:
                     print('parameters.py: unknown param.type', param.type)
                     continue

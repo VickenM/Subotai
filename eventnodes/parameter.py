@@ -1,9 +1,9 @@
 from .base import BaseNode, ComputeNode, EventNode
 from .params import IntParam, FloatParam, StringParam, ListParam, BoolParam
 from .params import INPUT_PLUG, OUTPUT_PLUG, PARAM, NONE
-from PySide2 import QtWidgets
-from PySide2 import QtCore
-from PySide2.QtCore import Slot
+from PySide6 import QtWidgets
+from PySide6 import QtCore
+from PySide6.QtCore import Slot
 
 
 class PromoteWidget(QtWidgets.QWidget):
@@ -22,9 +22,9 @@ class PromoteWidget(QtWidgets.QWidget):
         layout.setSpacing(0)
         layout.addWidget(self.line)
         layout.addWidget(self.checkbox)
-        layout.setSizeConstraint(layout.SetNoConstraint)
+        layout.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetNoConstraint)
 
-        self.checkbox.stateChanged.connect(self.changed)
+        self.checkbox.checkStateChanged.connect(self.changed)
         self.line.textChanged.connect(self.changed)
         self.setLayout(layout)
 

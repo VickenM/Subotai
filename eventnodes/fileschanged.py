@@ -1,5 +1,5 @@
 import os
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 from .base import EventNode, ComputeNode
 from .params import StringParam, ListParam, OUTPUT_PLUG, PARAM

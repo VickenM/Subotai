@@ -1,4 +1,4 @@
-from PySide2 import QtGui, QtCore, QtWidgets
+from PySide6 import QtGui, QtCore, QtWidgets
 from . import pyweritems
 
 
@@ -188,7 +188,7 @@ class PywerView(QtWidgets.QGraphicsView):
         zoomOutFactor = 1 / zoomInFactor
 
         # Save the scene pos
-        oldPos = self.mapToScene(event.pos())
+        oldPos = self.mapToScene(event.position().toPoint())
 
         # Zoom
         if event.angleDelta().y() > 0:
@@ -198,7 +198,7 @@ class PywerView(QtWidgets.QGraphicsView):
         self.scale(zoomFactor, zoomFactor)
 
         # Get the new position
-        newPos = self.mapToScene(event.pos())
+        newPos = self.mapToScene(event.position().toPoint())
 
         # Move scene to old position
         delta = newPos - oldPos
@@ -215,14 +215,14 @@ class PywerView(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
 
-        self.mouse_position = event.pos()
+        self.mouse_position = event.position().toPoint()
         if self.drag_edge:
             self.drag_edge.target_position = self.mapToScene(self.mouse_position)
             self.drag_edge.adjust()
 
     def mousePressEvent(self, event):
         if self._is_drag_event(event):
-            self.drag_edge = self._drag_edge(event.pos())
+            self.drag_edge = self._drag_edge(event.position().toPoint())
 
         if self._is_change_event(event):
             self._begin_move_items(event)
@@ -235,7 +235,7 @@ class PywerView(QtWidgets.QGraphicsView):
         super().mouseReleaseEvent(event)
 
         if self._is_drop_event(event):
-            self._drop_edge(drag_edge=self.drag_edge, position=event.pos())
+            self._drop_edge(drag_edge=self.drag_edge, position=event.position().toPoint())
             self.drag_edge = None
 
         if self._is_change_event(event):

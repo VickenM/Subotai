@@ -1,7 +1,7 @@
-from PySide2 import QtWidgets
-from PySide2 import QtCore, QtGui
-from PySide2.QtWidgets import QApplication
-from PySide2.QtCore import Slot
+from PySide6 import QtWidgets
+from PySide6 import QtCore, QtGui
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Slot
 
 
 class PywerItem(QtWidgets.QGraphicsItem):
@@ -322,7 +322,7 @@ class PywerNode(PywerItem):
         self.base_color = (25, 25, 25, 200)
         self.selected_color = (255, 165, 0, 255)
 
-        self.setFlag(self.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
 
         self.inputs = []
         self.outputs = []
@@ -470,9 +470,9 @@ class PywerNode(PywerItem):
         resizer_width = self.resizer.rect.width()
         resizer_offset = QtCore.QPointF(resizer_width, resizer_width)
         rect = QtCore.QRectF(0, 0, self.width, self.height)
-        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, False)
+        self.resizer.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, False)
         self.resizer.setPos(rect.bottomRight() - resizer_offset)
-        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, True)
+        self.resizer.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
 
         self.spinner.setPos(QtCore.QPointF(self.width - 20, 0))
 
@@ -539,7 +539,7 @@ class PywerNode(PywerItem):
             painter.drawText(x, y, plug.type_)
 
         for plug in self.outputs:
-            width = font_metrics.width(plug.type_)
+            width = font_metrics.horizontalAdvance(plug.type_)
             rect = plug.boundingRect()
             pos = plug.pos()
             x, y = pos.x() - width - 5, pos.y() + rect.bottom()
@@ -676,7 +676,7 @@ class PywerGroup(PywerItem):
         self.old_selection = None
         self.old_size = None
 
-        self.setFlag(self.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
 
         self.name = NameText(parent=self)
         font = self.name.font()
@@ -742,9 +742,9 @@ class PywerGroup(PywerItem):
         resizer_width = self.resizer.rect.width()
         resizer_offset = QtCore.QPointF(resizer_width, resizer_width)
         rect = QtCore.QRectF(0, 0, self.width, self.height)
-        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, False)
+        self.resizer.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, False)
         self.resizer.setPos(rect.bottomRight() - resizer_offset)
-        self.resizer.setFlag(self.resizer.ItemSendsGeometryChanges, True)
+        self.resizer.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
 
     def size(self):
         return self.width, self.height
@@ -792,7 +792,7 @@ class PywerGroup(PywerItem):
         painter.drawText(10, font_height, self.type_)
 
     def itemChange(self, change, value):
-        if change == self.ItemPositionChange and self.scene() and self.move_children:
+        if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange and self.scene() and self.move_children:
             pos = value
             for node in self.contained_nodes:
                 diff = pos - self.pos()

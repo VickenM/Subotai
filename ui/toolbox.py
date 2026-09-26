@@ -1,4 +1,4 @@
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 import sys
 
 
@@ -13,27 +13,27 @@ class SectionView(QtWidgets.QListView):
 
     def __init__(self, parent=None):
         super(SectionView, self).__init__(parent=parent)
-        self.setViewMode(self.ListMode)
+        self.setViewMode(QtWidgets.QListView.ViewMode.ListMode)
         self.setAlternatingRowColors(True)
         self.setWrapping(False)
-        self.setResizeMode(self.Adjust)
+        self.setResizeMode(QtWidgets.QListView.ResizeMode.Adjust)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
                                                  QtWidgets.QSizePolicy.Minimum))
         self.setUniformItemSizes(True)
-        self.setMovement(self.Snap)
-        self.setSelectionMode(self.NoSelection)
-        self.setEditTriggers(self.NoEditTriggers)
+        self.setMovement(QtWidgets.QListView.Movement.Snap)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
     def set_icon_mode(self):
-        self.setViewMode(self.IconMode)
+        self.setViewMode(QtWidgets.QListView.ViewMode.IconMode)
         self.setWrapping(True)
         self.setAlternatingRowColors(False)
         self.updateGeometry()
 
     def set_list_mode(self):
-        self.setViewMode(self.ListMode)
+        self.setViewMode(QtWidgets.QListView.ViewMode.ListMode)
         self.setWrapping(False)
         self.setAlternatingRowColors(True)
         self.updateGeometry()
@@ -44,16 +44,16 @@ class SectionView(QtWidgets.QListView):
         item_height = self.sizeHintForRow(0)
         item_width = self.sizeHintForColumn(0)
 
-        if not item_width:
+        if item_width <= 0:
             return QtCore.QSize()
 
         item_count = self.model().rowCount()
 
         area_width = self.childrenRect().width()
-        items_per_row = (area_width - 1) // item_width
+        items_per_row = max(1, (area_width - 1) // item_width)
 
         rows = item_count
-        if self.viewMode() == self.IconMode:
+        if self.viewMode() == QtWidgets.QListView.ViewMode.IconMode:
             rows = math.ceil(item_count / items_per_row)
             height = (rows * item_height) + (self.size().height() - self.childrenRect().height())
         else:
@@ -69,16 +69,16 @@ class SectionView(QtWidgets.QListView):
         self.updateGeometry()
 
     def filterItems(self, filter_text):
-        self.model().setFilterRegExp(filter_text)
+        self.model().setFilterRegularExpression(filter_text)
 
     def mouseDoubleClickEvent(self, event):
-        index = self.indexAt(event.pos())
+        index = self.indexAt(event.position().toPoint())
         if index.isValid():
             self.doubleClicked.emit(index)
             # return super().mouseDoubleClickEvent(event)
 
     def mousePressEvent(self, event):
-        index = self.indexAt(event.pos())
+        index = self.indexAt(event.position().toPoint())
         if not index.isValid():
             return
 
@@ -97,7 +97,7 @@ class SectionView(QtWidgets.QListView):
         drag.setMimeData(mimeData)
         drag.setPixmap(icon.pixmap(32, 32))
 
-        dropAction = drag.exec_(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.CopyAction)
+        dropAction = drag.exec(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.CopyAction)
 
         if dropAction == QtCore.Qt.MoveAction:
             self.close()
@@ -238,7 +238,7 @@ class ToolBox(QtWidgets.QWidget):
 
     def toggle_view_mode(self):
         for section in self.sections():
-            if section.view.viewMode() == section.view.ListMode:
+            if section.view.viewMode() == QtWidgets.QListView.ViewMode.ListMode:
                 section.view.set_icon_mode()
             else:
                 section.view.set_list_mode()
@@ -334,4 +334,4 @@ if __name__ == "__main__":
 
     tool_library.itemDoubleClicked.connect(itemSelected)
 
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

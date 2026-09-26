@@ -3,9 +3,9 @@ import json
 import os
 import sys
 
-from PySide2 import QtCore
-from PySide2 import QtGui
-from PySide2 import QtWidgets
+from PySide6 import QtCore
+from PySide6 import QtGui
+from PySide6 import QtWidgets
 
 from pywerlines import pyweritems
 
@@ -36,10 +36,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.view = AppView()
         self.scene = AppScene()
         self.scene.setSceneRect(0, 0, 100000, 100000)
-        self.scene.setItemIndexMethod(self.scene.NoIndex)
+        self.scene.setItemIndexMethod(QtWidgets.QGraphicsScene.ItemIndexMethod.NoIndex)
         self.view.setScene(self.scene)
 
-        self.undo_stack = QtWidgets.QUndoStack()
+        self.undo_stack = QtGui.QUndoStack()
 
         self.filename = None
         self.unsaved = False
@@ -252,7 +252,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         def show_options_menu():
             menu = QtWidgets.QMenu(self)
-            menu.exec_(self.view.mapToGlobal(QtCore.QPoint(x, y)))
+            menu.exec(self.view.mapToGlobal(QtCore.QPoint(x, y)))
 
         def show_new_nodes_menu():
             menu = QtWidgets.QMenu(self)
@@ -270,12 +270,12 @@ class MainWindow(QtWidgets.QMainWindow):
             menu.addAction(self.actions_map.get_action('copy'))
             menu.addAction(self.actions_map.get_action('paste'))
             menu.addAction(self.actions_map.get_action('delete'))
-            menu.exec_(self.view.mapToGlobal(QtCore.QPoint(x, y)))
+            menu.exec(self.view.mapToGlobal(QtCore.QPoint(x, y)))
 
         show_new_nodes_menu()
 
     def load_data(self, data):
-        junk_stack = QtWidgets.QUndoStack()
+        junk_stack = QtGui.QUndoStack()
         scenetools.load_macro(self.context, junk_stack, data, pos=None)
 
         # new_items = scenetools.load_scene_data(self.scene, data, pos=None)
@@ -513,7 +513,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel)
             save_dialog.setDefaultButton(QtWidgets.QMessageBox.Save)
 
-            ret = save_dialog.exec_()
+            ret = save_dialog.exec()
             if ret == QtWidgets.QMessageBox.Save:
                 self.save_scene()
                 return True
@@ -756,4 +756,4 @@ if __name__ == "__main__":
 
     app, main_window = main(background=background, scene_file=scene_file, json_string=json_string,
                             splashscreen=splashscreen, list_params=list_params, params=params)
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
