@@ -312,6 +312,8 @@ class PywerNode(PywerItem):
         self.corner_radius = 5
         self.plug_spacing = 8
         self.header_height = 20
+        self.content_font = QtGui.QFont()
+        self.content_font.setPointSize(10)
 
         self.old_position = None
         self.old_selection = None
@@ -348,8 +350,8 @@ class PywerNode(PywerItem):
         self.drop_shadow = Glow()
 
         self.resizer = Resizer(parent=self)
-        self.resizer.setConstrainY(True)
         self.resizer.resize_signal.connect(self.resize)
+        self.name.document().contentsChanged.connect(self.adjust)
         self.adjust()
 
     def setResizing(self, resizing):
@@ -409,12 +411,7 @@ class PywerNode(PywerItem):
 
     @Slot(QtCore.QPointF)
     def resize(self, change):
-        rect = QtCore.QRectF(0, 0, self.width, self.height).adjusted(0, 0, change.x(), change.y())
-        self.width = rect.width()
-        self.height = rect.height()
-        self.prepareGeometryChange()
-        self.adjust()
-        self.updateEdges()
+        self.setSize(self.width + change.x(), self.height + change.y())
 
     @classmethod
     def from_dict(cls, blueprint):
@@ -438,34 +435,72 @@ class PywerNode(PywerItem):
         plug.setParentItem(self)
         self.inputs.append(plug)
         self.adjust()
-        self.resizer.setMinSize(QtCore.QPointF(100, self.height))
 
     def remove_input(self, plug):
         self.inputs.remove(plug)
         plug.setParentItem(None)
+        if plug.scene():
+            plug.scene().removeItem(plug)
         self.adjust()
-        self.resizer.setMinSize(QtCore.QPointF(100, self.height))
 
     def add_output(self, plug):
         plug.setParentItem(self)
         self.outputs.append(plug)
         self.adjust()
-        self.resizer.setMinSize(QtCore.QPointF(100, self.height))
 
-    def adjust(self):
-        y = self.plug_spacing + self.header_height
-        for p in self.inputs:
-            p.setPos(QtCore.QPointF(0.5 * p.boundingRect().width(), y))
-            y += p.boundingRect().height() + self.plug_spacing
+    def _text_width(self, text: str) -> float:
+        """Measure advance and glyph overhang using the font used for painting."""
+        metrics = QtGui.QFontMetricsF(self.content_font)
+        bounds = metrics.tightBoundingRect(text)
+        return max(metrics.horizontalAdvance(text), bounds.right()) - min(0, bounds.left()) + 2
 
-        y = self.plug_spacing + self.header_height
-        for p in self.outputs:
-            p.setPos(QtCore.QPointF(self.width - (1.5 * p.boundingRect().width()), y))
-            y += p.boundingRect().height() + self.plug_spacing
+    def minimumSize(self) -> QtCore.QSizeF:
+        """Return the content minimum in scene coordinates, independent of size.
 
-        if self.inputs + self.outputs:
-            self.height = max(
-                [plug.y() + plug.boundingRect().height() + self.plug_spacing for plug in self.inputs + self.outputs])
+        The editable caption stays above the body; its width is included. Each
+        plug column reserves its widest label and each row fits its font/shape.
+        """
+        metrics = QtGui.QFontMetricsF(self.content_font)
+        header = max(20.0, metrics.height() + 8)
+        widths, heights = [], []
+        for plugs in (self.inputs, self.outputs):
+            widths.append(max((p.boundingRect().width() + 5 + self._text_width(p.type_)
+                               for p in plugs), default=0))
+            heights.append(sum(max(metrics.height(), p.boundingRect().height()) + self.plug_spacing
+                               for p in plugs))
+        width = max(100.0, sum(widths) + 26, self._text_width(self.type_) + 40,
+                    self.name.boundingRect().width())
+        height = max(50.0, header + self.plug_spacing + max(heights) + 10)
+        # Support additional embedded graphics items without counting the
+        # managed caption, plugs, spinner or bottom-right resize handle twice.
+        managed = [self.name, self.spinner, self.resizer, *self.inputs, *self.outputs]
+        for child in self.childItems():
+            if child not in managed:
+                bounds = child.mapRectToParent(child.boundingRect())
+                width = max(width, bounds.right() + 5)
+                height = max(height, bounds.bottom() + 5)
+        return QtCore.QSizeF(width, height)
+
+    def adjust(self) -> None:
+        """Grow to fit changed content while preserving user-expanded sizes."""
+        self.setSize(self.width, self.height)
+
+    def _layout_content(self) -> None:
+        """Place plugs and their label rectangles using the measured row heights."""
+        metrics = QtGui.QFontMetricsF(self.content_font)
+        self.header_height = max(20.0, metrics.height() + 8)
+        self._label_rects = []
+        for plugs, is_output in ((self.inputs, False), (self.outputs, True)):
+            y = self.header_height + self.plug_spacing
+            for plug in plugs:
+                bounds = plug.boundingRect()
+                row_height = max(metrics.height(), bounds.height())
+                x = self.width - 5 - bounds.right() if is_output else 5 - bounds.left()
+                plug.setPos(x, y + (row_height - bounds.height()) / 2 - bounds.top())
+                label_width = self._text_width(plug.type_)
+                label_x = x + bounds.left() - 5 - label_width if is_output else x + bounds.right() + 5
+                self._label_rects.append((plug, QtCore.QRectF(label_x, y, label_width, row_height)))
+                y += row_height + self.plug_spacing
 
         resizer_width = self.resizer.rect.width()
         resizer_offset = QtCore.QPointF(resizer_width, resizer_width)
@@ -474,14 +509,22 @@ class PywerNode(PywerItem):
         self.resizer.setPos(rect.bottomRight() - resizer_offset)
         self.resizer.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
 
-        self.spinner.setPos(QtCore.QPointF(self.width - 20, 0))
+        self.spinner.setPos(QtCore.QPointF(self.width - 25, (self.header_height - 20) / 2))
+        self.name.setPos(0, -self.name.boundingRect().height())
 
     def size(self):
         return self.width, self.height
 
-    def setSize(self, width, height):
-        self.width, self.height = width, height
-        self.adjust()
+    def setSize(self, width: float, height: float) -> None:
+        """Clamp all sizing paths, including file restoration and history replay."""
+        minimum = self.minimumSize()
+        width, height = max(width, minimum.width()), max(height, minimum.height())
+        if (width, height) != (self.width, self.height):
+            self.prepareGeometryChange()
+            self.width, self.height = width, height
+        self.resizer.setMinSize(QtCore.QPointF(minimum.width(), minimum.height()))
+        self._layout_content()
+        self.updateEdges()
         self.update()
 
     def boundingRect(self):
@@ -515,11 +558,7 @@ class PywerNode(PywerItem):
         painter.setBrush(gradient)
         painter.drawPath(shape)
 
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        font_metrics = QtGui.QFontMetrics(font)
-        font_height = font_metrics.height()
-        painter.setFont(font)
+        painter.setFont(self.content_font)
 
         text_color = self.active_text_color
         if not self.is_active():
@@ -527,23 +566,15 @@ class PywerNode(PywerItem):
         pen = QtGui.QPen(text_color)
         pen.setWidthF(0.1)
         painter.setPen(pen)
-        painter.drawText(10, font_height, self.type_)
+        painter.drawText(QtCore.QRectF(10, 0, self.width - 40, self.header_height),
+                         QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, self.type_)
 
         pen.setColor(QtCore.Qt.white)
         painter.setPen(pen)
 
-        for plug in self.inputs:
-            rect = plug.boundingRect()
-            pos = plug.pos()
-            x, y = pos.x() + rect.right() + 5, pos.y() + rect.bottom()
-            painter.drawText(x, y, plug.type_)
-
-        for plug in self.outputs:
-            width = font_metrics.horizontalAdvance(plug.type_)
-            rect = plug.boundingRect()
-            pos = plug.pos()
-            x, y = pos.x() - width - 5, pos.y() + rect.bottom()
-            painter.drawText(x, y, plug.type_)
+        for plug, rect in self._label_rects:
+            alignment = QtCore.Qt.AlignRight if plug in self.outputs else QtCore.Qt.AlignLeft
+            painter.drawText(rect, alignment | QtCore.Qt.AlignVCenter, plug.type_)
 
     def updateEdges(self):
         for plug in self.inputs + self.outputs:

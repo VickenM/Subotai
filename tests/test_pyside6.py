@@ -65,6 +65,12 @@ class Qt6IntegrationTests(unittest.TestCase):
                 # Unowned node/runtime cycles can otherwise be collected while the
                 # next node is constructing its C++ children.
                 self.window.scene.add_node(node)
+                node.setSize(1, 1)
+                body = QtCore.QRectF(0, 0, *node.size())
+                for plug in node.inputs + node.outputs:
+                    self.assertTrue(body.contains(plug.mapRectToParent(plug.boundingRect())))
+                for _, rect in node._label_rects:
+                    self.assertTrue(body.contains(rect))
                 self.window.parameters.set_node_obj(node.node_obj)
                 self.window.parameters.set_node_obj(None)
 
