@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -7,6 +8,19 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ForEach(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+        'output:finished': ('finished', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:items': ParameterDefinition(ListParam, {'name': 'items', 'value': [], 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'output:item': ParameterDefinition(StringParam, {'name': 'item', 'value': '', 'pluggable': OUTPUT_PLUG}, storage='stored', bind_node=False),
+        'output:index': ParameterDefinition(IntParam, {'name': 'index', 'value': 0, 'pluggable': OUTPUT_PLUG}, storage='stored', bind_node=False),
+        'output:count': ParameterDefinition(IntParam, {'name': 'count', 'value': 0, 'pluggable': OUTPUT_PLUG}, storage='stored', bind_node=False),
+    }
+
     type = 'ForEach'
     categories = ['Flow Control']
     description = \
@@ -27,16 +41,14 @@ Events:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.signals.append(Signal(node=self, name='finished', pluggable=OUTPUT_PLUG))
-        self.params.append(ListParam(name='items', value=[
-            # StringParam('', value="D:\\projects\\python\\node2\\tmp\\sklavos.zip")
-        ], pluggable=PARAM | INPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
+        self.signals.append(self.create_signal('output:finished'))
+        self.params.append(self.create_parameter('input:items'))
 
-        self.params.append(StringParam(name='item', value='', pluggable=OUTPUT_PLUG))
-        self.params.append(IntParam(name='index', value=0, pluggable=OUTPUT_PLUG))
-        self.params.append(IntParam(name='count', value=0, pluggable=OUTPUT_PLUG))
+        self.params.append(self.create_parameter('output:item'))
+        self.params.append(self.create_parameter('output:index'))
+        self.params.append(self.create_parameter('output:count'))
 
     @ComputeNode.Decorators.show_ui_computation
     @Slot()

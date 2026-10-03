@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from .base import BaseNode, ComputeNode, EventNode
 from .params import IntParam, FloatParam, StringParam, ListParam, Param
 from .params import INPUT_PLUG, OUTPUT_PLUG, PARAM
@@ -19,6 +20,12 @@ class ToStr(StringParam):
 
 
 class IntToStr(BaseNode):
+    parameter_definitions = {
+        'input:integer': ParameterDefinition(IntParam, {'name': 'integer', 'value': 0, 'pluggable': INPUT_PLUG}, storage='stored', bind_node=False),
+        'property:zeropad': ParameterDefinition(IntParam, {'name': 'zeropad', 'value': 0, 'pluggable': PARAM}, storage='stored', bind_node=False),
+        'output:string': ParameterDefinition(ToStr, {'name': 'string', 'pluggable': OUTPUT_PLUG}, storage='derived', bind_node=False),
+    }
+
     type = 'IntToStr'
     categories = ['Data']
     description = \
@@ -33,8 +40,8 @@ Parameters:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
-        input_param = IntParam(name='integer', value=0, pluggable=INPUT_PLUG)
-        zeropard_param = IntParam(name='zeropad', value=0, pluggable=PARAM)
+        input_param = self.create_parameter('input:integer')
+        zeropard_param = self.create_parameter('property:zeropad')
         self.params.append(input_param)
         self.params.append(zeropard_param)
         self.params.append(

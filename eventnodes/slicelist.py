@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -25,6 +26,13 @@ class SliceParam(ListParam):
 
 
 class SliceList(BaseNode):
+    parameter_definitions = {
+        'input:start': ParameterDefinition(IntParam, {'name': 'start', 'value': 0, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:end': ParameterDefinition(IntParam, {'name': 'end', 'value': -1, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:list': ParameterDefinition(ListParam, {'name': 'list', 'value': [], 'pluggable': INPUT_PLUG}, storage='stored', bind_node=False),
+        'output:list': ParameterDefinition(SliceParam, {'name': 'list', 'pluggable': OUTPUT_PLUG}, storage='derived', bind_node=False),
+    }
+
     type = 'SliceList'
     categories = ['Data']
     description = \
@@ -42,9 +50,9 @@ Parameters:
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
 
-        start_param = IntParam(name='start', value=0, pluggable=PARAM | INPUT_PLUG)
-        end_param = IntParam(name='end', value=-1, pluggable=PARAM | INPUT_PLUG)
-        list_param = ListParam(name='list', value=[], pluggable=INPUT_PLUG)
+        start_param = self.create_parameter('input:start')
+        end_param = self.create_parameter('input:end')
+        list_param = self.create_parameter('input:list')
 
         self.params.append(start_param)
         self.params.append(end_param)

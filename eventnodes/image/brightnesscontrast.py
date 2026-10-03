@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -11,17 +12,29 @@ from PIL import Image, ImageChops, ImageEnhance
 
 
 class BrightnessContrast(BaseImageNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:image': ParameterDefinition(ImageParam, {'name': 'image', 'pluggable': INPUT_PLUG}, storage='transient', bind_node=False),
+        'output:image': ParameterDefinition(ImageParam, {'name': 'image', 'pluggable': OUTPUT_PLUG}, storage='transient', bind_node=False),
+        'property:brightness': ParameterDefinition(FloatParam, {'name': 'brightness', 'value': 1.0, 'pluggable': PARAM}, storage='stored', bind_node=False),
+        'property:contrast': ParameterDefinition(FloatParam, {'name': 'contrast', 'value': 1.0, 'pluggable': PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'Brightness/Contrast'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
         self.params.append(ImageParam(name='image', value=None, pluggable=INPUT_PLUG))
         self.params.append(ImageParam(name='image', value=None, pluggable=OUTPUT_PLUG))
-        self.params.append(FloatParam(name='brightness', value=1.0, pluggable=PARAM))
-        self.params.append(FloatParam(name='contrast', value=1.0, pluggable=PARAM))
+        self.params.append(self.create_parameter('property:brightness'))
+        self.params.append(self.create_parameter('property:contrast'))
 
     @ComputeNode.Decorators.show_ui_computation
     def compute(self):

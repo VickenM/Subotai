@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, IntParam, PARAM, SUBTYPE_FILEPATH
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
@@ -11,14 +12,24 @@ from PIL import ImageQt
 
 
 class SystemNotification(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'property:title': ParameterDefinition(StringParam, {'name': 'title', 'value': '', 'pluggable': PARAM}, storage='stored', bind_node=False),
+        'input:message': ParameterDefinition(StringParam, {'name': 'message', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:icon': ParameterDefinition(ImageParam, {'name': 'icon', 'pluggable': INPUT_PLUG}, storage='transient', bind_node=False),
+    }
+
     type = 'SystemNotification'
     categories = ['I/O']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.params.append(StringParam(name='title', value='', pluggable=PARAM))
-        self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.params.append(self.create_parameter('property:title'))
+        self.params.append(self.create_parameter('input:message'))
         # self.params.append(StringParam(name='icon', value='', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_FILEPATH))
         self.params.append(ImageParam(name='icon', value=None, pluggable=INPUT_PLUG))
 

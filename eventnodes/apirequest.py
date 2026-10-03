@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from eventnodes.base import ComputeNode
 from eventnodes.params import StringParam, PARAM
 from eventnodes.signal import Signal, INPUT_PLUG, OUTPUT_PLUG
@@ -14,17 +15,28 @@ from .apilistener import QueueParam
 
 
 class APIRequest(ComputeNode):
+    legacy_aliases = ('nodes.apirequest.APIRequest',)
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:session': ParameterDefinition(QueueParam, {'name': 'session', 'pluggable': INPUT_PLUG}, storage='transient', bind_node=False),
+        'input:request': ParameterDefinition(StringParam, {'name': 'request', 'value': 'n', 'pluggable': INPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+    }
+
     categories = ['I/O']
     type = 'APIRequest'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
         self.params.append(QueueParam(name='session', value=None, pluggable=INPUT_PLUG))
         self.params.append(
-            StringParam(name='request', value='n', pluggable=INPUT_PLUG | PARAM))
+            self.create_parameter('input:request'))
 
     @QtCore.Slot()
     def compute(self):

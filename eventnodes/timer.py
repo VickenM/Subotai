@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtWidgets
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
@@ -8,6 +9,17 @@ from .signal import Signal, OUTPUT_PLUG
 
 
 class TimerNode(EventNode):
+    def sync_restored_controls(self):
+        self.update()
+
+    signal_definitions = {
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'property:interval': ParameterDefinition(IntParam, {'name': 'interval', 'value': 1000, 'pluggable': PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'Timer'
     categories = ['Events']
     description = \
@@ -21,8 +33,8 @@ Parameters:
 
     def __init__(self):
         super(TimerNode, self).__init__()
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(IntParam(name='interval', value=1000, pluggable=PARAM))
+        self.signals.append(self.create_signal('output:event'))
+        self.params.append(self.create_parameter('property:interval'))
 
         interval = self.get_first_param('interval').value
         self.timer = QtCore.QTimer()

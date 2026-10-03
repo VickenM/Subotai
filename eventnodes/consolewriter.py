@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from .base import ComputeNode  # , ThreadedComputeNode
 from .params import StringParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
@@ -6,6 +7,16 @@ from PySide6.QtCore import Slot
 
 
 class ConsoleWriter(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'property:prefix': ParameterDefinition(StringParam, {'name': 'prefix', 'value': '%m/%d/%Y, %H:%M:%S', 'pluggable': PARAM}, storage='stored', bind_node=False),
+        'input:message': ParameterDefinition(StringParam, {'name': 'message', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+    }
+
     type = 'ConsoleWriter'
     categories = ['I/O']
     description = \
@@ -22,10 +33,10 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='prefix', value='%m/%d/%Y, %H:%M:%S', pluggable=PARAM))
-        self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
+        self.params.append(self.create_parameter('property:prefix'))
+        self.params.append(self.create_parameter('input:message'))
 
     @ComputeNode.Decorators.show_ui_computation
     @Slot()

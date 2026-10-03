@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtWidgets
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
@@ -79,6 +80,14 @@ class ValidExpressionIndicator(QtWidgets.QWidget):
 
 
 class HotkeyNode(EventNode):
+    signal_definitions = {
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'property:hotkey': ParameterDefinition(StringParam, {'name': 'hotkey', 'value': '', 'pluggable': PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'Hotkey'
     categories = ['Events']
     description = \
@@ -88,8 +97,8 @@ class HotkeyNode(EventNode):
 
     def __init__(self):
         super(HotkeyNode, self).__init__()
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='hotkey', value='', pluggable=PARAM))
+        self.signals.append(self.create_signal('output:event'))
+        self.params.append(self.create_parameter('property:hotkey'))
         # self.expression_indicator = ValidExpressionIndicator()
         # self.controls.append((self.expression_indicator, self.toggle_viewer, self.show_viewer_button.clicked))
 
@@ -99,6 +108,8 @@ class HotkeyNode(EventNode):
         self.deactivate()
 
     def update(self):
+        if self.restoring:
+            return
         hk = self.get_first_param('hotkey').value
         if hk == self.current_hotkey:
             return

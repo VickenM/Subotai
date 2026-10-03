@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from .base import BaseNode, ComputeNode, EventNode
 from .params import IntParam, FloatParam, StringParam, ListParam, BoolParam
 from .params import INPUT_PLUG, OUTPUT_PLUG, PARAM, NONE
@@ -35,6 +36,15 @@ class PromoteWidget(QtWidgets.QWidget):
 
 
 class ParamNode(BaseNode):
+    def sync_restored_controls(self):
+        with QtCore.QSignalBlocker(self.promote_control.checkbox), QtCore.QSignalBlocker(self.promote_control.line):
+            self.update()
+
+    parameter_definitions = {
+        'property:promote state': ParameterDefinition(BoolParam, {'name': 'promote state', 'value': False, 'pluggable': NONE}, storage='stored', bind_node=False),
+        'property:promote name': ParameterDefinition(StringParam, {'name': 'promote name', 'value': None, 'pluggable': NONE}, storage='stored', bind_node=False),
+    }
+
     description = """**Parameters Nodes** are a convenient way to provide the same value to multiple
 inputs and can be controlled from a single spot.
 
@@ -46,8 +56,8 @@ If the paramter is promoted, it's value can be set from the commandline interfac
         super().__init__(*args, **kwargs)
 
         self.promote_control = PromoteWidget()
-        self.params.append(BoolParam(name='promote state', value=False, pluggable=NONE))
-        self.params.append(StringParam(name='promote name', value=None, pluggable=NONE))
+        self.params.append(self.create_parameter('property:promote state'))
+        self.params.append(self.create_parameter('property:promote name'))
 
         self.controls.append((self.promote_control, self.sync, self.promote_control.promote_signal))
 
@@ -66,36 +76,52 @@ If the paramter is promoted, it's value can be set from the commandline interfac
 
 
 class StringParameter(ParamNode):
+    parameter_definitions = {
+        'output:param': ParameterDefinition(StringParam, {'name': 'param', 'value': '', 'pluggable': OUTPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'StringParameter'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
-        self.params.append(StringParam(name='param', value='', pluggable=OUTPUT_PLUG | PARAM))
+        self.params.append(self.create_parameter('output:param'))
 
 
 class IntegerParameter(ParamNode):
+    parameter_definitions = {
+        'output:param': ParameterDefinition(IntParam, {'name': 'param', 'value': 0, 'pluggable': OUTPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'IntegerParameter'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
-        self.params.append(IntParam(name='param', value=0, pluggable=OUTPUT_PLUG | PARAM))
+        self.params.append(self.create_parameter('output:param'))
 
 
 class FloatParameter(ParamNode):
+    parameter_definitions = {
+        'output:param': ParameterDefinition(FloatParam, {'name': 'param', 'value': 0.0, 'pluggable': OUTPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'FloatParameter'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
-        self.params.append(FloatParam(name='param', value=0.0, pluggable=OUTPUT_PLUG | PARAM))
+        self.params.append(self.create_parameter('output:param'))
 
 
 class BooleanParameter(ParamNode):
+    parameter_definitions = {
+        'output:param': ParameterDefinition(BoolParam, {'name': 'param', 'value': True, 'pluggable': OUTPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'BooleanParameter'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
-        self.params.append(BoolParam(name='param', value=True, pluggable=OUTPUT_PLUG | PARAM))
+        self.params.append(self.create_parameter('output:param'))

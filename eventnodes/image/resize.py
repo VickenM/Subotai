@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -11,16 +12,28 @@ from PIL import Image
 
 
 class Resize(BaseImageNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:image': ParameterDefinition(ImageParam, {'name': 'image', 'pluggable': PARAM | INPUT_PLUG}, storage='transient', bind_node=False),
+        'input:width': ParameterDefinition(IntParam, {'name': 'width', 'value': 0, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:height': ParameterDefinition(IntParam, {'name': 'height', 'value': 0, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'output:image': ParameterDefinition(ImageParam, {'name': 'image', 'pluggable': PARAM | OUTPUT_PLUG}, storage='transient', bind_node=False),
+    }
+
     type = 'ResizeImage'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
         self.params.append(ImageParam(name='image', value=None, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(IntParam(name='width', value=0, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(IntParam(name='height', value=0, pluggable=PARAM | INPUT_PLUG))
+        self.params.append(self.create_parameter('input:width'))
+        self.params.append(self.create_parameter('input:height'))
         self.params.append(ImageParam(name='image', value=None, pluggable=PARAM | OUTPUT_PLUG))
 
     @ComputeNode.Decorators.show_ui_computation

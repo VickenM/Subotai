@@ -7,11 +7,87 @@ from abc import abstractmethod
 
 
 class BaseNode(QtCore.QObject):
+    def __init_subclass__(cls, **kwargs):
+        """Guard built-in state transitions so snapshots cannot observe half an edit."""
+        super().__init_subclass__(**kwargs)
+        import functools
+        import inspect
+        def guarded(function):
+            if inspect.iscoroutinefunction(function):
+                @functools.wraps(function)
+                async def async_call(self, *args, **kw):
+                    with self._state_lock:
+                        self._state_busy += 1
+                        try:
+                            return await function(self, *args, **kw)
+                        finally:
+                            self._state_busy -= 1
+                return async_call
+            @functools.wraps(function)
+            def call(self, *args, **kw):
+                with self._state_lock:
+                    self._state_busy += 1
+                    try:
+                        return function(self, *args, **kw)
+                    finally:
+                        self._state_busy -= 1
+            return call
+        for name in ('compute', 'collect', 'reset', 'received_response', 'job_complete'):
+            if name in cls.__dict__:
+                setattr(cls, name, guarded(cls.__dict__[name]))
+
+    parameter_definitions = {}
+    signal_definitions = {}
+    state_fields = {}
+    type_version = 1
+    type_migrations = {}
+    dynamic_input_prefix = None
+
+    @classmethod
+    def persistence_type_id(cls):
+        """Return the stable built-in ID or an add-on's explicit namespaced ID."""
+        if cls.__module__.startswith('eventnodes.'):
+            return 'subotai:' + cls.type
+        return cls.persistence_type
+
+    def create_signal(self, binding):
+        """Create an event port from its class-owned declaration."""
+        from eventnodes.signal import Signal
+        name, flags = self.signal_definitions[binding]
+        return Signal(node=self, name=name, pluggable=flags)
+
+    @classmethod
+    def describe_parameters(cls):
+        """Return inherited node-owned declarations without creating a node."""
+        definitions = {}
+        for parent in reversed(cls.__mro__):
+            definitions.update(parent.__dict__.get('parameter_definitions', {}))
+        return definitions
+
+    def create_parameter(self, binding):
+        """Use the declaration as the single source of constructor defaults."""
+        return self.describe_parameters()[binding].create(self)
+
+    def save_state(self):
+        """Return declared extra state; the serializer detaches and encodes it."""
+        return {key: getattr(self, field.attribute) for key, field in self.state_fields.items()}
+
+    def restore_state(self, state):
+        """Restore validated extra state onto an inactive node."""
+        from copy import deepcopy
+        for key, field in self.state_fields.items():
+            setattr(self, field.attribute, deepcopy(state[key]))
+
     categories = ['General']
     description = """Base Node description"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        from persistence import is_restoring
+        import threading
+        self._state_lock = threading.RLock()
+        self._state_busy = 0
+        self.restoring = is_restoring()
         self.color = (150, 150, 150, 255)
         self.warning_color = (150, 100, 25, 255)
         self.error_color = (150, 50, 50, 255)
@@ -70,6 +146,18 @@ class BaseNode(QtCore.QObject):
         self.ui_node.update()
 
     def terminate(self):
+        pass
+
+    def activate_resources(self):
+        """Start non-event runtime resources after a staged graph is committed."""
+        pass
+
+    def pause_resources(self):
+        """Stop transient jobs when a pasted graph is removed by undo."""
+        pass
+
+    def sync_restored_controls(self):
+        """Synchronize inert UI configuration without evaluating derived outputs."""
         pass
 
     def connected_params(self, connected_param, this_param):

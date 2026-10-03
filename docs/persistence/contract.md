@@ -1,9 +1,9 @@
-# Graph persistence contract: version 1 proposal
+# Graph persistence contract: version 1
 
-Status: proposed specification for [#28](https://github.com/VickenM/Subotai/issues/28),
-based on `9e77b2f`. The application still reads/writes the existing unversioned
-format. This change supplies a contract, schema, inventory and validation examples;
-runtime serialization/migration belongs to #29 and exhaustive round-trip tests to #30.
+Status: specification from [#28](https://github.com/VickenM/Subotai/issues/28),
+implemented by #29. The application writes version 1 and migrates legacy files
+in memory. See the [implementation guide](implementation.md) for code ownership
+and extension points. Exhaustive round-trip coverage remains tracked by #30.
 
 ## In plain English
 
@@ -21,15 +21,16 @@ defined here, not resuming the Python process or its active jobs.
 
 - [Built-in inventory](builtin-inventory.md): all 44 types, constructor parameters,
   event ports, flags and default expressions, including inherited promotion fields.
-- [Machine-readable schema](graph-v1.schema.json): the proposed structural format,
+- [Machine-readable schema](graph-v1.schema.json): the structural format,
   using [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core).
 - [Example document](example-v1.json): a Counter with stored count 7 connected to
-  a ConsoleWriter, enclosed by a graphical group. This is a specification fixture;
-  do not open it in the current application's legacy loader.
+  a ConsoleWriter, enclosed by a graphical group.
 - [Architecture inventory](../architecture.md) explains current ownership and
   reconstruction; [node sizing](../node-sizing.md) defines size normalization.
 
-## What the current implementation does
+## Historical behavior before version 1
+
+The following describes the legacy implementation that motivated this contract.
 
 [`AppNode.to_dict`](../../appnode.py) writes ID, module-qualified type, name,
 position, dimensions, active state and parameters grouped by numeric flags.
