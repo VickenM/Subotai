@@ -1,0 +1,181 @@
+{
+  "format": "subotai.graph",
+  "schema_version": 1,
+  "nodes": [
+    {
+      "id": "counter-1",
+      "type": "subotai:Counter",
+      "type_version": 1,
+      "name": "Count jobs",
+      "enabled": true,
+      "position": [
+        100,
+        80
+      ],
+      "size": [
+        320,
+        200
+      ],
+      "parameters": [
+        {
+          "id": "input:initial",
+          "name": "initial",
+          "flags": 5,
+          "value": {
+            "codec": "int",
+            "data": 0
+          }
+        },
+        {
+          "id": "input:increment",
+          "name": "increment",
+          "flags": 5,
+          "value": {
+            "codec": "int",
+            "data": 1
+          }
+        },
+        {
+          "id": "output:value",
+          "name": "value",
+          "flags": 2,
+          "value": {
+            "codec": "int",
+            "data": 7
+          }
+        }
+      ],
+      "ports": [
+        {
+          "id": "event:input:event",
+          "name": "event",
+          "direction": "input",
+          "kind": "event",
+          "binding": "event"
+        },
+        {
+          "id": "event:input:reset",
+          "name": "reset",
+          "direction": "input",
+          "kind": "event",
+          "binding": "reset"
+        },
+        {
+          "id": "event:output:event",
+          "name": "event",
+          "direction": "output",
+          "kind": "event",
+          "binding": "event"
+        },
+        {
+          "id": "value:input:initial",
+          "name": "initial",
+          "direction": "input",
+          "kind": "value",
+          "binding": "input:initial"
+        },
+        {
+          "id": "value:input:increment",
+          "name": "increment",
+          "direction": "input",
+          "kind": "value",
+          "binding": "input:increment"
+        },
+        {
+          "id": "value:output:value",
+          "name": "value",
+          "direction": "output",
+          "kind": "value",
+          "binding": "output:value"
+        }
+      ],
+      "state": {}
+    },
+    {
+      "id": "console-1",
+      "type": "subotai:ConsoleWriter",
+      "type_version": 1,
+      "name": "Report job",
+      "enabled": true,
+      "position": [
+        600,
+        80
+      ],
+      "size": [
+        320,
+        160
+      ],
+      "parameters": [
+        {
+          "id": "property:prefix",
+          "name": "prefix",
+          "flags": 4,
+          "value": {
+            "codec": "string",
+            "data": "%m/%d/%Y, %H:%M:%S"
+          }
+        },
+        {
+          "id": "input:message",
+          "name": "message",
+          "flags": 5,
+          "value": {
+            "codec": "string",
+            "data": "Job complete"
+          }
+        }
+      ],
+      "ports": [
+        {
+          "id": "event:input:event",
+          "name": "event",
+          "direction": "input",
+          "kind": "event",
+          "binding": "event"
+        },
+        {
+          "id": "event:output:event",
+          "name": "event",
+          "direction": "output",
+          "kind": "event",
+          "binding": "event"
+        },
+        {
+          "id": "value:input:message",
+          "name": "message",
+          "direction": "input",
+          "kind": "value",
+          "binding": "input:message"
+        }
+      ],
+      "state": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": {
+        "node_id": "counter-1",
+        "port_id": "event:output:event"
+      },
+      "target": {
+        "node_id": "console-1",
+        "port_id": "event:input:event"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "id": "group-1",
+      "name": "Reporting",
+      "position": [
+        50,
+        20
+      ],
+      "size": [
+        950,
+        300
+      ]
+    }
+  ]
+}

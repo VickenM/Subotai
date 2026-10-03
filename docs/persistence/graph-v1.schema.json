@@ -1,0 +1,411 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:subotai:graph:1",
+  "title": "Subotai graph document version 1 (proposed)",
+  "$comment": "Structural contract only. Semantic validation and runtime loading are specified in contract.md, not implemented here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schema_version",
+    "nodes",
+    "edges",
+    "groups"
+  ],
+  "properties": {
+    "format": {
+      "const": "subotai.graph"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/edge"
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/group"
+      }
+    }
+  },
+  "$defs": {
+    "value": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "const": "null"
+            },
+            "data": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "const": "bool"
+            },
+            "data": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "const": "int"
+            },
+            "data": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "const": "float"
+            },
+            "data": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "const": "string"
+            },
+            "data": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "const": "enum"
+            },
+            "data": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "const": "list"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/value"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "const": "object"
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/value"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "codec",
+            "version",
+            "data"
+          ],
+          "properties": {
+            "codec": {
+              "type": "string",
+              "pattern": "^[^\\s:]+:.+$"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "data": {}
+          }
+        }
+      ]
+    },
+    "parameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "flags",
+        "value"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "flags": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 7
+        },
+        "value": {
+          "$ref": "#/$defs/value"
+        }
+      }
+    },
+    "port": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "direction",
+        "kind",
+        "binding"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "direction": {
+          "enum": [
+            "input",
+            "output"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "value",
+            "event"
+          ]
+        },
+        "binding": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "type_version",
+        "name",
+        "enabled",
+        "position",
+        "size",
+        "parameters",
+        "ports",
+        "state"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "pattern": "^[^\\s:]+:.+$"
+        },
+        "type_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/parameter"
+          }
+        },
+        "ports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/port"
+          }
+        },
+        "state": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/value"
+          }
+        }
+      }
+    },
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "port_id"
+      ],
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "port_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source",
+        "target"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "$ref": "#/$defs/endpoint"
+        },
+        "target": {
+          "$ref": "#/$defs/endpoint"
+        }
+      }
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "position",
+        "size"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "size": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    }
+  }
+}

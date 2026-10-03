@@ -17,6 +17,7 @@ Some example uses are:
 
 - [Architecture and state inventory](docs/architecture.md): components, ownership, execution, persistence and undo/redo, with diagrams.
 - [Node sizing](docs/node-sizing.md): content minimums, extension hooks and legacy-size normalization.
+- [Proposed save-file contract](docs/persistence/contract.md): built-in state inventory, versioned JSON schema and migration policies (#28; runtime implementation follows in #29).
 - [Development roadmap](docs/planning/github-plan.md): planned work and GitHub tracking links.
 
 # Requirements
@@ -45,6 +46,12 @@ The requirements contain the application's runtime dependencies. Development too
 Existing JSON workflows keep their format. Add-ons loaded through `SUBOTAI_ADDONS` must use `PySide6` imports. Qt actions and undo classes now live in `QtGui` (`QAction`, `QUndoCommand`, `QUndoStack`); custom Qt code may also need Qt 6 API updates. Do not mix PySide2 and PySide6 objects in the same application.
 
 ## Tests
+
+Install development dependencies for the full suite (including JSON Schema specification checks):
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
