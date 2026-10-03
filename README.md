@@ -13,6 +13,11 @@ Some example uses are:
 
 > **_NOTE:_** The project is under active development with large parts subject to change. 
 
+## Project documentation
+
+- [Architecture and state inventory](docs/architecture.md): components, ownership, execution, persistence and undo/redo, with diagrams.
+- [Development roadmap](docs/planning/github-plan.md): planned work and GitHub tracking links.
+
 # Requirements
 * Python 3.10–3.14 (64-bit)
 * PySide6 6.11.2 (Qt 6)

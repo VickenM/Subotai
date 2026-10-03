@@ -39,6 +39,7 @@ class Qt6IntegrationTests(unittest.TestCase):
     def tearDown(self):
         try:
             self.window.parameters.set_node_obj(None)
+            self.window.undo_stack.clear()
             self.window.deactivate_event_nodes()
             self.window.exit_app()
             self.window.deleteLater()
@@ -60,11 +61,12 @@ class Qt6IntegrationTests(unittest.TestCase):
         for name in register.node_registry:
             with self.subTest(node=name):
                 node = appnode.new_node(name)
-                try:
-                    self.window.parameters.set_node_obj(node.node_obj)
-                    self.window.parameters.set_node_obj(None)
-                finally:
-                    node.node_obj.terminate()
+                # Give Qt ownership of the graphics items until GUI-thread teardown.
+                # Unowned node/runtime cycles can otherwise be collected while the
+                # next node is constructing its C++ children.
+                self.window.scene.add_node(node)
+                self.window.parameters.set_node_obj(node.node_obj)
+                self.window.parameters.set_node_obj(None)
 
     def test_examples_round_trip_and_render(self):
         for path in sorted((ROOT / 'examples').glob('*.json')):
@@ -160,12 +162,10 @@ class Qt6IntegrationTests(unittest.TestCase):
 
     def test_pillow_to_qt_image(self):
         node = appnode.new_node('Viewer')
-        try:
-            node.node_obj.get_first_param('image').value = Image.new('RGB', (32, 32), 'red')
-            node.node_obj.compute()
-            self.assertFalse(node.node_obj.widget.label.pixmap().isNull())
-        finally:
-            node.node_obj.terminate()
+        self.window.scene.add_node(node)
+        node.node_obj.get_first_param('image').value = Image.new('RGB', (32, 32), 'red')
+        node.node_obj.compute()
+        self.assertFalse(node.node_obj.widget.label.pixmap().isNull())
 
 
 if __name__ == '__main__':
