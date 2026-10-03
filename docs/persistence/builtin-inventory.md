@@ -1,6 +1,7 @@
 # Built-in parameter and port inventory
 
 Source baseline: `9e77b2f` (2026-10-02). All 44 registered built-in type declarations are listed below.
+This is documentation, not a runtime inventory or loader input. Node-owned declarations will be authoritative in #29; this reference should then be generated from those declarations.
 Extracted from constructor syntax without importing or executing nodes. Defaults below are Python source expressions,
 not proposed JSON encodings. `PARAM=4`, `INPUT_PLUG=1`, `OUTPUT_PLUG=2`, `NONE=0`.
 Inherited promotion fields are included. Dynamic `stringN` inputs are described in the contract.

@@ -148,6 +148,75 @@ non-JSON objects are errors, never `str(object)` or omitted values.
 
 ## Ports, dynamic inputs and add-ons
 
+### Nodes describe their own state
+
+The authoritative declarations belong to the node classes (and their parameter
+classes), alongside the behavior they describe. The built-in inventory is
+**documentation only**: it is not a runtime catalog, a loader input, or a second
+hand-maintained definition of parameters. Once declarations exist in #29, that
+reference should be generated from them without constructing or activating nodes.
+The existing registry remains the mechanism for finding an installed node class
+by its stable type ID; it does not duplicate the class's state declarations.
+
+Here, a node's **manifest** means its own declarative description: type/version,
+parameter bindings and codecs, defaults and constraints, persistence policy,
+port definitions/dynamic families, and additional persistent fields. Most nodes
+inherit save/restore behavior from the base class. They do not each implement
+JSON encoding, file access or a separate parameter traversal algorithm.
+
+| Owner | Responsibility |
+| --- | --- |
+| Node and parameter classes | Describe local state; distinguish persistent, derived and transient values; declare extra fields and dynamic ports; provide exceptional conversion/migration behavior when necessary. |
+| Shared state serializer | Walk those declarations, deep-copy local values, apply registered codecs, validate records and invoke optional hooks. Never evaluate a derived getter to save a node. |
+| Graph loader/registry | Resolve type IDs, validate the complete document, create inactive instances, restore all local state/ports, and then reconnect edges and activate event sources. |
+| Editor adapter | Capture/restore captions, positions, dimensions and groups; normalize sizes after the node's content exists. |
+| Document/file layer | Encode/decode JSON, migrate document versions, report errors and write files atomically. |
+
+The generic node envelope in the schema remains unchanged. Its `type` and
+`type_version` select the installed class and its declarations. The shared layer
+can therefore interpret `parameters`, `ports` and `state` for different node
+types without hard-coded branches for every built-in node.
+
+### Declarations first, custom hooks when necessary
+
+Ordinary scalar/list/enum parameters need no custom hook. Persistent fields
+outside `params` should also be declarative when possible: Collector can declare
+its `_items` buffer as the typed `state.pending_items` field. Shared dynamic-port
+support should cover FormatString and JoinStringsMulti so each does not have to
+implement its own reconstruction algorithm.
+
+A node may override small state hooks when a declaration cannot express its
+conversion or restoration behavior. The following is illustrative pseudocode,
+not a shipped API or a requirement to add these exact methods to every node:
+
+```python
+def save_state(self):
+    return {"pending_items": list(self._items)}
+
+def restore_state(self, state):
+    self._items = list(state["pending_items"])
+```
+
+Those hooks exchange logical structured values with the shared serializer, which
+applies the declared codecs to produce the schema's typed value envelopes. They
+do not parse JSON text, write files, serialize neighboring nodes, or reconnect
+edges. The example's list copy is sufficient only for immutable string items;
+the shared snapshot boundary must detach nested mutable values as well.
+
+Hook output is subject to the same declared keys, codecs, versions and validation
+as automatically serialized state. Hooks cannot silently add undeclared fields
+or replace the node/graph envelope. A save hook must not mutate the live node or
+perform external I/O. A restore hook runs on an inactive staging node, with no
+execution or external effects. It must leave all required ports available before
+edge reconstruction. A failure aborts staging and leaves the current graph intact.
+Changing a hook's stored representation requires a type/codec version migration.
+
+Recreation order is explicit: validate data against class declarations; construct
+inactive nodes; restore parameters and additional state; restore declared dynamic
+ports (or invoke an exceptional port-restoration hook); connect edges only after
+every node and port exists; synchronize editor state; then apply activation.
+The shared implementation owns this order, even for nodes with custom hooks.
+
 A port record carries an opaque local `id`, display `name`, `direction`, `kind`
 (`value` or `event`) and stable `binding`. For value ports, binding names a
 parameter in the node manifest, including computed/transient parameters that
@@ -303,7 +372,7 @@ input to #31/#32, not an assertion that existing commands already satisfy it.
 
 | Follow-up | Required evidence |
 | --- | --- |
-| #29 | Separate snapshot/codec, strict parser, pure migrations, semantic validation, inert construction and atomic file I/O; enforce the lifecycle/manifest contracts above. |
+| #29 | Put authoritative declarations on node/parameter classes; implement inherited serialization, declarative extra fields and dynamic ports, with optional validated hooks. Separate snapshot/codec, strict parser, pure migrations, semantic validation, inert construction and atomic file I/O; enforce the lifecycle/manifest contracts above. Generate the readable inventory from declarations without executing constructors. |
 | #30 | Round-trip every built-in's persistent state, including nondefault/null/list/enum values, output caches, Collector buffer, promotion and dynamic string1–string12; all six v0 examples; unavailable add-ons, malformed endpoints, duplicates, unknown versions and failed-load rollback. Verify no side effects on parse/load and stable second-save geometry. |
 | #31 | Reproduce history failures against the same snapshot contract, especially mutable values, dynamic ports, deleted nodes, dirty state and activation. |
 
