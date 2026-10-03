@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -22,17 +23,29 @@ class BlendOpParam(EnumParam):
 
 
 class Blend(BaseImageNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:image1': ParameterDefinition(ImageParam, {'name': 'image1', 'pluggable': INPUT_PLUG}, storage='transient', bind_node=False),
+        'input:image2': ParameterDefinition(ImageParam, {'name': 'image2', 'pluggable': INPUT_PLUG}, storage='transient', bind_node=False),
+        'output:image': ParameterDefinition(ImageParam, {'name': 'image', 'pluggable': OUTPUT_PLUG}, storage='transient', bind_node=False),
+        'property:blend_mode': ParameterDefinition(BlendOpParam, {'name': 'blend_mode', 'value': BlendOpParam.Operations.overlay, 'pluggable': PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'BlendImage'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
         self.params.append(ImageParam(name='image1', value=None, pluggable=INPUT_PLUG))
         self.params.append(ImageParam(name='image2', value=None, pluggable=INPUT_PLUG))
         self.params.append(ImageParam(name='image', value=None, pluggable=OUTPUT_PLUG))
-        self.params.append(BlendOpParam(name='blend_mode', value=BlendOpParam.Operations.overlay, pluggable=PARAM))
+        self.params.append(self.create_parameter('property:blend_mode'))
 
     @ComputeNode.Decorators.show_ui_computation
     def compute(self):

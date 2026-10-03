@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -59,6 +60,13 @@ class MathParam(IntParam):
 
 
 class Math(BaseNode):
+    parameter_definitions = {
+        'property:operation': ParameterDefinition(MathOpParam, {'name': 'operation', 'value': MathOpParam.Operations.add, 'pluggable': PARAM}, storage='stored', bind_node=False),
+        'input:value1': ParameterDefinition(IntParam, {'name': 'value1', 'value': 0, 'pluggable': INPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+        'input:value2': ParameterDefinition(IntParam, {'name': 'value2', 'value': 0, 'pluggable': INPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+        'output:result': ParameterDefinition(MathParam, {'name': 'result', 'pluggable': OUTPUT_PLUG}, storage='derived', bind_node=False),
+    }
+
     type = 'Math'
     categories = ['Math']
     description = \
@@ -76,9 +84,9 @@ Parameters:
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
 
-        op = MathOpParam(name='operation', value=MathOpParam.Operations.add, pluggable=PARAM)
-        first = IntParam(name='value1', value=0, pluggable=INPUT_PLUG | PARAM)
-        second = IntParam(name='value2', value=0, pluggable=INPUT_PLUG | PARAM)
+        op = self.create_parameter('property:operation')
+        first = self.create_parameter('input:value1')
+        second = self.create_parameter('input:value2')
         self.params.append(op)
         self.params.append(first)
         self.params.append(second)

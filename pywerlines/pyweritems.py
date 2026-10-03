@@ -2,6 +2,10 @@ from PySide6 import QtWidgets
 from PySide6 import QtCore, QtGui
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Slot
+import itertools
+import uuid
+
+_edge_order = itertools.count()
 
 
 class PywerItem(QtWidgets.QGraphicsItem):
@@ -41,6 +45,8 @@ class PywerItem(QtWidgets.QGraphicsItem):
 class PywerEdge(PywerItem):
     def __init__(self, *args, **kwargs):
         super(PywerEdge, self).__init__(*args, **kwargs)
+        self.persistence_id = str(uuid.uuid4())
+        self.persistence_order = next(_edge_order)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
 
         self.arrow_size = 5.0

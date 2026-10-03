@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -18,6 +19,18 @@ class CompareParam(EnumParam):
 
 
 class Condition(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:true': ('true', OUTPUT_PLUG),
+        'output:false': ('false', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'property:operation': ParameterDefinition(CompareParam, {'name': 'operation', 'value': CompareParam.Operations.equal, 'pluggable': PARAM}, storage='stored', bind_node=False),
+        'input:value1': ParameterDefinition(IntParam, {'name': 'value1', 'value': 0, 'pluggable': INPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+        'input:value2': ParameterDefinition(IntParam, {'name': 'value2', 'value': 0, 'pluggable': INPUT_PLUG | PARAM}, storage='stored', bind_node=False),
+    }
+
     type = 'Condition'
     categories = ['Flow Control']
     description = \
@@ -34,13 +47,13 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='true', pluggable=OUTPUT_PLUG))
-        self.signals.append(Signal(node=self, name='false', pluggable=OUTPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:true'))
+        self.signals.append(self.create_signal('output:false'))
 
-        self.params.append(CompareParam(name='operation', value=CompareParam.Operations.equal, pluggable=PARAM))
-        self.params.append(IntParam(name='value1', value=0, pluggable=INPUT_PLUG | PARAM))
-        self.params.append(IntParam(name='value2', value=0, pluggable=INPUT_PLUG | PARAM))
+        self.params.append(self.create_parameter('property:operation'))
+        self.params.append(self.create_parameter('input:value1'))
+        self.params.append(self.create_parameter('input:value2'))
 
     @ComputeNode.Decorators.show_ui_computation
     @Slot()

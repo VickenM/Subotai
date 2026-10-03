@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -7,6 +8,18 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Counter(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'input:reset': ('reset', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:initial': ParameterDefinition(IntParam, {'name': 'initial', 'value': 0, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:increment': ParameterDefinition(IntParam, {'name': 'increment', 'value': 1, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'output:value': ParameterDefinition(IntParam, {'name': 'value', 'value': 0, 'pluggable': OUTPUT_PLUG}, storage='stored', bind_node=False),
+    }
+
     type = 'Counter'
     categories = ['Flow Control']
     description = \
@@ -25,13 +38,13 @@ Signals:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='reset', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('input:reset'))
+        self.signals.append(self.create_signal('output:event'))
 
-        self.params.append(IntParam(name='initial', value=0, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(IntParam(name='increment', value=1, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(IntParam(name='value', value=0, pluggable=OUTPUT_PLUG))
+        self.params.append(self.create_parameter('input:initial'))
+        self.params.append(self.create_parameter('input:increment'))
+        self.params.append(self.create_parameter('output:value'))
 
     def map_signal(self, signal):
         if signal == 'reset':

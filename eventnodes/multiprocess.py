@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from .base import ComputeNode
 from .params import StringParam, IntParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
@@ -210,7 +211,15 @@ class LoopThread(threading.Thread):
         self.loop = asyncio.new_event_loop()
 
     def run(self):
-        self.loop.run_forever()
+        try:
+            self.loop.run_forever()
+        finally:
+            pending = asyncio.all_tasks(self.loop)
+            for task in pending:
+                task.cancel()
+            if pending:
+                self.loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            self.loop.close()
 
 
 class QueueThread(threading.Thread):
@@ -250,27 +259,37 @@ class QueueThread(threading.Thread):
             asyncio.run_coroutine_threadsafe(safe_run_command(**item_and_process_id), self.loop_thread.loop)
 
 
-procs = []
-
-
 class MultiProcess(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'property:concurrency': ParameterDefinition(IntParam, {'name': 'concurrency', 'value': 0, 'pluggable': PARAM}, storage='stored', bind_node=False),
+        'input:process': ParameterDefinition(StringParam, {'name': 'process', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:arguments': ParameterDefinition(StringParam, {'name': 'arguments', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+    }
+
     type = 'MultiProcess'
     categories = ['I/O']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.procs = []
 
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='process', value='', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='arguments', value='', pluggable=PARAM | INPUT_PLUG))
-        concurrency = IntParam(name='concurrency', value=0, pluggable=PARAM)
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
+        self.params.append(self.create_parameter('input:process'))
+        self.params.append(self.create_parameter('input:arguments'))
+        concurrency = self.create_parameter('property:concurrency')
         self.params.append(concurrency)
 
         self.queue = queue.Queue()
 
         self.loop_thread = LoopThread()
-        self.loop_thread.start()
+        if not self.restoring:
+            self.loop_thread.start()
 
         self.queue_thread = QueueThread(queue=self.queue, concurrency=concurrency, loop_thread=self.loop_thread)
 
@@ -279,7 +298,8 @@ class MultiProcess(ComputeNode):
 
         self.queue_thread.concurrent = self.concurrency_widget.concurrency.value()
         self.controls.append((self.progress_widget, None, None))
-        self.queue_thread.start()
+        if not self.restoring:
+            self.queue_thread.start()
 
     @QtCore.Slot()
     def compute(self):
@@ -294,7 +314,7 @@ class MultiProcess(ComputeNode):
             self.start_glow_signal.emit(self.error_color)
 
         async def process_start(proc, process_id):
-            procs.append(proc)
+            self.procs.append(proc)
 
             self.progress_widget.set_proc(proc, process_id)
             self.start_spinner_signal.emit()
@@ -339,13 +359,37 @@ class MultiProcess(ComputeNode):
         # QtCore.QCoreApplication.processEvents()
 
         loop = self.loop_thread.loop
+        if loop.is_closed():
+            return
         for task in asyncio.all_tasks(loop):
             task.cancel()
-        loop.call_soon_threadsafe(loop.stop)
+        if self.loop_thread.is_alive():
+            loop.call_soon_threadsafe(loop.stop)
 
-        for p in procs:
+        for p in self.procs:
             if p.returncode is None:
                 p.terminate()
 
         self.queue_thread.kill()
+        if self.queue_thread.is_alive():
+            self.queue_thread.join(timeout=5)
+        if self.loop_thread.is_alive():
+            self.loop_thread.join(timeout=5)
+        if not self.loop_thread.is_alive() and not loop.is_closed():
+            loop.close()
+
+    def activate_resources(self):
+        if self.loop_thread.loop.is_closed():
+            self.queue = queue.Queue()
+            self.loop_thread = LoopThread()
+            self.queue_thread = QueueThread(self.queue, self.get_first_param('concurrency'), self.loop_thread)
+            self.progress_widget.loop_thread = self.loop_thread
+            self.concurrency_widget.queuethread = self.queue_thread
+        self.concurrency_widget.concurrency.setValue(self.get_first_param('concurrency').value)
+        if not self.loop_thread.is_alive():
+            self.loop_thread.start()
+            self.queue_thread.start()
+
+    def pause_resources(self):
+        self.terminate()
 

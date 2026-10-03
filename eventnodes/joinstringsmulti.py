@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -26,6 +27,13 @@ class JoinParam(StringParam):
 
 
 class JoinStringsMulti(BaseNode):
+    dynamic_input_prefix = 'string'
+    parameter_definitions = {
+        'input:string1': ParameterDefinition(StringParam, {'name': 'string1', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=True),
+        'input:separator': ParameterDefinition(StringParam, {'name': 'separator', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'output:string': ParameterDefinition(JoinParam, {'name': 'string', 'pluggable': OUTPUT_PLUG}, storage='derived', bind_node=False),
+    }
+
     type = 'JoinStringsMulti'
     categories = ['String']
     description = \
@@ -45,8 +53,8 @@ Parameters:
 
         self.string_params = []
 
-        string0 = StringParam(name='string1', value='', pluggable=PARAM | INPUT_PLUG, node=self)
-        separator = StringParam(name='separator', value='', pluggable=PARAM | INPUT_PLUG)
+        string0 = self.create_parameter('input:string1')
+        separator = self.create_parameter('input:separator')
         self.params.append(separator)
         self.string_params.append(string0)
         self.params.append(string0)
@@ -54,6 +62,8 @@ Parameters:
                                      pluggable=OUTPUT_PLUG))
 
     def connected_params(self, connected_param, this_param):
+        if self.restoring:
+            return
         if not self.string_params[-1].is_connected():
             return
 
@@ -68,6 +78,8 @@ Parameters:
         self.ui_node.adjust()
 
     def disconnected_params(self, this_param):
+        if self.restoring:
+            return
         while (len(self.string_params) > 1) and (not self.string_params[-2].is_connected()):
             param_to_remove = self.params.pop()
             self.string_params.remove(param_to_remove)

@@ -1,3 +1,5 @@
+import persistence
+import graph_document
 import argparse
 import json
 import os
@@ -275,43 +277,50 @@ class MainWindow(QtWidgets.QMainWindow):
         show_new_nodes_menu()
 
     def load_data(self, data):
-        junk_stack = QtGui.QUndoStack()
-        scenetools.load_macro(self.context, junk_stack, data, pos=None)
-
-        # new_items = scenetools.load_scene_data(self.scene, data, pos=None)
-        # for n in new_items.keys():
-        #     if isinstance(n, pyweritems.PywerNode):
-        #         n.node_obj.moveToThread(self.worker_thread)
+        # Build and validate everything before touching the current session.
+        document = graph_document.migrate(data)
+        staged = graph_document.stage(document)
+        restored_data = graph_document.snapshot(staged)
+        self.parameters.set_node_obj(None)
+        self.undo_stack.clear()
+        self.deactivate_event_nodes()
+        self.session_stop_thread()
+        self.scene.clear()
+        self.session_start_thread()
+        graph_document.install(self.scene, staged)
+        for node in self.scene.get_all_nodes():
+            node.node_obj.moveToThread(self.worker_thread)
+        self.context.update(scene=self.scene, worker=self.worker_thread,
+                            current_selection=[], scene_data=restored_data)
+        self.activation_errors = graph_document.activate(self.scene)
+        self.load_diagnostics = [
+            'Adjusted node size: ' + record['id']
+            for record in document['nodes']
+            if next(n['size'] for n in restored_data['nodes'] if n['id'] == record['id']) != record['size']
+        ]
+        self.statusBar().showMessage('; '.join(self.activation_errors + self.load_diagnostics))
+        self.update_parameters_panel()
 
     def save_data(self):
-        return scenetools.get_scene_data(self.scene)
+        return graph_document.snapshot(self.scene)
 
     def load_json(self, json_string):
-        data = json.loads(json_string)
-        self.load_data(data)
+        self.load_data(persistence.loads(json_string))
 
     def dump_json(self):
-        return json.dumps(self.save_data())
+        return persistence.dumps(self.save_data())
 
     def load_file(self, file_name):
-        with open(file_name, 'r') as fp:
-            data = json.load(fp)
-        self.load_data(data)
-
+        self.load_data(persistence.read_document(file_name))
         self.unsaved = False
         self.filename = file_name
         self.copy_buffer = {}
-
         self.update_window_title()
 
     def save_file(self, file_name):
-        data = self.save_data()
-        with open(file_name, 'w') as fp:
-            json.dump(data, fp, indent=4)
-
+        persistence.write_document(file_name, self.save_data())
         self.unsaved = False
         self.filename = file_name
-
         self.update_window_title()
 
     def keyPressEvent(self, event):
@@ -515,8 +524,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             ret = save_dialog.exec()
             if ret == QtWidgets.QMessageBox.Save:
-                self.save_scene()
-                return True
+                return self.save_scene()
             elif ret == QtWidgets.QMessageBox.Discard:
                 return True
             elif ret == QtWidgets.QMessageBox.Cancel:
@@ -557,36 +565,32 @@ class MainWindow(QtWidgets.QMainWindow):
             filename, filter_ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Scene', os.getcwd(),
                                                                       'Scene Files (*.json)')
             if filename:
-                self.undo_stack.clear()
-                self.deactivate_event_nodes()
-                self.session_stop_thread()
-                self.scene.clear()
-                self.session_start_thread()  # TODO: do i need this? test removing it.
-                self.load_file(filename)
-
-                self.context = {
-                    'scene': self.scene,
-                    'current_selection': [],
-                    'worker': self.worker_thread,
-                    'scene_data': scenetools.get_scene_data(self.scene)
-                }
-
-                self.update_window_title()
+                try:
+                    self.load_file(filename)
+                except (persistence.PersistenceError, OSError) as error:
+                    QtWidgets.QMessageBox.warning(self, 'Unable to open graph', str(error))
 
     @QtCore.Slot()
     def save_scene_as(self):
         filename, filter_ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save Scene', os.getcwd(),
                                                                   'Scene Files (*.json)')
         if filename:
+            return self._save_with_error_dialog(filename)
+        return False
+
+    def _save_with_error_dialog(self, filename):
+        try:
             self.save_file(filename)
+            return True
+        except (persistence.PersistenceError, OSError) as error:
+            QtWidgets.QMessageBox.warning(self, 'Unable to save graph', str(error))
+            return False
 
     @QtCore.Slot()
     def save_scene(self):
         if self.filename:
-            self.save_file(self.filename)
-        else:
-            self.save_scene_as()
-        self.update_window_title()
+            return self._save_with_error_dialog(self.filename)
+        return self.save_scene_as()
 
     def toggle_visible(self):
         self.setVisible(not self.isVisible())
@@ -668,26 +672,19 @@ def print_params_from_scene(scene):
 
 
 def print_params_from_data(data):
-    promoted_params = {}
-    for node in data['nodes']:
-        state = node.get('params', {}).get('0', {}).get('promote state', False)
-        name = node.get('params', {}).get('0', {}).get('promote name', '')
-
-        if state:
-            promoted_params[name] = node['node_obj'].split('.')[-1]
-
-    print('{name} {type}'.format(name='PARAMETER NAME'.ljust(25), type=('PARAMETER TYPE').ljust(25)))
-    print('{name} {type}'.format(name='--------------'.ljust(25), type=('--------------').ljust(25)))
-    for n, t in promoted_params.items():
-        print('{name} {type}'.format(name=n.ljust(25), type=t.ljust(25)))
+    document = graph_document.migrate(data)
+    print('PARAMETER NAME'.ljust(25), 'PARAMETER TYPE'.ljust(25))
+    for node in document['nodes']:
+        params = {p['id']: p['value']['data'] for p in node['parameters']}
+        if params.get('property:promote state'):
+            print(str(params.get('property:promote name')).ljust(25), node['type'])
 
 
 def main(splashscreen=True, background=False, scene_file=None, json_string=None, list_params=False, params={}):
     register.reload_node_registry()
 
     if list_params:
-        with open(scene_file, 'r') as fp:
-            data = json.load(fp)
+        data = persistence.read_document(scene_file)
         print_params_from_data(data=data)
         sys.exit()
 

@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from eventnodes.base import ComputeNode
 from eventnodes.params import StringParam, PARAM
 from eventnodes.signal import Signal, INPUT_PLUG, OUTPUT_PLUG
@@ -113,26 +114,47 @@ class LoopThread(threading.Thread):
         super().__init__()
 
     def run(self):
-        self.loop.run_forever()
+        try:
+            self.loop.run_forever()
+        finally:
+            pending = asyncio.all_tasks(self.loop)
+            for task in pending:
+                task.cancel()
+            if pending:
+                self.loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            self.loop.close()
 
 
 class Download(ComputeNode):
+    legacy_aliases = ('nodes.download.Download',)
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:url': ParameterDefinition(StringParam, {'name': 'url', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:filename': ParameterDefinition(StringParam, {'name': 'filename', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'output:filename': ParameterDefinition(StringParam, {'name': 'filename', 'value': '', 'pluggable': OUTPUT_PLUG}, storage='stored', bind_node=False),
+    }
+
     type = 'Download'
     categories = ['I/O']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='url', value='', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='filename', value='', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='filename', value='', pluggable=OUTPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
+        self.params.append(self.create_parameter('input:url'))
+        self.params.append(self.create_parameter('input:filename'))
+        self.params.append(self.create_parameter('output:filename'))
 
         self.progress_widget = Progress()
         self.controls.append((self.progress_widget, None, None))
 
         self.loop_thread = LoopThread(node=self)
-        self.loop_thread.start()
+        if not self.restoring:
+            self.loop_thread.start()
 
         self.count = 0
 
@@ -174,4 +196,17 @@ class Download(ComputeNode):
 
     def terminate(self):
         loop = self.loop_thread.loop
-        loop.call_soon_threadsafe(loop.stop)
+        if self.loop_thread.is_alive():
+            loop.call_soon_threadsafe(loop.stop)
+            self.loop_thread.join(timeout=5)
+        if not self.loop_thread.is_alive() and not loop.is_closed():
+            loop.close()
+
+    def activate_resources(self):
+        if self.loop_thread.loop.is_closed():
+            self.loop_thread = LoopThread(node=self)
+        if not self.loop_thread.is_alive():
+            self.loop_thread.start()
+
+    def pause_resources(self):
+        self.terminate()

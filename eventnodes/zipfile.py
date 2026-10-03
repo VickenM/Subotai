@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -7,6 +8,17 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class ZipFile(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:source': ParameterDefinition(StringParam, {'name': 'source', 'value': '', 'pluggable': PARAM | INPUT_PLUG, 'subtype': SUBTYPE_DIRPATH}, storage='stored', bind_node=False),
+        'input:zipfile': ParameterDefinition(StringParam, {'name': 'zipfile', 'value': '', 'pluggable': PARAM | INPUT_PLUG, 'subtype': SUBTYPE_FILEPATH}, storage='stored', bind_node=False),
+        'output:zipfile': ParameterDefinition(StringParam, {'name': 'zipfile', 'value': '', 'pluggable': OUTPUT_PLUG, 'subtype': SUBTYPE_FILEPATH}, storage='stored', bind_node=False),
+    }
+
     type = 'ZipFile'
     categories = ['FileSystem']
     description = \
@@ -21,12 +33,12 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='source', value='', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_DIRPATH))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
+        self.params.append(self.create_parameter('input:source'))
         self.params.append(
-            StringParam(name='zipfile', value='', pluggable=PARAM | INPUT_PLUG, subtype=SUBTYPE_FILEPATH))
-        self.params.append(StringParam(name='zipfile', value='', pluggable=OUTPUT_PLUG, subtype=SUBTYPE_FILEPATH))
+            self.create_parameter('input:zipfile'))
+        self.params.append(self.create_parameter('output:zipfile'))
 
     @ComputeNode.Decorators.show_ui_computation
     def compute(self):

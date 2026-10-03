@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 
 from .base import ComputeNode
@@ -36,6 +37,14 @@ class View(QtWidgets.QWidget):
 
 
 class Viewer(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:image': ParameterDefinition(ImageParam, {'name': 'image', 'pluggable': INPUT_PLUG}, storage='transient', bind_node=False),
+    }
+
     type = 'Viewer'
     categories = ['I/O']
     description = \
@@ -49,11 +58,12 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
         self.params.append(ImageParam(name='image', value=None, pluggable=INPUT_PLUG))
 
         self.widget = View()
-        self.widget.show()
+        if not self.restoring:
+            self.widget.show()
 
         self.show_viewer_button = QtWidgets.QPushButton('Toggle Viewer')
 

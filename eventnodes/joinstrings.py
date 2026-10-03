@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -26,6 +27,13 @@ class JoinParam(StringParam):
 
 
 class JoinStrings(BaseNode):
+    parameter_definitions = {
+        'input:first': ParameterDefinition(StringParam, {'name': 'first', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:second': ParameterDefinition(StringParam, {'name': 'second', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:separator': ParameterDefinition(StringParam, {'name': 'separator', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'output:string': ParameterDefinition(JoinParam, {'name': 'string', 'pluggable': OUTPUT_PLUG}, storage='derived', bind_node=False),
+    }
+
     type = 'JoinStrings'
     categories = ['String']
     description = \
@@ -43,9 +51,9 @@ Parameters:
         super().__init__(*args, **kwargs)
         self.color = (150, 150, 150, 255)
 
-        first = StringParam(name='first', value='', pluggable=PARAM | INPUT_PLUG)
-        second = StringParam(name='second', value='', pluggable=PARAM | INPUT_PLUG)
-        separator = StringParam(name='separator', value='', pluggable=PARAM | INPUT_PLUG)
+        first = self.create_parameter('input:first')
+        second = self.create_parameter('input:second')
+        separator = self.create_parameter('input:separator')
         self.params.append(separator)
         self.params.append(first)
         self.params.append(second)

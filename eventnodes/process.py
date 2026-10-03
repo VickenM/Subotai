@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from .base import ComputeNode
 from .params import StringParam, PARAM
 from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
@@ -8,14 +9,24 @@ from PySide6 import QtCore
 
 
 class Process(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:process': ParameterDefinition(StringParam, {'name': 'process', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:arguments': ParameterDefinition(StringParam, {'name': 'arguments', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+    }
+
     type = 'Process'
     categories = ['I/O']
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='process', value='', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='arguments', value='', pluggable=PARAM | INPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
+        self.params.append(self.create_parameter('input:process'))
+        self.params.append(self.create_parameter('input:arguments'))
 
     @ComputeNode.Decorators.show_ui_computation
     @QtCore.Slot()

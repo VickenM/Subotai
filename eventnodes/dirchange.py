@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 
 from .base import EventNode, ComputeNode
@@ -8,6 +9,16 @@ import os
 
 
 class DirChanged(EventNode):
+    signal_definitions = {
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'output:directory': ParameterDefinition(StringParam, {'name': 'directory', 'value': '', 'pluggable': OUTPUT_PLUG | PARAM, 'subtype': SUBTYPE_DIRPATH}, storage='stored', bind_node=False),
+        'output:new': ParameterDefinition(ListParam, {'name': 'new', 'value': [], 'pluggable': OUTPUT_PLUG}, storage='stored', bind_node=False),
+        'output:removed': ParameterDefinition(ListParam, {'name': 'removed', 'value': [], 'pluggable': OUTPUT_PLUG}, storage='stored', bind_node=False),
+    }
+
     type = 'DirChanged'
     categories = ['Events']
     description = \
@@ -22,11 +33,11 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
+        self.signals.append(self.create_signal('output:event'))
         self.params.append(
-            StringParam(name='directory', value='', pluggable=OUTPUT_PLUG | PARAM, subtype=SUBTYPE_DIRPATH))
-        self.params.append(ListParam(name='new', value=[], pluggable=OUTPUT_PLUG))
-        self.params.append(ListParam(name='removed', value=[], pluggable=OUTPUT_PLUG))
+            self.create_parameter('output:directory'))
+        self.params.append(self.create_parameter('output:new'))
+        self.params.append(self.create_parameter('output:removed'))
 
         directory = self.get_first_param('directory').value
         self.watcher = None  # QtCore.QFileSystemWatcher([directory])
@@ -43,6 +54,8 @@ Parameters:
             self.watcher.directoryChanged.disconnect(self.compute)
 
     def update(self):
+        if self.restoring:
+            return
         directory = self.get_first_param('directory').value
 
         self.current_contents = []

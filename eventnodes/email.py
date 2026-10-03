@@ -1,3 +1,4 @@
+from persistence import ParameterDefinition
 from PySide6 import QtCore
 from PySide6.QtCore import Slot
 
@@ -7,6 +8,24 @@ from .signal import Signal, INPUT_PLUG, OUTPUT_PLUG
 
 
 class Email(ComputeNode):
+    signal_definitions = {
+        'input:event': ('event', INPUT_PLUG),
+        'output:event': ('event', OUTPUT_PLUG),
+    }
+
+    parameter_definitions = {
+        'input:sender': ParameterDefinition(StringParam, {'name': 'sender', 'value': 'my.name@gmail.com', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:recipients': ParameterDefinition(ListParam, {'name': 'recipients', 'value': [StringParam(name='', value='my.name@gmail.com')], 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:subject': ParameterDefinition(StringParam, {'name': 'subject', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:message': ParameterDefinition(StringParam, {'name': 'message', 'value': '', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:attachments': ParameterDefinition(ListParam, {'name': 'attachments', 'value': [], 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:server': ParameterDefinition(StringParam, {'name': 'server', 'value': 'smtp.gmail.com', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:port': ParameterDefinition(IntParam, {'name': 'port', 'value': 587, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:username': ParameterDefinition(StringParam, {'name': 'username', 'value': 'my.name@gmail.com', 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:password': ParameterDefinition(StringParam, {'name': 'password', 'value': '', 'subtype': SUBTYPE_PASSWORD, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+        'input:use_tls': ParameterDefinition(BoolParam, {'name': 'use_tls', 'value': True, 'pluggable': PARAM | INPUT_PLUG}, storage='stored', bind_node=False),
+    }
+
     type = 'Email'
     categories = ['FileSystem']
     description = \
@@ -28,22 +47,19 @@ Parameters:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.signals.append(Signal(node=self, name='event', pluggable=INPUT_PLUG))
-        self.signals.append(Signal(node=self, name='event', pluggable=OUTPUT_PLUG))
-        self.params.append(StringParam(name='sender', value='my.name@gmail.com', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(ListParam(name='recipients',
-                                     value=[StringParam(name='', value='my.name@gmail.com')],
-                                     pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='subject', value='', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='message', value='', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(ListParam(name='attachments', value=[], pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='server', value='smtp.gmail.com', pluggable=PARAM | INPUT_PLUG))
-        self.params.append(IntParam(name='port', value=587, pluggable=PARAM | INPUT_PLUG))
-        self.params.append(StringParam(name='username', value='my.name@gmail.com', pluggable=PARAM | INPUT_PLUG))
+        self.signals.append(self.create_signal('input:event'))
+        self.signals.append(self.create_signal('output:event'))
+        self.params.append(self.create_parameter('input:sender'))
+        self.params.append(self.create_parameter('input:recipients'))
+        self.params.append(self.create_parameter('input:subject'))
+        self.params.append(self.create_parameter('input:message'))
+        self.params.append(self.create_parameter('input:attachments'))
+        self.params.append(self.create_parameter('input:server'))
+        self.params.append(self.create_parameter('input:port'))
+        self.params.append(self.create_parameter('input:username'))
         self.params.append(
-            StringParam(name='password', value='', subtype=SUBTYPE_PASSWORD,
-                        pluggable=PARAM | INPUT_PLUG))
-        self.params.append(BoolParam(name='use_tls', value=True, pluggable=PARAM | INPUT_PLUG))
+            self.create_parameter('input:password'))
+        self.params.append(self.create_parameter('input:use_tls'))
 
     def send_mail(self, send_from, send_to, subject, message, files=[], server="localhost", port=587, username='',
                   password='', use_tls=True):

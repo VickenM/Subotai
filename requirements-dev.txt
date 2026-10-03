@@ -1,2 +1,1 @@
 -r requirements.txt
-jsonschema>=4.23,<5
