@@ -16,6 +16,7 @@ Some example uses are:
 ## Project documentation
 
 - [Architecture and state inventory](docs/architecture.md): components, ownership, execution, persistence and undo/redo, with diagrams.
+- [Node sizing](docs/node-sizing.md): content minimums, extension hooks and legacy-size normalization.
 - [Development roadmap](docs/planning/github-plan.md): planned work and GitHub tracking links.
 
 # Requirements
